@@ -1,0 +1,30 @@
+name: Apply NEON RUMBLE v3.23
+on:
+  push:
+    paths:
+      - 'apply_v323.py'
+      - '.github/workflows/apply-v323.yml'
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      - name: Apply v3.23
+        run: python apply_v323.py
+      - name: Verify v3.23
+        run: |
+          grep -q 'BATTLE <b>v3.23</b>' index.html
+          grep -q "damage:85,speed:155" index.html
+          grep -q "armor:type.id==='knight'?.3:0" index.html
+          grep -q '회전팔 125 / 3초' index.html
+          grep -q 'robotOrbitAngle' index.html
+          grep -q "e.id==='tree'?2:1" index.html
+      - name: Commit v3.23
+        run: |
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git add index.html
+          git commit -m 'Release NEON RUMBLE v3.23'
+          git push
