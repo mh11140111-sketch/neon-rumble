@@ -1,0 +1,26 @@
+name: Apply NEON RUMBLE v3.18 Control Hotfix
+on:
+  push:
+    paths:
+      - 'apply_v318_control_hotfix.py'
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      - name: Apply control hotfix
+        run: python apply_v318_control_hotfix.py
+      - name: Verify control hotfix
+        run: |
+          grep -q "\['boss','relay','group','control'\]" index.html
+          grep -q "this.mode==='control'&&f.team===0" index.html
+          grep -q 'BATTLE <b>v3.18</b>' index.html
+      - name: Commit hotfix
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add index.html
+          git commit -m 'Hotfix control movement in v3.18'
+          git push
