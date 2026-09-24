@@ -1,0 +1,30 @@
+name: Apply NEON RUMBLE v3.21 Genie Clamp Fix
+on:
+  push:
+    paths:
+      - '.github/workflows/apply-v321-genie-clamp-fix.yml'
+      - 'apply_v321_genie_clamp_fix.py'
+permissions:
+  contents: write
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+      - name: Apply exact Genie clamp fix
+        run: python apply_v321_genie_clamp_fix.py
+      - name: Verify exact fix
+        run: |
+          grep -Fq "Math.max(0,Math.min(1,engine.time-f.genieArmStart))" index.html
+          ! grep -Fq "clamp(engine.time-f.genieArmStart,0,1)" index.html
+          grep -Fq "BATTLE <b>v3.21</b>" index.html
+      - name: Commit exact fix
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add index.html
+          git diff --cached --quiet && exit 0
+          git commit -m "Fix Genie attack crash in v3.21"
+          git push
