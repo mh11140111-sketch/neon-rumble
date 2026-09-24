@@ -1,5 +1,6 @@
 from pathlib import Path
 
+# Triggered after the v3.22 workflow was installed.
 p=Path('index.html')
 s=p.read_text(encoding='utf-8')
 
