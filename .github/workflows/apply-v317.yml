@@ -3,6 +3,7 @@ on:
   push:
     paths:
       - 'apply_v317.py'
+      - '.github/workflows/apply-v317.yml'
 jobs:
   patch:
     runs-on: ubuntu-latest
