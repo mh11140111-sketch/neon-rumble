@@ -19,7 +19,7 @@ jobs:
         run: |
           grep -Fq "BATTLE <b>v3.20</b>" index.html
           grep -Fq "armor:0,lifesteal:0,rootSlowStrength:0,magicSlowStrength:0,speed:180*scale" index.html
-          grep -Fq "'robot','genie'].includes(f.id)" index.html
+          grep -Fq "'aladdin','genie'].includes(f.id)" index.html
           grep -Fq "🧞‍♂️ 지니 '+ghp+' / '+gmax+' HP" index.html
           grep -Fq "allFs.filter(f=>!f.summon)" index.html
       - name: Commit genie hotfix
