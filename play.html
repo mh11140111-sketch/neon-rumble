@@ -1,0 +1,9 @@
+<!doctype html><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>NEON RUMBLE</title><body style="margin:0;background:#0a101b;color:#fff;font-family:system-ui"><div id="loading" style="padding:24px">NEON RUMBLE v3.12 불러오는 중...</div><script>
+fetch('/index.html?base=1',{cache:'no-store'}).then(r=>r.text()).then(s=>{
+  s=s.replace('BATTLE <b>v3.11</b>','BATTLE <b>v3.12</b>');
+  s=s.replace("hp:1000,damage:50,speed:155,cooldown:3,description:'3초마다 특수 폭탄! 💣 50%: 피해 50, 🧨 30%: 피해 70","hp:1000,damage:100,speed:155,cooldown:3,description:'3초마다 특수 폭탄! 💣 50%: 피해 100, 🧨 30%: 피해 70");
+  s=s.replace('(dynamite?70:50)*f.scale','(dynamite?70:100)*f.scale');
+  s=s.replace('보스 빌런은 1.5초마다 투척하며 폭탄 100·다이너마이트 140','보스 빌런은 1.5초마다 투척하며 폭탄 200·다이너마이트 140');
+  document.open();document.write(s);document.close();
+}).catch(e=>{document.getElementById('loading').textContent='게임을 불러오지 못했어: '+e;});
+</script>
