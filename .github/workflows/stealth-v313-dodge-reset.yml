@@ -1,0 +1,34 @@
+name: Stealth v3.13 dodge reset
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/stealth-v313-dodge-reset.yml'
+permissions:
+  contents: write
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Patch invisible dodge reset
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          p = Path('index.html')
+          s = p.read_text(encoding='utf-8')
+          old = "if(e.id==='invisible'&&!bypassDodge){if(this.random()<e.dodgeChance){this.effect(e,'공격 무시!','skill');const reflected=30*e.scale;this.attack(e,f,reflected,false,true);return 0}else{e.dodgeChance=Math.min(1,e.dodgeChance+.1);this.effect(e,'회피 '+Math.round(e.dodgeChance*100)+'%','skill')}}"
+          new = "if(e.id==='invisible'&&!bypassDodge){if(this.random()<e.dodgeChance){e.dodgeChance=.5;this.effect(e,'공격 무시!','skill');const reflected=30*e.scale;this.attack(e,f,reflected,false,true);return 0}else{e.dodgeChance=Math.min(1,e.dodgeChance+.1);this.effect(e,'회피 '+Math.round(e.dodgeChance*100)+'%','skill')}}"
+          if old not in s:
+              raise SystemExit('target dodge code not found')
+          s = s.replace(old, new, 1)
+          s = s.replace("detail:'기본 공격 없음 · 공격 무시 50% · 성공 시 반사 30 · 실패할 때마다 무시 확률 +10%p · 증가분 유지'", "detail:'기본 공격 없음 · 공격 무시 50% · 성공 시 반사 30 · 실패할 때마다 무시 확률 +10%p · 성공 시 50%로 초기화'", 1)
+          p.write_text(s, encoding='utf-8')
+          PY
+      - name: Commit stealth patch
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add index.html
+          git commit -m "Stealth patch v3.13 invisible dodge reset" || exit 0
+          git push
