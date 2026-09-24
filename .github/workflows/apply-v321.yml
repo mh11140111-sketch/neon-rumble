@@ -1,0 +1,37 @@
+name: Apply NEON RUMBLE v3.21
+on:
+  push:
+    paths:
+      - 'apply_v321.py'
+      - '.github/workflows/apply-v321.yml'
+permissions:
+  contents: write
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Apply v3.21
+        run: python apply_v321.py
+      - name: Verify v3.21
+        run: |
+          grep -Fq "BATTLE <b>v3.21</b>" index.html
+          grep -Fq "v3.21 · 지니 회전팔 & AI 개선" index.html
+          grep -Fq "g.genieArmUntil=this.time+1" index.html
+          grep -Fq "damage:100*scale*(owner.geniePower||1)" index.html
+          grep -Fq "phase*Math.PI*2*3" index.html
+          grep -Fq "f.id==='aladdin'&&f.health>0" index.html
+          grep -Fq "회전팔 피해 200, 공격 주기 1.5초" index.html
+      - name: Commit v3.21
+        run: |
+          if git diff --quiet -- index.html; then
+            echo "No changes to commit"
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add index.html
+          git commit -m "Release NEON RUMBLE v3.21"
+          git push
