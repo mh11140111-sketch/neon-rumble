@@ -16,11 +16,6 @@ rep("trail:[],summon:true,ownerSide:owner.side}",
     "trail:[],summon:true,ownerSide:owner.side,genieResolved:false}",
     'genie lifecycle state')
 
-# Genie only attacks with its 3-second arm swing, never generic contact melee.
-rep("'moon','invisible','moai','puffer','police','robot'].includes(f.id)",
-    "'moon','invisible','moai','puffer','police','robot','genie'].includes(f.id)",
-    'genie contact exclusion')
-
 # HUD counts only primary fighters. Summons keep their own in-arena HP bar and Aladdin HUD shows Genie HP separately.
 old="for(let team=0;team<2;team++){const fs=engine.fighters.filter(f=>f.team===team),f=fs[0],hp=fs.reduce((n,x)=>n+x.health,0),max=fs.reduce((n,x)=>n+x.hp,0),live=fs.filter(x=>x.health>0).length;"
 new="for(let team=0;team<2;team++){const allFs=engine.fighters.filter(f=>f.team===team),fs=allFs.filter(f=>!f.summon),f=fs[0],hp=fs.reduce((n,x)=>n+(Number.isFinite(x.health)?x.health:0),0),max=fs.reduce((n,x)=>n+(Number.isFinite(x.hp)?x.hp:0),0),live=fs.filter(x=>x.health>0).length;"
@@ -39,6 +34,10 @@ rep(old,new,'genie independent label')
 old="genieSkill(g,dt){\n if(g.id!=='genie'||g.health<=0)return;"
 new="genieSkill(g,dt){\n if(g.id!=='genie')return;if(!Number.isFinite(g.hp))g.hp=1500*(g.boss?2.5:1);if(!Number.isFinite(g.health))g.health=g.hp;if(g.health<=0)return;"
 rep(old,new,'genie nan guard')
+
+# The current v3.20 code already excludes both Aladdin and Genie from generic contact attacks.
+if "'aladdin','genie'].includes(f.id)" not in s:
+    raise SystemExit('PATCH FAILED: genie contact exclusion missing')
 
 p.write_text(s,encoding='utf-8')
 print('v3.20 genie independent-unit hotfix applied')
