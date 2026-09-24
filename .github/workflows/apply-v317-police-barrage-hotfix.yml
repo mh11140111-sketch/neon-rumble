@@ -14,10 +14,10 @@ jobs:
         run: python apply_v317_police_barrage_hotfix.py
       - name: Verify police barrage hotfix
         run: |
-          grep -q "f.policeBarrageCd=this.time+.38/f.scale" index.html
-          grep -q "const a=this.random()*Math.PI*2" index.html
-          grep -q "bounces:0" index.html
-          grep -q 'BATTLE <b>v3.17</b>' index.html
+          grep -Fq "f.policeBarrageCd=this.time+.38/f.scale" index.html
+          grep -Fq "const a=this.random()*Math.PI*2" index.html
+          grep -Fq "bounces:0" index.html
+          grep -Fq 'BATTLE <b>v3.17</b>' index.html
       - name: Commit hotfix
         run: |
           git config user.name 'github-actions[bot]'
