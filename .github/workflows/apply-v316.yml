@@ -1,0 +1,45 @@
+name: Apply NEON RUMBLE v3.16
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'apply_v316.py'
+      - '.github/workflows/apply-v316.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Apply v3.16 patch
+        run: python apply_v316.py
+      - name: Verify key v3.16 features
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          s=Path('index.html').read_text(encoding='utf-8')
+          checks=[
+            'BATTLE <b>v3.16</b>',
+            'v3.16 · 회전 방패 기사',
+            "knightShieldReady:type.id==='knight'",
+            "this.time+10",
+            "if(dmg>=500)this.knightShockwave(e)",
+            "this.attack(f,e,100,true)",
+            "this.time+3",
+            "회전 방패 · 검격",
+          ]
+          missing=[x for x in checks if x not in s]
+          if missing: raise SystemExit('VERIFY FAILED: '+repr(missing))
+          print('v3.16 verification passed')
+          PY
+      - name: Commit v3.16
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add index.html
+          git diff --cached --quiet || git commit -m 'Release NEON RUMBLE v3.16'
+          git push
