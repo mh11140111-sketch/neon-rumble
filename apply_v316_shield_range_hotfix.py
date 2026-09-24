@@ -19,3 +19,4 @@ rep(old_moon,new_moon,'moon shield range')
 
 p.write_text(s,encoding='utf-8')
 print('v3.16 charged shield range hotfix applied')
+# trigger
