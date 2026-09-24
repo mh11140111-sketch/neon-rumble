@@ -8,3 +8,4 @@ if old not in s:
 s=s.replace(old,new,1)
 p.write_text(s,encoding='utf-8')
 print('v3.18 control mode whitelist hotfix applied')
+# trigger workflow
