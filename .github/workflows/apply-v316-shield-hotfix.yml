@@ -1,0 +1,28 @@
+name: Apply NEON RUMBLE v3.16 Shield Hotfix
+on:
+  push:
+    paths:
+      - 'apply_v316_shield_hotfix.py'
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Apply shield hotfix
+        run: python apply_v316_shield_hotfix.py
+      - name: Verify hotfix
+        run: |
+          grep -q "BATTLE <b>v3.16</b>" index.html
+          grep -q "knightShieldChargedUntil" index.html
+          grep -q "완전 방어 3초" index.html
+          grep -q "knightBlocksProjectile" index.html
+      - name: Commit hotfix
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add index.html
+          git diff --cached --quiet || git commit -m "Hotfix knight rotating shield in v3.16"
+          git push
