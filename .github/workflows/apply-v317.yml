@@ -1,0 +1,29 @@
+name: Apply NEON RUMBLE v3.17
+on:
+  push:
+    paths:
+      - 'apply_v317.py'
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      - name: Apply v3.17 patch
+        run: python apply_v317.py
+      - name: Verify v3.17
+        run: |
+          grep -q 'BATTLE <b>v3.17</b>' index.html
+          grep -q "id:'police'" index.html
+          grep -q 'knightBlockedDamage' index.html
+          grep -q "e.id==='moai'" index.html
+          grep -q "kind:'taser'" index.html
+          grep -q "kind:'bullet'" index.html
+      - name: Commit v3.17
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add index.html
+          git commit -m 'Release NEON RUMBLE v3.17'
+          git push
