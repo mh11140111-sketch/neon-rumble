@@ -1,0 +1,33 @@
+name: Apply NEON RUMBLE v3.21 Genie Arm Hotfix
+on:
+  push:
+    paths:
+      - 'apply_v321_genie_arm_hotfix.py'
+      - '.github/workflows/apply-v321-genie-arm-hotfix.yml'
+permissions:
+  contents: write
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Apply Genie arm hotfix
+        run: python apply_v321_genie_arm_hotfix.py
+      - name: Verify Genie arm hotfix
+        run: |
+          grep -Fq "BATTLE <b>v3.21</b>" index.html
+          grep -Fq "ctx.fillRect(f.radius*.62,-18*gs,34*gs,36*gs)" index.html
+          ! grep -Fq "ctx.roundRect(f.radius*.62,-18*gs,34*gs,36*gs,9*gs)" index.html
+      - name: Commit Genie arm hotfix
+        run: |
+          if git diff --quiet -- index.html; then
+            echo "No changes to commit"
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add index.html
+          git commit -m "Hotfix Genie arm crash in v3.21"
+          git push
