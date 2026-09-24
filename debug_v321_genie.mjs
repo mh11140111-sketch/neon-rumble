@@ -1,6 +1,7 @@
 import fs from 'fs';
 import {JSDOM} from 'jsdom';
 
+// Runtime regression test: must survive Genie attack start beyond 3 seconds.
 const html=fs.readFileSync('index.html','utf8');
 const errors=[];
 let raf=[];
