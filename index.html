@@ -1,0 +1,320 @@
+<!doctype html><html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="#0a101b"><title>NEON RUMBLE · 결투 & 보스전</title><style>
+*{box-sizing:border-box}html{color-scheme:dark}body{margin:0;background:#0a101b;color:#edf3ff;font-family:system-ui,-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;font-size:16px}button,select,a{-webkit-tap-highlight-color:transparent}button,select{font:inherit;color:inherit;background:#19263a;border:1px solid #35465f;border-radius:12px;padding:12px 16px;min-height:46px;cursor:pointer;touch-action:manipulation}button:disabled{opacity:.4;cursor:wait}button:focus-visible,select:focus-visible,a:focus-visible{outline:3px solid #c5f794;outline-offset:4px}button:hover:not(:disabled){filter:brightness(1.13)}[hidden]{display:none!important}main{max-width:850px;margin:auto;padding:20px 24px 36px}header{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:30px}.brand{font-weight:900;font-size:24px;letter-spacing:-.8px;text-decoration:none;color:#edf3ff}.brand span{color:#69def3}.badge{font-size:12px;letter-spacing:1px;color:#a8b8ce;border:1px solid #2a3951;border-radius:8px;padding:8px}.badge b{font-weight:400;color:#b8f279;margin-left:8px}h1{font-size:clamp(26px,5vw,36px);margin:6px 0 0;letter-spacing:-1px}.section-title{display:flex;align-items:center;justify-content:space-between;gap:12px}.eyebrow{color:#b8f279;font-size:12px;letter-spacing:2px;margin:0}.versus{position:relative;display:grid;grid-template-columns:1fr 1fr;gap:28px;margin:22px 0}.chosen{display:flex;align-items:center;flex-direction:column;position:relative;min-width:0;padding:18px 12px 20px;background:#111d2f;border:2px solid #2c3b50}.chosen.left[aria-pressed=true]{border-color:#69def3;background:#11283a}.chosen.right[aria-pressed=true]{border-color:#ff9873;background:#302326}.chosen strong{font-size:24px;margin:2px 0 6px}.chosen>span:last-child{font-size:14px;color:#b3c3d9}.side{width:100%;display:flex;justify-content:space-between;align-items:center;font-size:14px;gap:6px}.left .side{color:#69def3}.right .side{color:#ff9873}.side b{font-size:12px;font-weight:500}.chosen-icon{font-family:'Apple Color Emoji','Segoe UI Emoji',sans-serif;font-size:62px;line-height:1.5}.vs{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);z-index:1;border:1px solid #3a495e;background:#0a101b;border-radius:50%;height:48px;width:48px;display:grid;place-items:center;font-size:14px;font-weight:850}.pick-heading{display:flex;justify-content:space-between;gap:10px;align-items:baseline;margin-bottom:12px;font-size:14px}.pick-heading span{font-size:12px;color:#9bacc3}.roster{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}.fighter-card{display:flex;text-align:left;flex-direction:column;align-items:flex-start;position:relative;gap:8px;padding:16px;background:#111c2b;border:1px solid #2d3b50;min-width:0}.fighter-card[aria-pressed=true]{border-color:var(--pick-color,#69def3);background:#1b2a3d}.card-top{display:flex;align-items:center;gap:10px;width:100%}.card-icon{font-size:30px}.card-name{font-size:17px;font-weight:750}.card-tag{font-size:12px;color:#b8f279}.card-desc{font-size:14px;line-height:1.6;color:#b8c5d8}.card-hp{font-size:12px;color:#94a6bf}.match-info{font-size:14px;line-height:1.7;margin:18px 0;background:#111b2a;padding:6px 14px;border-radius:12px}.match-info p{display:flex;gap:12px}.match-info p>span:first-child{flex-shrink:0}.cyan{color:#69def3}.orange{color:#ff9873}.primary{background:#b8f279;border-color:#b8f279;color:#132015;font-weight:800}.start{width:100%;font-size:18px;padding:17px}.hint{font-size:12px;color:#93a7c1;text-align:center;line-height:1.7}.score{display:grid;grid-template-columns:1fr auto 1fr;gap:20px;align-items:center;margin-bottom:14px}.score>div>span{font-size:12px}.score h2{font-size:22px;margin:4px 0 12px}.health{height:7px;background:#27364d;border-radius:9px;overflow:hidden}.health i{height:100%;display:block;background:#69def3;width:100%;transition:width .08s linear}.right-score .health i{background:#ff9873}.right-score{text-align:right}.numbers{font-size:12px;display:flex;justify-content:space-between;gap:6px;color:#b5c7df;margin-top:8px;font-variant-numeric:tabular-nums}.clock{text-align:center}.clock small{display:block;font-size:12px;color:#92a9c7;letter-spacing:2px}.clock strong{display:block;font-size:25px;font-variant-numeric:tabular-nums;margin-top:5px}.arena{position:relative;background:#111d2e;border:1px solid #35465f;border-radius:18px;overflow:hidden;max-width:660px;margin:auto}canvas{display:block;width:100%;aspect-ratio:1;touch-action:manipulation}.result{position:absolute;inset:0;background:#0a1426ed;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:20px;gap:12px}.result h2{font-size:30px;margin:0}.result>span{font-size:60px}.result>p:not(.eyebrow){font-size:14px;color:#b9cbe1;line-height:1.7;margin:0 0 10px}.result button{max-width:310px;width:100%}#pause-label{position:absolute;top:45%;left:50%;transform:translateX(-50%);padding:15px 22px;border-radius:12px;background:#0a101bd9;border:1px solid #546882;font-weight:750;pointer-events:none}.controls{display:flex;flex-wrap:wrap;justify-content:center;gap:8px;margin-top:16px}.controls button,.controls select{font-size:14px}.event{text-align:center;color:#c6d6ed;font-size:14px;min-height:22px}.battle-info{font-size:13px;line-height:1.8;color:#a7bbd4;padding:12px 16px;background:#101b2b;border-radius:12px}.sr-only{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0,0,0,0)}#boot{font-size:14px;color:#e3c478} @media(max-width:560px){main{padding:14px 12px 24px}header{margin-bottom:24px}.brand{font-size:20px}.badge{padding:6px;font-size:11px}.badge b{margin-left:3px}.versus{gap:18px}.chosen{padding:12px 10px 16px}.chosen-icon{font-size:52px}.chosen strong{font-size:22px}.roster{grid-template-columns:repeat(2,1fr)}.fighter-card{padding:13px 12px}.card-desc{font-size:13px}.card-name{font-size:16px}.pick-heading{flex-wrap:wrap;gap:4px}.score{gap:10px}.score h2{font-size:18px}.numbers{font-size:11px;flex-direction:column;gap:3px}.clock strong{font-size:22px}.controls{gap:6px}.controls button,.controls select{padding:10px}.side{font-size:12px}.side b{font-size:11px}.result h2{font-size:25px}.result>span{font-size:40px}.result{gap:8px}.result>p:not(.eyebrow){margin:0;font-size:12px}}
+
+.ability{font-size:12px;color:#b8f279;line-height:1.5;min-height:1.5em;margin-top:5px}
+
+.mode-tabs{display:flex;gap:8px;margin-bottom:24px}.mode-tabs button{flex:1;font-weight:700}.mode-tabs [aria-pressed="true"]{background:#b8f279;color:#132015;border-color:#b8f279}.squad-picker,.squad-hud{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:8px;margin:0 0 18px}.squad-picker button{padding:10px 4px;display:flex;align-items:center;flex-direction:column;gap:5px;font-size:14px;min-width:0}.squad-picker button span{font-size:30px}.squad-picker button small{font-size:11px;color:#b9c5d8}.squad-picker [aria-pressed="true"]{border:2px solid #ff9873;background:#38272b}.boss-rules{margin-bottom:18px;padding:12px 14px;border:1px solid #49522d;border-radius:12px;background:#19231c;font-size:14px;line-height:1.7}.boss-rules summary{color:#d2f4ab;cursor:pointer;font-weight:600}.boss-rules p{color:#b9cbd4}.squad-hud{margin-bottom:12px}.hero-status{background:#182334;border-radius:8px;padding:9px 6px;text-align:center;min-width:0;font-size:12px}.hero-status strong{display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-size:13px}.hero-status .health{height:4px;margin:7px 0}.hero-status .health i{background:#ff9873}.hero-status small{color:#bccde4;font-variant-numeric:tabular-nums}.hero-status.defeated{opacity:.4}.chosen.boss-choice{border-color:#b8f279}.chosen.boss-choice[aria-pressed=true]{border-color:#b8f279;background:#1b2b26}.hint{line-height:1.8}@media(max-width:560px){.squad-picker,.squad-hud{gap:5px}.squad-picker button{font-size:12px;padding:9px 2px}.squad-picker button span{font-size:26px}.hero-status strong{font-size:11px}.hero-status{padding:7px 3px}.hero-status small{font-size:10px}.boss-rules{font-size:13px}.ability{font-size:11px}}
+
+.mode-tabs{flex-wrap:wrap}.relay-picker{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin:12px 0}.relay-picker button{min-height:64px;white-space:normal;overflow-wrap:anywhere;font-size:14px;padding:10px 6px}.relay-picker button:nth-child(-n+3){color:#69def3}.relay-picker button:nth-child(n+4){color:#ff9873}.relay-picker button[aria-pressed=true]{border-color:#b8f279;background:#243444}.relay-hud{white-space:pre-line;line-height:1.8;font-size:14px;padding:12px;background:#152338;border-radius:12px;margin:12px 0} .relay-picker[hidden],.relay-hud[hidden]{display:none}
+
+</style><link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 32 32%27%3E%3Crect width=%2732%27 height=%2732%27 rx=%278%27 fill=%27%23101c2d%27/%3E%3Cpath d=%27M8 24V8l16 16V8%27 fill=%27none%27 stroke=%27%2369def3%27 stroke-width=%274%27/%3E%3C/svg%3E">
+<style id="mobile-compat">
+html,body{width:100%;min-height:100%;overscroll-behavior:none;-webkit-text-size-adjust:100%;}
+body{min-height:100dvh;overflow-x:hidden;-webkit-user-select:none;user-select:none;-webkit-touch-callout:none;}
+main{padding-left:max(12px,env(safe-area-inset-left));padding-right:max(12px,env(safe-area-inset-right));padding-bottom:max(24px,env(safe-area-inset-bottom));}
+button,select{touch-action:manipulation;}
+canvas{touch-action:none;-webkit-user-select:none;user-select:none;}
+@media (max-width:560px){
+  main{max-width:100%;padding-top:max(10px,env(safe-area-inset-top));}
+  header{position:relative;z-index:2;}
+  .arena{width:min(100%,calc(100dvh - 205px));max-width:100%;}
+  .controls{position:relative;z-index:3;}
+  .controls button,.controls select{min-height:44px;}
+}
+@media (max-width:560px) and (orientation:landscape){
+  main{padding-top:8px;padding-bottom:8px;}
+  header{margin-bottom:10px;}
+  .arena{width:min(68dvh,100%);}
+  .score{margin-bottom:8px;}
+  .controls{margin-top:8px;}
+}
+</style>
+</head><body><main>
+<header><a href="./" class="brand">NEON RUMBLE<span>.</span></a><span class="badge">BATTLE <b>v3.11</b></span></header>
+<p id="boot" role="status">게임을 불러오는 중이야. 계속 이 안내가 보이면 Safari에서 다시 열어 줘.</p>
+<section id="selection"><div class="mode-tabs" role="group" aria-label="게임 모드"><button id="mode-duel" type="button" aria-pressed="true">1대1 결투</button><button id="mode-boss" type="button" aria-pressed="false">👑 보스전 · 1대5</button><button id="mode-relay" type="button" aria-pressed="false">릴레이 · 3대3</button></div><div class="section-title"><div><p class="eyebrow">CHOOSE YOUR FIGHTER</p><h1>이번엔 누가 이길까?</h1></div><button id="random" type="button" disabled>🎲 랜덤</button></div>
+<div class="versus"><button class="chosen left" id="choose0" type="button" aria-pressed="true"><span class="side"><span id="label0">왼쪽 선수</span> <b>선택 중</b></span><span class="chosen-icon" id="icon0">🥊</span><strong id="name0">복서</strong><span id="tag0">반사 · 돌진</span></button><span class="vs">VS</span><button class="chosen right" id="choose1" type="button" aria-pressed="false"><span class="side"><span id="label1">오른쪽 선수</span> <b>변경</b></span><span class="chosen-icon" id="icon1">⚒️</span><strong id="name1">대장장이</strong><span id="tag1">시간이 힘이다</span></button></div>
+<p id="relay-rules" class="hint" hidden>각 팀의 1·2·3번을 눌러 출전 순서를 정해 줘. 승자는 남은 체력과 강화 상태를 유지하고, 패한 쪽만 다음 선수가 나와. 세 명 모두 탈락하면 패배!</p><div id="relay-picker" class="relay-picker" hidden></div><div id="squad-picker" class="squad-picker" hidden aria-label="도전자 5명 선택"></div><details id="boss-rules" class="boss-rules" hidden><summary>보스 능력: 크기 3배 · 체력 2.5배 · 나머지 2배</summary><p>어떤 캐릭터든 보스로 선택할 수 있어. 도전자 5명은 동시에 싸우고, 같은 캐릭터도 여러 명 선택 가능해.</p><p>보스는 공격력·이동 속도·탄속·스킬 효과가 2배. 공격·돌진·뿌리 성장·강화 주기는 일반 캐릭터의 절반이야. 기사 피해 감소는 60%, 흡혈귀 흡혈은 70%, 나무 감속은 80%로 강화돼. 나무의 명중 회복은 보스도 현재 체력의 3%로 같아. 보스 닌자 체력은 1625, 보스 마법사는 1750이야. 보스 거미줄은 0.25초마다 피해 60 및 80% 감속, 접촉 독은 20초간 0.15초마다 피해 10이야. 보스 거미는 2.5초마다 포획, 물기 200, 포식 성공 시 현재 체력 10% 회복 및 명중 시 사라지는 사방 거미줄을 펼쳐. 맹독은 제거됐어. 보스 남자는 출전 10초 후 히어로가 되어 돌진 피해 500을 줘. 새는 부활 전 쪼기만 사용하고 부활은 1회야. 보스 새는 체력 750, 알과 부활한 불사조는 체력 2500, 부활 대기는 5초야. 새·알·불사조 모두 화상 면역이야. 보스 빌런은 1.5초마다 투척하며 폭탄 100·다이너마이트 140·하트 최대 체력 60% 회복, 종류별 확률은 동일해. 부활 폭발 100·기절 6초, 불꽃 14 및 화상 확률 20%, 화상은 20초간 0.25초마다 피해 20이야. 보스 너드는 2.5초 대기 후 6초 공부하며, 피해 범위 20~190에서 공부마다 최소·최대가 각각 2~40 증가해.</p><p>보스 대장장이: 강화마다 공격력 +20, 강화 주기 0.5초 → 최소 0.15초. 명중하면 주기만 0.5초로 초기화돼. 보스 닌자는 표창 20 / 0.15초, 독 확률 20% / 20초간 0.15초마다 10, 베기 80 / 0.4초야. 도전자 전원 처치 또는 보스 처치로 승패가 결정돼.</p></details><div class="pick-heading"><strong id="pick-label">왼쪽 선수를 골라 줘</strong><span>같은 캐릭터끼리도 대결 가능</span></div><div class="roster" id="roster"></div>
+<div class="match-info"><p><span class="cyan" id="detail-label0">왼쪽</span> <span id="detail0"></span></p><p><span class="orange" id="detail-label1">오른쪽</span> <span id="detail1"></span></p></div>
+<button class="primary start" id="start" type="button" disabled>이 조합으로 전투 시작</button><p class="hint">직접 조작 없이 자동 전투 · 체력 0이 되면 패배 · 수치는 초기 테스트 기준이야.</p></section>
+<section id="battle" hidden><div class="score"><div><span class="cyan" id="score-label0">왼쪽</span><h2 id="fighter0"></h2><div class="health"><i id="bar0"></i></div><div class="numbers"><span id="hp0"></span><span id="power0"></span></div><div class="ability" id="ability0"></div></div><div class="clock"><small id="battle-mode">DUEL</small><strong id="timer">00:00</strong></div><div class="right-score"><span class="orange" id="score-label1">오른쪽</span><h2 id="fighter1"></h2><div class="health"><i id="bar1"></i></div><div class="numbers"><span id="hp1"></span><span id="power1"></span></div><div class="ability" id="ability1"></div></div></div>
+<div id="relay-hud" class="relay-hud" hidden aria-live="polite"></div><div id="squad-hud" class="squad-hud" hidden></div><div class="arena"><canvas id="arena" width="720" height="720" aria-label="자동 전투 경기장"></canvas><div id="result" class="result" hidden><p class="eyebrow">DUEL COMPLETE</p><span id="winner-icon"></span><h2 id="winner"></h2><p id="summary"></p><button id="rematch" class="primary" type="button">같은 조합으로 재대결</button><button id="result-select" type="button">캐릭터 다시 선택</button></div><div id="pause-label" hidden>일시정지</div></div>
+<div class="controls"><button id="pause" type="button">일시정지</button><label class="speed-label"><span class="sr-only">전투 속도</span><select id="speed"><option value="1">1× 속도</option><option value="2">2× 속도</option><option value="4">4× 속도</option></select></label><button id="sound" type="button" aria-pressed="false">소리 꺼짐</button><button id="back" type="button">선수 변경</button></div><p id="event" class="event" role="status" aria-live="polite">전투 시작!</p><div class="battle-info" id="battle-info"></div></section>
+</main><script>
+/* Add characters to ROSTER and their behavior to stepFighter. No UI changes required. */
+(function(root){'use strict';
+const ROSTER=[
+{id:'boxer',name:'복서',icon:'🥊',tag:'반사 · 돌진',hp:1000,damage:65,speed:195,cooldown:.42,description:'랜덤하게 튕겨 다니다 2.8초마다 상대를 향해 돌진. 돌진 펀치는 130 피해.',detail:'접촉 65 · 돌진 130 · 돌진 주기 2.8초'},
+{id:'archer',name:'궁수',icon:'🏹',tag:'무작위 사격',hp:1000,damage:70,speed:155,cooldown:.38,description:'0.38초마다 랜덤한 방향으로 화살을 발사. 화살은 벽에서 한 번 튕겨.',detail:'화살 70 · 사격 간격 0.38초 · 조준 없음'},
+{id:'smith',name:'대장장이',icon:'⚒️',tag:'시간이 힘이다',hp:1000,damage:10,speed:140,cooldown:.8,description:'상대에게 닿으면 망치 공격. 공격 중이 아닐 때 강화마다 공격력 +10. 강화 주기는 1초부터 매회 0.1초 감소해 최소 0.3초가 돼. 적을 맞히면 강화 주기는 다시 1초부터 시작해.',detail:'기본 공격력 10 · 강화 1.0초 → 최소 0.3초 · 명중 시 주기 초기화 · 공격력 유지 · 새 경기에서 초기화'},
+{id:'knight',name:'기사',icon:'🛡️',tag:'방어 · 검격',hp:1000,damage:95,speed:125,cooldown:.95,description:'방패로 받는 피해를 항상 30% 줄이고, 상대에게 접근해 검으로 공격해.',detail:'검격 95 · 받는 피해 −30% · 공격 간격 0.95초'},
+{id:'mage',name:'마법사',icon:'🧙',tag:'추적 · 둔화',hp:700,damage:65,speed:140,cooldown:1.45,description:'상대를 쫓는 마법탄을 발사. 명중하면 상대의 이동 속도가 1.2초간 느려져.',detail:'마법탄 65 · 이동 속도 −35% · 사격 간격 1.45초'},
+{id:'vampire',name:'흡혈귀',icon:'🧛',tag:'추격 · 흡혈',hp:1000,damage:75,speed:165,cooldown:.7,description:'상대를 쫓아가 물어뜯고, 실제로 준 피해의 35%만큼 자신의 체력을 회복해.',detail:'접촉 75 · 피해량의 35% 회복 · 최대 체력 초과 불가'},
+{id:'tree',name:'나무',icon:'🌳',tag:'뿌리 성장 · 감속',hp:1000,damage:25,speed:0,cooldown:.5,description:'제자리에 뿌리내려 대각선까지 8방향으로 짧은 뿌리를 펼쳐. 1초마다 길어지며, 닿은 상대에게 지속 피해와 40% 감속. 피해를 줄 때마다 현재 체력의 3% 회복(보스도 3%).',detail:'8방향 · 뿌리 시작 12 · 초당 길이 +18 · 접촉 시 0.5초마다 피해 25 · 명중 시 현재 체력 3% 회복 · 이동 불가'},
+{id:'ninja',name:'닌자',icon:'🥷',tag:'표창 · 독 · 베기',hp:650,damage:10,speed:228,cooldown:.3,description:'랜덤하게 벽을 튕기며 0.3초마다 직선 표창을 던져. 10% 확률로 독표창. 가까운 적은 베기로 밀쳐내. 체력 650, 이동 속도 20% 증가.',detail:'표창 10 · 독 10초 / 0.3초마다 5 · 독 중첩 없이 시간 갱신 · 베기 40 / 재사용 0.8초'}
+,{id:'nerd',name:'너드',icon:'🤓',tag:'알파벳 · 공부 · 무적',hp:1000,damage:10,speed:150,cooldown:.8,description:'a~z를 순서대로 날려 10~95 피해. 5초 뒤 3초간 공부하며 무적이 돼. 공부 중 이동·공격은 멈추고, 끝나면 최소·최대 피해가 각각 1~20 증가해.',detail:'알파벳 0.8초마다 · 공부 종료 후 다시 5초 대기 · 공부 중 모든 피해 면역'}
+,{id:'spider',name:'거미',icon:'🕷️',tag:'거미줄 · 감속 · 접촉 독',hp:1000,damage:30,speed:185,cooldown:.5,description:'벽에 닿아 실을 걸고 다른 벽에 닿으면 두 지점 사이에 거미줄을 설치해. 거미줄에 닿은 적은 40% 감속 및 0.5초마다 30 피해. 몸에 닿으면 즉시 중독돼. 5초마다 적을 포획해 돌진하고, 물어뜯기 100에 성공하면 현재 체력의 10%를 회복하고 상하좌우로 1회용 거미줄을 펼쳐.',detail:'포획 5초마다 · 물기 100 · 포식 회복: 현재 체력 10%(보스도 동일) · 사방 거미줄은 각 줄이 명중하면 소멸 · 벽 연결 줄은 유지 · 접촉 독 유지'}
+,{id:'phoenix',name:'새(불사조)',icon:'🐦',tag:'쪼기 · 불꽃 · 알 부활',hp:300,damage:30,speed:170,cooldown:.8,description:'처음에는 가까운 적에게 쪼기 30만 사용해. 알에서 단 한 번 부활하면 🐦‍🔥 불사조가 되어 불꽃 7을 사용해. 불꽃은 10% 확률로 화상. 죽으면 체력 1000의 알이 되고 10초 뒤 부활해 자신 외 모두에게 폭발 50·화상·3초 기절! 알이 깨지면 탈락.',detail:'쪼기 0.8초 · 불꽃 0.3초 · 화상 10초 / 0.5초마다 10 · 알은 행동 불가 · 부활 1회 · 부활 체력 1000 · 새/알/불사조 모두 화상 면역'}
+,{id:'hero',name:'남자(히어로)',icon:'👱‍♂️',tag:'20초 생존 · 변신 · 돌진',hp:1000,damage:250,speed:165,cooldown:0,description:'출전 후 20초 동안 이동만 해. 살아남으면 🦸 히어로로 변신해 돌진 피해 250 → 후퇴 → 재돌진을 반복해.',detail:'기본 체력 1000 · 변신 전 공격 없음 · 돌진당 1회 타격 · 후퇴 0.65초 · 변신 시 상태이상 해제 · 변신 후 속도 +50%'}
+,{id:'villain',name:'빌런',icon:'🦹‍♂️',tag:'폭탄 · 행운 · 즉사',hp:1000,damage:50,speed:155,cooldown:3,description:'3초마다 특수 폭탄! 💣 50%: 피해 50, 🧨 30%: 피해 70, ❤️ 15%: 최대 체력 30% 회복, ☠️ 5%: 명중한 적 즉사.',detail:'직선 투척 · 하트는 자신 회복 · 확률은 보스도 동일 · 무적과 새의 부활은 유지'}
+];
+const clamp=(n,a,b)=>Math.max(a,Math.min(b,n)),distance=(a,b)=>Math.hypot(a.x-b.x,a.y-b.y);
+const ROOT_DIRECTIONS=Array.from({length:8},(_,i)=>[Math.cos(i*Math.PI/4),Math.sin(i*Math.PI/4)]);
+class Engine{
+constructor(left='boxer',right='smith',random=Math.random,options={}){
+ this.random=random;this.mode=['boss','relay'].includes(options.mode)?options.mode:'duel';this.relayTeams=options.teams?options.teams.map(t=>[...t]):null;this.relayIndex=[0,0];if(this.mode==='relay'){if(!this.relayTeams||this.relayTeams.length!==2||!this.relayTeams.every(t=>t.length===3&&t.every(id=>ROSTER.some(c=>c.id===id))))throw Error('릴레이는 팀마다 유효한 선수 3명이 필요해.');left=this.relayTeams[0][0];right=this.relayTeams[1][0]}this.time=0;this.width=720;this.height=720;this.shots=[];this.effects=[];this.events=[];this.result=null;
+ const ids=this.mode==='boss'?[left,...(options.allies||[right,'archer','knight','mage','vampire'])]:[left,right];
+ if(this.mode==='boss'&&ids.length!==6)throw Error('도전자는 정확히 5명이 필요해.');
+ const starts=this.mode==='boss'?[[170,360],[515,135],[635,235],[515,360],[635,485],[515,585]]:[[170,360],[550,360]];
+ this.fighters=ids.map((id,side)=>{
+  const type=ROSTER.find(x=>x.id===id);if(!type)throw Error('알 수 없는 캐릭터');
+  const boss=this.mode==='boss'&&side===0,scale=boss?2:1,bodyScale=boss?3:1,team=side===0?0:1,angle=this.rand(-1,1)+(team?Math.PI:0),hp=type.hp*(boss?2.5:1);
+  return {...type,side,team,boss,scale,bodyScale,radius:33*bodyScale,hp,health:hp,damage:type.damage*scale,speed:type.speed*scale,cooldown:type.cooldown/scale,
+   armor:type.id==='knight'?.3*scale:0,lifesteal:type.id==='vampire'?.35*scale:0,rootSlowStrength:.4*scale,magicSlowStrength:.35*scale,
+   x:starts[side][0],y:starts[side][1],vx:Math.cos(angle),vy:Math.sin(angle),attack:0,cd:0,skill:1.2/scale,turn:1/scale,dash:0,dashHit:false,
+   awakened:false,revivals:0,heroReady:false,transformAt:20/scale,heroPhase:'rush',retreatUntil:0,egg:false,eggUntil:0,stunUntil:0,burn:null,peckCd:0,flameCd:0,captureTarget:null,capturedBy:null,nextCapture:5/scale,venom:null,webAnchor:null,webs:[],webHits:{},studyUntil:0,nextStudy:5/scale,studyStart:0,minDamage:10*scale,maxDamage:95*scale,letterIndex:0,poison:null,slashCd:0,slashFx:0,slashAngle:0,idle:0,forgeLevel:0,forgeInterval:1/scale,rootLength:12*scale,rootGrowth:0,rootHits:{},rootSlow:0,rootSlowPower:0,slow:0,slowPower:0,flash:0,damageDealt:0,hits:0,healed:0,trail:[]};
+ });
+}
+rand(a,b){return a+this.random()*(b-a)}
+enemies(f){return this.fighters.filter(e=>e.team!==f.team&&e.health>0)}
+nearest(f){const es=this.enemies(f);return es.reduce((a,b)=>!a||distance(f,b)<distance(f,a)?b:a,null)}
+emit(text){this.events.push(text);if(this.events.length>10)this.events.shift()}
+effect(f,text,kind='hit'){if(kind==='forge')this.effects=this.effects.filter(v=>v.kind!==kind||v.side!==f.side);this.effects.push({x:f.x,y:f.y-f.radius-7,text,kind,side:f.side,team:f.team,life:.8})}
+aim(f,e){const d=distance(f,e);return d>1e-9?{x:(e.x-f.x)/d,y:(e.y-f.y)/d}:{x:f.side<e.side?1:-1,y:0}}
+turn(f){const a=this.rand(-Math.PI,Math.PI);f.vx=Math.cos(a);f.vy=Math.sin(a);f.turn=this.rand(.9,2.2)/f.scale}
+bounds(f){const low=22+f.radius,high=698-f.radius;return {low,high}}
+keepInside(f){const {low,high}=this.bounds(f);f.x=clamp(f.x,low,high);f.y=clamp(f.y,low,high)}
+checkEnd(){if(this.resolvingBlast)return;if(this.mode==='relay'){const out=this.fighters.find(f=>f.health<=0&&this.relayIndex[f.side]===2);if(out)this.result=1-out.side;return;}const alive=[0,1].map(team=>this.fighters.some(f=>f.team===team&&f.health>0));if(!alive[0]||!alive[1])this.result=alive[0]?0:1}
+isStudying(f){return f.id==='nerd'&&this.time>=f.studyStart&&this.time<f.studyUntil-1e-9}
+study(f){
+ if(f.id!=='nerd'||f.health<=0||f.stunUntil>this.time)return;
+ if(f.studyUntil>0&&this.time>=f.studyUntil-1e-9){
+  const low=(1+Math.floor(this.random()*20))*f.scale,high=(1+Math.floor(this.random()*20))*f.scale;f.minDamage+=low;f.maxDamage=Math.max(f.minDamage,f.maxDamage+high);f.damage=f.minDamage;f.nextStudy=f.studyUntil+5/f.scale;f.studyUntil=0;this.effect(f,'실력 +'+low+' / +'+high,'skill');
+ }
+ if(!f.studyUntil&&this.time>=f.nextStudy-1e-9){f.studyStart=this.time;f.studyUntil=this.time+3*f.scale;this.effect(f,'공부 · 무적','skill')}
+}
+attack(f,e,dmg,friendly=false){
+ if(this.result!==null||f.health<=0||e.health<=0||(!friendly&&f.team===e.team)||this.isStudying(e))return 0;
+ f.attack=.35/f.scale;f.cd=f.cooldown;let n=Math.min(e.health,Math.round(dmg*(1-e.armor)));e.health-=n;f.damageDealt+=n;f.hits++;
+ if(f.id==='smith'){f.forgeLevel=0;f.forgeInterval=1/f.scale;f.idle=0;this.effects=this.effects.filter(v=>v.kind!=='forge'||v.side!==f.side);this.effect(f,'강화 '+f.forgeInterval.toFixed(1)+'초','skill')}
+ e.flash=.15;this.effect(e,'−'+n);
+ if(f.lifesteal){const heal=Math.min(f.hp-f.health,Math.round(n*f.lifesteal));f.health+=heal;f.healed+=heal;if(heal)this.effect(f,'+'+heal,'heal')}
+ if(f.id==='tree'&&n>0){const heal=Math.min(f.hp-f.health,f.health*.03);f.health+=heal;f.healed+=heal;if(heal)this.effect(f,'+'+Number(heal.toFixed(1)),'heal')}
+ this.formEgg(e);
+ if(e.health===0){e.trail=[];this.emit((e.boss?'보스 ':this.mode==='boss'?'도전자 '+e.side+'번 ':'')+e.name+' 탈락!');this.checkEnd()}
+ return n;
+}
+fire(f,e){
+ const homing=f.id==='mage',a=(homing||f.id==='ninja'||f.id==='nerd')?Math.atan2(e.y-f.y,e.x-f.x):this.rand(0,Math.PI*2),vx=Math.cos(a),vy=Math.sin(a);
+ this.shots.push({x:f.x+vx*(f.radius+5),y:f.y+vy*(f.radius+5),vx,vy,owner:f.side,team:f.team,target:e.side,kind:homing?'magic':f.id==='ninja'?'shuriken':f.id==='nerd'?'letter':'arrow',letter:f.id==='nerd'?String.fromCharCode(97+f.letterIndex++%26):null,radius:4*f.scale,speed:(homing?200:380)*f.scale,damage:f.id==='nerd'?f.minDamage+Math.floor(this.random()*(f.maxDamage-f.minDamage+1)):f.damage,life:(homing?5:4)*f.scale,bounces:(homing||f.id==='ninja'||f.id==='nerd')?0:Math.floor(f.scale)+(this.random()<f.scale%1?1:0),poison:f.id==='ninja'&&this.random()<.1*f.scale});
+ f.cd=f.cooldown;f.attack=.18/f.scale;
+}
+transformHero(f){if(f.id!=='hero'||f.heroReady||f.health<=0||this.time<f.transformAt-1e-9)return;f.heroReady=true;f.icon='🦸';f.name='히어로';f.speed*=1.5;f.poison=null;f.burn=null;f.venom=null;f.stunUntil=0;f.slow=0;f.slowPower=0;f.rootSlow=0;f.rootSlowPower=0;if(f.capturedBy!==null){const captor=this.fighters[f.capturedBy];if(captor)this.releaseCapture(captor);f.capturedBy=null}this.effect(f,'변신 · 상태이상 해제!','skill')}
+throwBomb(f,e){
+ const roll=this.random();f.cd=f.cooldown;f.attack=.18/f.scale;
+ if(roll<.8){const dynamite=roll>=.5;this.bombShot(f,e,dynamite?'🧨':'💣',(dynamite?70:50)*f.scale,false)}
+ else if(roll<.95){const heal=Math.min(f.hp-f.health,f.hp*.3*f.scale);f.health+=heal;f.healed+=heal;this.effect(f,'❤️ +'+Math.round(heal),'heal')}
+ else this.bombShot(f,e,'☠️',0,true);
+}
+bombShot(f,e,icon,damage,instant){const a=this.aim(f,e);this.shots.push({x:f.x+a.x*(f.radius+8),y:f.y+a.y*(f.radius+8),vx:a.x,vy:a.y,owner:f.side,team:f.team,target:e.side,kind:'bomb',icon,damage,instant,radius:10*f.scale,speed:300*f.scale,life:4,bounces:0});this.effect(f,icon+' 투척','skill')}
+stepFighter(f,e,dt){
+ this.transformHero(f);
+ if(f.egg||f.stunUntil>this.time){f.attack=0;return}
+ f.peckCd=Math.max(0,f.peckCd-dt);f.flameCd=Math.max(0,f.flameCd-dt);
+ f.slashCd=Math.max(0,f.slashCd-dt);f.slashFx=Math.max(0,f.slashFx-dt);f.cd=Math.max(0,f.cd-dt);f.skill-=dt;f.turn-=dt;f.flash=Math.max(0,f.flash-dt);f.slow=Math.max(0,f.slow-dt);f.rootSlow=Math.max(0,f.rootSlow-dt);
+ if(!f.slow)f.slowPower=0;if(!f.rootSlow)f.rootSlowPower=0;
+ if(f.id==='tree'){f.rootGrowth+=dt;const interval=1/f.scale;while(f.rootGrowth>=interval-1e-9){f.rootGrowth=Math.max(0,f.rootGrowth-interval);f.rootLength=Math.min(1000,f.rootLength+18)}}
+ if(f.id==='smith'){f.idle+=Math.max(0,dt-f.attack);while(f.idle>=f.forgeInterval-1e-9){f.idle=Math.max(0,f.idle-f.forgeInterval);f.damage+=10*f.scale;f.forgeLevel++;f.forgeInterval=Math.max(3,10-f.forgeLevel)/10/f.scale;this.effect(f,'⚒ +'+10*f.scale,'forge')}}
+ if(this.isStudying(f)){f.attack=0;return}
+ f.attack=Math.max(0,f.attack-dt);f.dash=Math.max(0,f.dash-dt);
+ if(f.id==='boxer'&&f.skill<=0){const a=this.aim(f,e);f.vx=a.x;f.vy=a.y;f.dash=.52*f.scale;f.dashHit=false;f.skill=2.8/f.scale;this.effect(f,'돌진!','skill')}
+ if(f.dash<=0){if(f.turn<=0)this.turn(f);if(['knight','vampire','smith'].includes(f.id)){const a=this.aim(f,e),k=(f.id==='smith'?.65:1.8)*f.scale;const x=f.vx+a.x*k*dt,y=f.vy+a.y*k*dt,n=Math.hypot(x,y)||1;f.vx=x/n;f.vy=y/n}}
+ const prey=f.captureTarget!==null?this.fighters[f.captureTarget]:null;if(prey){const aim=this.aim(f,prey);f.vx=aim.x;f.vy=aim.y}
+ if(f.id==='hero'&&f.heroReady){if(f.heroPhase==='retreat'&&this.time>=f.retreatUntil-1e-9)f.heroPhase='rush';if(f.heroPhase==='rush'){const aim=this.aim(f,e);f.vx=aim.x;f.vy=aim.y}}
+ const speed=(f.capturedBy!==null?0:f.id==='hero'&&f.heroReady?(f.heroPhase==='rush'?750:450)*f.scale:prey?610*f.scale:f.dash>0?610*f.scale:f.speed)*(1-Math.max(f.slowPower,f.rootSlowPower));f.x+=f.vx*speed*dt;f.y+=f.vy*speed*dt;
+ const {low,high}=this.bounds(f);let bounced=false;const walls=[];
+ if(f.x<low||f.x>high){walls.push(f.x<low?'left':'right');f.x=clamp(f.x,low,high);f.vx=f.x===low?Math.abs(f.vx):-Math.abs(f.vx);bounced=true}
+ if(f.y<low||f.y>high){walls.push(f.y<low?'top':'bottom');f.y=clamp(f.y,low,high);f.vy=f.y===low?Math.abs(f.vy):-Math.abs(f.vy);bounced=true}if(bounced){f.turn=this.rand(.6,1.5)/f.scale;if(f.id==='spider')this.touchWall(f,walls[0])}
+ if(f.dash>0)f.trail.push({x:f.x,y:f.y,life:.2});f.trail.forEach(p=>p.life-=dt);f.trail=f.trail.filter(p=>p.life>0);
+ if(f.id==='hero'&&f.heroReady&&f.heroPhase==='rush'&&distance(f,e)<=f.radius+e.radius+5){const aim=this.aim(f,e);this.attack(f,e,250*f.scale);f.heroPhase='retreat';f.retreatUntil=this.time+.65/f.scale;f.vx=-aim.x;f.vy=-aim.y;this.effect(f,'돌진!','skill')}
+ if(prey&&distance(f,prey)<=f.radius+prey.radius+5){this.bite(f,prey)}
+ if(f.id==='phoenix'){if(f.peckCd<=1e-9&&distance(f,e)<=f.radius+e.radius+50*f.scale){this.attack(f,e,30*f.scale);f.peckCd=.8/f.scale;this.effect(f,'쪼기!','skill')}if(f.awakened&&f.flameCd<=1e-9&&this.result===null){this.flame(f,e);f.flameCd=.3/f.scale}}
+ if(f.id==='villain'&&f.cd<=1e-9)this.throwBomb(f,e);
+ if(['archer','mage','ninja','nerd'].includes(f.id)&&f.cd<=1e-9)this.fire(f,e);
+}
+collide(a,b){
+ const d=distance(a,b),limit=a.radius+b.radius;if(d>limit+.001)return;
+ const n=this.aim(a,b),overlap=Math.max(0,limit-d),wa=a.id==='tree'?0:b.id==='tree'?1:b.radius*b.radius/(a.radius*a.radius+b.radius*b.radius),wb=b.id==='tree'?0:a.id==='tree'?1:1-wa;
+ a.x-=n.x*overlap*wa;a.y-=n.y*overlap*wa;b.x+=n.x*overlap*wb;b.y+=n.y*overlap*wb;this.keepInside(a);this.keepInside(b);
+ if(a.team!==b.team){const order=this.random()<.5?[a,b]:[b,a];for(const f of order){const e=f===a?b:a;if(f.id==='spider'&&f.health>0&&f.stunUntil<=this.time)this.applyPoison(f,e);if(!f.egg&&f.stunUntil<=this.time&&!['archer','mage','tree','ninja','nerd','spider','phoenix','hero','villain'].includes(f.id)&&f.cd<=0){const dash=f.id==='boxer'&&f.dash>0&&!f.dashHit;this.attack(f,e,dash?130*f.scale:f.damage);if(dash){f.dashHit=true;f.dash=0}}}}
+ a.vx=-n.x;a.vy=-n.y;b.vx=n.x;b.vy=n.y;
+}
+step(dt){if(this.result!==null||dt<=0)return;this.stepRound(dt);if(this.mode==='relay'&&this.result===null)this.advanceRelay()}
+advanceRelay(){
+ for(let side=0;side<2;side++){const old=this.fighters[side];if(old.health>0)continue;if(this.relayIndex[side]>=2){this.result=1-side;return}
+  this.releaseCapture(old);const other=this.fighters[1-side];if(other.captureTarget===side)this.releaseCapture(other);
+  this.relayIndex[side]++;const id=this.relayTeams[side][this.relayIndex[side]],fresh=new Engine(id,id,this.random).fighters[side];fresh.nextCapture+=this.time;fresh.nextStudy+=this.time;fresh.transformAt+=this.time;this.fighters[side]=fresh;this.shots=this.shots.filter(s=>s.owner!==side);this.emit((side?'오른쪽':'왼쪽')+' '+(this.relayIndex[side]+1)+'번 '+fresh.name+' 출전!');
+ }
+}
+stepRound(dt){
+ if(this.result!==null||dt<=0)return;this.time+=dt;this.effects.forEach(v=>v.life-=dt);this.effects=this.effects.filter(v=>v.life>0);
+ for(const f of this.fighters){this.transformHero(f);this.study(f)}
+ for(const f of this.fighters){if(f.health>0)this.tickPoison(f);if(this.result!==null)return;if(f.health>0)this.tickBurn(f);if(this.result!==null)return;}
+ for(const f of this.fighters)if(f.egg&&f.health>0&&this.time>=f.eggUntil-1e-9)this.revive(f);
+ if(this.result!==null)return;
+ for(const f of this.fighters)this.spiderSkill(f);
+ for(const f of this.fighters){if(f.health<=0)continue;const e=this.nearest(f);if(e)this.stepFighter(f,e,dt)}
+ const alive=this.fighters.filter(f=>f.health>0);for(let i=0;i<alive.length;i++)for(let j=i+1;j<alive.length;j++){if(alive[i].health<=0||alive[j].health<=0)continue;this.collide(alive[i],alive[j]);if(this.result!==null)return}
+ for(const f of alive){if(f.id!=='ninja'||f.health<=0||f.stunUntil>this.time||f.slashCd>1e-9)continue;const e=this.nearest(f);if(e&&distance(f,e)<=f.radius+e.radius+30*f.scale){this.slash(f,e);if(this.result!==null)return}}
+ const trees=alive.filter(f=>f.id==='tree'&&f.health>0&&f.stunUntil<=this.time);if(this.random()<.5)trees.reverse();
+ for(const f of trees)for(const e of this.enemies(f)){if(!this.isStudying(e)&&this.rootTouches(f,e)){e.rootSlow=.1;e.rootSlowPower=Math.max(e.rootSlowPower,f.rootSlowStrength);if((f.rootHits[e.side]||0)<=this.time+1e-9){this.attack(f,e,f.damage);f.rootHits[e.side]=this.time+.5/f.scale;if(this.result!==null)return}}}
+ this.tickWebs();if(this.result!==null)return;
+ for(const s of this.shots){
+  s.life-=dt;const f=this.fighters[s.owner];if(f.health<=0||f.egg){s.life=0;continue}let target=this.fighters[s.target];
+  if(!target||target.health<=0){target=this.nearest(f);if(target)s.target=target.side}
+  if(s.kind==='magic'&&target){const a=this.aim(s,target);s.vx+=a.x*dt*2.4*f.scale;s.vy+=a.y*dt*2.4*f.scale;const n=Math.hypot(s.vx,s.vy)||1;s.vx/=n;s.vy/=n}
+  s.x+=s.vx*s.speed*dt;s.y+=s.vy*s.speed*dt;
+  if(s.x<22||s.x>698||s.y<22||s.y>698){if(s.bounces>0){if(s.x<22||s.x>698)s.vx=-s.vx;if(s.y<22||s.y>698)s.vy=-s.vy;s.x=clamp(s.x,22,698);s.y=clamp(s.y,22,698);s.bounces--}else s.life=0}
+  if(s.life>0){const e=this.enemies(f).find(v=>distance(s,v)<v.radius+s.radius);if(e){this.attackProjectile(f,e,s);s.life=0;if(this.result!==null)break}}
+ }
+ this.shots=this.shots.filter(s=>s.life>0);
+}
+releaseCapture(f){const e=this.fighters[f.captureTarget];if(e&&e.capturedBy===f.side)e.capturedBy=null;f.captureTarget=null}
+spiderSkill(f){
+ if(f.id!=='spider')return;
+ if(f.captureTarget!==null){const e=this.fighters[f.captureTarget];if(f.health<=0||!e||e.health<=0||this.isStudying(e)||e.capturedBy!==f.side)this.releaseCapture(f)}
+ if(f.health<=0||f.stunUntil>this.time||f.capturedBy!==null||f.captureTarget!==null||this.time<f.nextCapture-1e-9)return;
+ const e=this.enemies(f).filter(e=>!this.isStudying(e)&&e.capturedBy===null).sort((a,b)=>distance(f,a)-distance(f,b))[0];
+ if(!e)return;f.nextCapture=this.time+5/f.scale;f.captureTarget=e.side;e.capturedBy=f.side;this.effect(e,'포획!','skill');
+}
+bite(f,e){
+ if(f.captureTarget!==e.side||f.health<=0||e.health<=0||this.isStudying(e)){this.releaseCapture(f);return}
+ const dealt=this.attack(f,e,100*f.scale);if(dealt>0){const heal=Math.min(f.hp-f.health,f.health*.1);f.health+=heal;f.healed+=heal;if(heal)this.effect(f,'+'+Number(heal.toFixed(1)),'heal');for(const [x,y] of [[22,f.y],[698,f.y],[f.x,22],[f.x,698]])f.webs.push({x1:f.x,y1:f.y,x2:x,y2:y,singleUse:true});this.effect(f,'사방 거미줄!','skill')}
+ this.releaseCapture(f);
+}
+formEgg(f){
+ if(f.id!=='phoenix'||f.egg||f.revivals>=1||f.health>0)return false;
+ f.egg=true;f.icon='🥚';f.hp=1000*(f.boss?2.5:1);f.health=f.hp;f.eggUntil=this.time+10/f.scale;f.poison=null;f.burn=null;f.stunUntil=0;f.attack=0;f.trail=[];
+ this.shots=this.shots.filter(s=>s.owner!==f.side);this.effect(f,'알 · '+10/f.scale+'초','skill');this.emit('불사조가 알이 됐어!');return true;
+}
+revive(f){
+ f.egg=false;f.awakened=true;f.revivals++;f.icon='🐦‍🔥';f.name='불사조';f.hp=1000*(f.boss?2.5:1);f.health=f.hp;f.poison=null;f.burn=null;f.stunUntil=0;f.peckCd=0;f.flameCd=0;
+ this.effects.push({x:f.x,y:f.y,text:'부활 폭발!',kind:'blast',side:f.side,team:f.team,life:.8});
+ this.resolvingBlast=true;
+ for(const e of this.fighters){if(e===f||e.health<=0||this.isStudying(e))continue;this.attack(f,e,50*f.scale,true);if(e.health>0){this.applyBurn(f,e,true);e.stunUntil=Math.max(e.stunUntil,this.time+3*f.scale)}}
+ this.resolvingBlast=false;this.checkEnd();this.emit('불사조 부활! 전장 전체 폭발');
+}
+flame(f,e){if(!f.awakened||f.egg||f.health<=0)return;const a=this.aim(f,e);this.shots.push({x:f.x+a.x*(f.radius+5),y:f.y+a.y*(f.radius+5),vx:a.x,vy:a.y,owner:f.side,team:f.team,target:e.side,kind:'flame',radius:6*f.scale,speed:300*f.scale,damage:7*f.scale,life:2*f.scale,bounces:0,burn:this.random()<.1*f.scale})}
+applyBurn(f,e,friendly=false){if(e.id==='phoenix')return;if(e.health<=0||this.isStudying(e)||(!friendly&&f.team===e.team))return;const old=e.burn,interval=.5/f.scale;e.burn={source:f.side,damage:10*f.scale,interval,next:old?Math.min(old.next,this.time+interval):this.time+interval,expires:this.time+10*f.scale};this.effect(e,'화상','burn')}
+tickBurn(e){if(e.id==='phoenix'){e.burn=null;return}const p=e.burn;if(!p||e.health<=0)return;
+ while(p.next<=this.time+1e-9&&p.next<=p.expires+1e-9){const tick=p.next;p.next+=p.interval;if(e.id==='nerd'&&tick>=e.studyStart-1e-9&&tick<e.studyUntil-1e-9)continue;const source=this.fighters[p.source];const n=Math.min(e.health,Math.round(p.damage*(1-e.armor)));e.health-=n;if(source)source.damageDealt+=n;this.effect(e,'화상 −'+n,'burn');if(this.formEgg(e))return;if(e.health===0){e.burn=null;this.emit(e.name+' 화상으로 탈락!');this.checkEnd();return}}
+ if(this.time>=p.expires-1e-9)e.burn=null;
+}
+touchWall(f,wall){
+ const point={wall,x:wall==='left'?22:wall==='right'?698:f.x,y:wall==='top'?22:wall==='bottom'?698:f.y};
+ if(f.webAnchor&&f.webAnchor.wall!==wall){f.webs.push({x1:f.webAnchor.x,y1:f.webAnchor.y,x2:point.x,y2:point.y});this.effect(f,'거미줄 설치','skill')}
+ f.webAnchor=point;
+}
+webTouches(s,e,width){const dx=s.x2-s.x1,dy=s.y2-s.y1,len=dx*dx+dy*dy,t=len?clamp(((e.x-s.x1)*dx+(e.y-s.y1)*dy)/len,0,1):0;return Math.hypot(e.x-s.x1-t*dx,e.y-s.y1-t*dy)<=e.radius+width}
+tickWebs(){
+ for(const f of this.fighters){if(f.id!=='spider'||f.health<=0||f.stunUntil>this.time)continue;
+  for(const e of this.enemies(f)){if(this.isStudying(e))continue;const web=f.webs.find(w=>this.webTouches(w,e,3*f.scale));if(!web)continue;
+   e.rootSlow=.1;e.rootSlowPower=Math.max(e.rootSlowPower,.4*f.scale);
+   if((f.webHits[e.side]||0)<=this.time+1e-9){const dealt=this.attack(f,e,f.damage);if(dealt>0&&web.singleUse)f.webs.splice(f.webs.indexOf(web),1);f.webHits[e.side]=this.time+.5/f.scale;if(this.result!==null)return}
+  }
+ }
+}
+rootSegments(f){
+ return ROOT_DIRECTIONS.map(([dx,dy])=>{
+  // Clip along the ray, preserving 45-degree diagonals at the arena walls.
+  const end=Math.min(f.radius-1+f.rootLength,Math.abs(dx)>1e-9?(dx>0?698-f.x:f.x-22)/Math.abs(dx):Infinity,Math.abs(dy)>1e-9?(dy>0?698-f.y:f.y-22)/Math.abs(dy):Infinity),start=Math.min(f.radius-1,end);
+  return {x1:f.x+dx*start,y1:f.y+dy*start,x2:f.x+dx*end,y2:f.y+dy*end};
+ });
+}
+rootTouches(f,e){return this.rootSegments(f).some(s=>{const dx=s.x2-s.x1,dy=s.y2-s.y1,len=dx*dx+dy*dy,t=len?clamp(((e.x-s.x1)*dx+(e.y-s.y1)*dy)/len,0,1):0;return Math.hypot(e.x-s.x1-t*dx,e.y-s.y1-t*dy)<=e.radius+5*f.scale})}
+attackProjectile(f,e,s){if(this.isStudying(e))return;const cd=f.cd,attack=f.attack;this.attack(f,e,s.instant?e.health/Math.max(.000001,1-e.armor):s.damage);f.cd=cd;f.attack=attack;if(s.burn&&e.health>0)this.applyBurn(f,e);if(s.poison&&e.health>0)this.applyPoison(f,e);if(s.kind==='magic'){e.slow=Math.max(e.slow,1.2*f.scale);e.slowPower=Math.max(e.slowPower,f.magicSlowStrength)}}
+slash(f,e){
+ if(f.health<=0||e.health<=0||this.isStudying(e)||f.team===e.team||f.slashCd>1e-9)return;
+ const cd=f.cd,aim=this.aim(f,e);this.attack(f,e,40*f.scale);f.cd=cd;f.slashCd=.8/f.scale;f.slashFx=.22;f.slashAngle=Math.atan2(aim.y,aim.x);
+ e.x+=aim.x*70*f.scale;e.y+=aim.y*70*f.scale;this.keepInside(e);e.vx=aim.x;e.vy=aim.y;this.effect(e,'넉백','skill');
+}
+applyPoison(f,e){
+ if(f.team===e.team||e.health<=0||this.isStudying(e))return;
+ const damage=5*f.scale,interval=.3/f.scale,old=e.poison;
+ // One poison per target. Refresh expiry without postponing the next tick.
+ if(old&&old.expires>=this.time){old.expires=this.time+10*f.scale;if(damage>=old.damage){old.damage=damage;old.interval=interval;old.source=f.side;old.next=Math.min(old.next,this.time+interval)}}
+ else e.poison={source:f.side,damage,interval,next:this.time+interval,expires:this.time+10*f.scale};
+ this.effect(e,'중독','poison');
+}
+tickPoison(e){
+ const p=e.poison;if(!p||e.health<=0)return;
+ while(p.next<=this.time+1e-9&&p.next<=p.expires+1e-9){
+  const tick=p.next;p.next+=p.interval;if(e.id==='nerd'&&tick>=e.studyStart-1e-9&&tick<e.studyUntil-1e-9)continue;const source=this.fighters[p.source];if(!source||source.team===e.team){e.poison=null;return}
+  const n=Math.min(e.health,Math.round(p.damage*(1-e.armor)));e.health-=n;source.damageDealt+=n;this.effect(e,'독 −'+n,'poison');
+  if(this.formEgg(e))return;
+  if(e.health===0){e.trail=[];e.poison=null;this.emit(e.name+' 중독으로 탈락!');this.checkEnd();return}
+ }
+ if(this.time>=p.expires-1e-9)e.poison=null;
+}
+
+}
+root.DuelEngine={Engine,ROSTER};
+})(typeof window==='undefined'?globalThis:window);
+
+</script><script>
+(function(){'use strict';
+const {Engine,ROSTER}=window.DuelEngine,$=id=>document.getElementById(id),colors=['#69def3','#ff9873'];let relayTeams=[['boxer','archer','knight'],['spider','tree','ninja']],relaySlots=[0,0],selected=['boxer','smith'],mode='duel',bossChoice='tree',squad=['boxer','archer','knight','mage','vampire'],bossSlot=-1,side=0,engine=null,paused=false,speed=1,sound=false,audio=null,last=performance.now(),acc=0,lastHits=0,lastMessage='';const canvas=$('arena'),ctx=canvas.getContext('2d');
+function currentChoices(){return mode==='boss'?[bossChoice,squad[Math.max(0,bossSlot)]]:mode==='relay'?relayTeams.map((t,i)=>t[relaySlots[i]]):selected}
+function updateSelection(){
+ const choices=currentChoices(),active=mode==='boss'?(bossSlot<0?0:1):side;
+ choices.forEach((id,i)=>{const c=ROSTER.find(v=>v.id===id);$('icon'+i).textContent=c.icon;$('name'+i).textContent=c.name;$('tag'+i).textContent=mode==='boss'&&i===0?'HP '+c.hp*2.5+' · 공격력 '+(c.id==='nerd'?'20~190':c.damage*2):c.tag;$('detail'+i).textContent=c.detail;$('choose'+i).setAttribute('aria-pressed',String(i===active));$('choose'+i).querySelector('b').textContent=i===active?'선택 중':'변경'});
+ $('label0').textContent=mode==='boss'?'👑 보스':'왼쪽 선수';$('label1').textContent=mode==='boss'?'도전자 '+(Math.max(0,bossSlot)+1)+'번':'오른쪽 선수';$('detail-label0').textContent=mode==='boss'?'보스 기본':'왼쪽';$('detail-label1').textContent=mode==='boss'?'도전자':'오른쪽';
+ $('choose0').classList.toggle('boss-choice',mode==='boss');$('squad-picker').hidden=mode!=='boss';$('boss-rules').hidden=mode!=='boss';$('mode-duel').setAttribute('aria-pressed',String(mode==='duel'));$('mode-boss').setAttribute('aria-pressed',String(mode==='boss'));
+ $('pick-label').textContent=mode==='boss'?(bossSlot<0?'보스 캐릭터를 골라 줘':'도전자 '+(bossSlot+1)+'번을 골라 줘'):(side?'오른쪽':'왼쪽')+' 선수를 골라 줘';$('roster').style.setProperty('--pick-color',colors[active]);for(const b of $('roster').children)b.setAttribute('aria-pressed',String(b.dataset.character===choices[active]));
+ for(let i=0;i<5;i++){const c=ROSTER.find(v=>v.id===squad[i]);$('squad-name'+i).textContent=c.name;$('squad-icon'+i).textContent=c.icon;$('squad-slot'+i).setAttribute('aria-pressed',String(bossSlot===i))}
+ $('relay-picker').hidden=mode!=='relay';$('relay-rules').hidden=mode!=='relay';$('mode-relay').setAttribute('aria-pressed',String(mode==='relay'));for(let t=0;t<2;t++)for(let i=0;i<3;i++){const c=ROSTER.find(c=>c.id===relayTeams[t][i]),b=$('relay-slot'+t+i);b.textContent=(t?'오른쪽':'왼쪽')+' '+(i+1)+'번 '+c.icon+' '+c.name;b.setAttribute('aria-pressed',String(side===t&&relaySlots[t]===i))}if(mode==='relay'){$('label0').textContent='왼쪽 '+(relaySlots[0]+1)+'번';$('label1').textContent='오른쪽 '+(relaySlots[1]+1)+'번';$('pick-label').textContent=(side?'오른쪽':'왼쪽')+' '+(relaySlots[side]+1)+'번 선수를 골라 줘'}
+ $('start').textContent=mode==='relay'?'릴레이 전투 시작 · 팀당 3명':mode==='boss'?'보스전 시작 · 1 vs 5':'이 조합으로 전투 시작';
+}
+for(let i=0;i<5;i++){const b=document.createElement('button');b.id='squad-slot'+i;b.type='button';b.setAttribute('aria-label','도전자 '+(i+1)+'번 변경');b.innerHTML='<small>도전자 '+(i+1)+'</small><span id="squad-icon'+i+'"></span><strong id="squad-name'+i+'"></strong>';b.onclick=()=>{bossSlot=i;updateSelection()};$('squad-picker').appendChild(b);const card=document.createElement('div');card.id='hero-status'+i;card.className='hero-status';card.innerHTML='<strong id="hero-name'+i+'"></strong><div class="health"><i id="hero-bar'+i+'"></i></div><small id="hero-hp'+i+'"></small>';$('squad-hud').appendChild(card)}
+for(let t=0;t<2;t++)for(let i=0;i<3;i++){const b=document.createElement('button');b.id='relay-slot'+t+i;b.type='button';b.onclick=()=>{side=t;relaySlots[t]=i;updateSelection()};$('relay-picker').appendChild(b)}
+ROSTER.forEach(c=>{const b=document.createElement('button');b.type='button';b.className='fighter-card';b.dataset.character=c.id;b.setAttribute('aria-label',c.name+' 선택. '+c.description);b.innerHTML='<span class="card-top"><span class="card-icon" aria-hidden="true">'+c.icon+'</span><span class="card-name">'+c.name+'</span></span><span class="card-tag">'+c.tag+'</span><span class="card-desc">'+c.description+'</span><span class="card-hp">기본 HP '+c.hp+' · 공격력 '+(c.id==='nerd'?'10~95':c.damage)+'</span>';b.onclick=()=>{if(mode==='boss'){if(bossSlot<0)bossChoice=c.id;else squad[bossSlot]=c.id}else if(mode==='relay')relayTeams[side][relaySlots[side]]=c.id;else selected[side]=c.id;updateSelection()};$('roster').appendChild(b)});
+$('choose0').onclick=()=>{side=0;bossSlot=-1;updateSelection()};$('choose1').onclick=()=>{side=1;bossSlot=Math.max(0,bossSlot);updateSelection()};$('random').onclick=()=>{const rand=()=>ROSTER[Math.floor(Math.random()*ROSTER.length)].id;if(mode==='boss'){bossChoice=rand();squad=squad.map(rand)}else if(mode==='relay')relayTeams=relayTeams.map(t=>t.map(rand));else selected=selected.map(rand);updateSelection()};$('mode-duel').onclick=()=>{mode='duel';updateSelection()};$('mode-boss').onclick=()=>{mode='boss';bossSlot=-1;updateSelection()};
+$('mode-relay').onclick=()=>{mode='relay';side=0;updateSelection()};
+function fit(){const width=canvas.getBoundingClientRect().width;if(!width)return;const ratio=Math.min(window.devicePixelRatio||1,2);canvas.width=Math.round(width*ratio);canvas.height=canvas.width;ctx.setTransform(canvas.width/720,0,0,canvas.height/720,0,0)}
+function start(){engine=mode==='relay'?new Engine(relayTeams[0][0],relayTeams[1][0],Math.random,{mode:'relay',teams:relayTeams}):mode==='boss'?new Engine(bossChoice,squad[0],Math.random,{mode:'boss',allies:squad}):new Engine(...selected);paused=false;acc=0;last=performance.now();lastHits=0;lastMessage='';$('selection').hidden=true;$('battle').hidden=false;$('result').hidden=true;$('pause-label').hidden=true;$('pause').disabled=false;$('pause').textContent='일시정지';$('event').textContent=mode==='boss'?'보스전 시작! 도전자 5명이 동시에 전투해.':'전투 시작!';$('squad-hud').hidden=mode!=='boss';$('score-label0').textContent=mode==='boss'?'보스':'왼쪽';$('score-label1').textContent=mode==='boss'?'도전자 팀':'오른쪽';$('battle-mode').textContent=mode==='relay'?'RELAY':mode==='boss'?'BOSS RAID':'DUEL';$('relay-hud').hidden=mode!=='relay';$('battle-info').textContent=engine.fighters.map(f=>f.name+': '+f.description).join(' / ');fit();hud();draw();window.scrollTo({top:0,behavior:'auto'});tone(650)}
+function selection(){engine=null;paused=false;acc=0;$('battle').hidden=true;$('selection').hidden=false;updateSelection();window.scrollTo({top:0,behavior:'auto'})}
+function pause(){if(!engine||engine.result!==null)return;paused=!paused;acc=0;last=performance.now();$('pause').textContent=paused?'계속하기':'일시정지';$('pause-label').hidden=!paused;}
+$('start').onclick=start;$('rematch').onclick=start;$('back').onclick=selection;$('result-select').onclick=selection;$('pause').onclick=pause;$('speed').onchange=()=>{speed=Number($('speed').value);acc=0};$('sound').onclick=()=>{sound=!sound;$('sound').textContent=sound?'소리 켜짐':'소리 꺼짐';$('sound').setAttribute('aria-pressed',String(sound));tone(540)};
+function tone(hz){if(!sound)return;try{audio=audio||new(window.AudioContext||window.webkitAudioContext)();if(audio.state==='suspended')audio.resume();const o=audio.createOscillator(),g=audio.createGain();o.type='triangle';o.frequency.value=hz;g.gain.setValueAtTime(.035,audio.currentTime);g.gain.exponentialRampToValueAtTime(.001,audio.currentTime+.08);o.connect(g);g.connect(audio.destination);o.start();o.stop(audio.currentTime+.08)}catch{}}
+function ability(f){return f.id==='villain'?'폭탄 '+f.cooldown+'초 · 해골 확률 5%': f.id==='hero'?(f.heroReady?'돌진 '+250*f.scale+' · '+(f.heroPhase==='rush'?'돌진 중':'후퇴 중'):'변신까지 '+Math.max(0,f.transformAt-engine.time).toFixed(1)+'초 · 이동만 가능'): f.id==='phoenix'?(f.egg?'🥚 부활까지 '+Math.max(0,f.eggUntil-engine.time).toFixed(1)+'초':f.awakened?'쪼기 '+30*f.scale+' · 불꽃 '+7*f.scale+' · 부활 소진':'쪼기만 가능 · 부활 1회'): f.id==='spider'?'거미줄 '+f.webs.length+'개 · 포획 '+Math.max(0,f.nextCapture-engine.time).toFixed(1)+'초': f.id==='nerd'?(engine.isStudying(f)?'📖 공부 · 무적 '+Math.max(0,f.studyUntil-engine.time).toFixed(1)+'초':'다음 공부 '+Math.max(0,f.nextStudy-engine.time).toFixed(1)+'초'): f.id==='ninja'?'표창 '+Number(f.cooldown.toFixed(2))+'초 · 베기 '+40*f.scale:f.id==='smith'?'강화 주기 '+Number(f.forgeInterval.toFixed(2))+'초':f.id==='tree'?'8방향 · 뿌리 '+f.rootLength+' · 감속 '+Math.round(f.rootSlowStrength*100)+'% · 명중 회복 3%':f.tag}
+function hud(){if(!engine)return;if(mode==='relay'){$('relay-hud').textContent=engine.relayTeams.map((t,side)=>(side?'오른쪽':'왼쪽')+' '+t.map((id,i)=>(i<engine.relayIndex[side]?'✕ ':i===engine.relayIndex[side]?'▶ ':'대기 ')+(i+1)+'. '+ROSTER.find(c=>c.id===id).name).join(' / ')).join('\n')}
+ for(let team=0;team<2;team++){const fs=engine.fighters.filter(f=>f.team===team),f=fs[0],hp=fs.reduce((n,x)=>n+x.health,0),max=fs.reduce((n,x)=>n+x.hp,0),live=fs.filter(x=>x.health>0).length;
+ $('fighter'+team).textContent=fs.length>1?'도전자 '+live+' / 5':(f.boss?'👑 ':f.icon+' ')+f.name;$('hp'+team).textContent=Math.ceil(hp)+' / '+max+' HP';$('power'+team).textContent=fs.length>1?'생존 '+live+'명':(f.id==='tree'?'뿌리 피해 ':'공격력 ')+(f.id==='nerd'?f.minDamage+'~'+f.maxDamage:f.damage);$('ability'+team).textContent=fs.length>1?'보스를 처치하면 승리':ability(f)+(f.burn?' · 화상':'')+(f.stunUntil>engine.time?' · 기절 '+(f.stunUntil-engine.time).toFixed(1)+'초':'')+(f.capturedBy!==null?' · 포획':'')+(f.poison?' · 중독 '+Math.max(0,Math.ceil(f.poison.expires-engine.time))+'초':'');$('bar'+team).style.width=(hp/max*100)+'%'}
+ if(mode==='boss'){engine.fighters.slice(1).forEach((f,i)=>{$('hero-name'+i).textContent=(i+1)+'. '+f.icon+' '+f.name;$('hero-hp'+i).textContent=f.health>0?Math.ceil(f.health)+' HP'+(f.burn?' · 화상':f.poison?' · 독':'')+(f.egg?' · 알 '+Math.max(0,Math.ceil(f.eggUntil-engine.time))+'초':'')+(f.stunUntil>engine.time?' · 기절':'')+(f.capturedBy!==null?' · 포획':''):'탈락';$('hero-bar'+i).style.width=(f.health/f.hp*100)+'%';$('hero-status'+i).classList.toggle('defeated',f.health<=0)})}
+ const t=Math.floor(engine.time);$('timer').textContent=String(Math.floor(t/60)).padStart(2,'0')+':'+String(t%60).padStart(2,'0');const hits=engine.fighters.reduce((n,f)=>n+f.hits,0);if(hits>lastHits){tone(180+Math.random()*170);lastHits=hits}const message=engine.events[engine.events.length-1];if(message&&message!==lastMessage){$('event').textContent=message;lastMessage=message}
+ if(engine.result!==null&&$('result').hidden){const winners=engine.fighters.filter(f=>f.team===engine.result),f=winners[0],survivors=winners.filter(f=>f.health>0);$('winner-icon').textContent=mode==='boss'?(engine.result===0?'👑':'🏆'):f.icon;$('winner').textContent=mode==='relay'?(engine.result?'오른쪽':'왼쪽')+' 팀 릴레이 승리!':mode==='boss'?(engine.result===0?'보스 '+f.name+' 승리!':'도전자 팀 승리!'):(f.team?'오른쪽':'왼쪽')+' '+f.name+' 승리!';$('summary').textContent=t+'초의 전투 · 생존 '+survivors.length+'명 · 남은 체력 '+Math.ceil(survivors.reduce((n,f)=>n+f.health,0))+' HP';$('result').hidden=false;$('pause').disabled=true;tone(760)}
+}
+function circle(x,y,r,fill){ctx.fillStyle=fill;ctx.beginPath();ctx.arc(x,y,r,0,Math.PI*2);ctx.fill()}
+function draw(){if(!engine)return;ctx.clearRect(0,0,720,720);ctx.fillStyle='#101c2d';ctx.fillRect(0,0,720,720);ctx.lineWidth=1;ctx.strokeStyle='#1c2d42';for(let i=24;i<720;i+=48){ctx.beginPath();ctx.moveTo(i,24);ctx.lineTo(i,696);ctx.moveTo(24,i);ctx.lineTo(696,i);ctx.stroke()}ctx.strokeStyle='#34475f';ctx.lineWidth=2;ctx.strokeRect(22,22,676,676);ctx.beginPath();ctx.arc(360,360,132,0,Math.PI*2);ctx.stroke();ctx.setLineDash([5,12]);ctx.beginPath();ctx.moveTo(360,23);ctx.lineTo(360,697);ctx.stroke();ctx.setLineDash([]);ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillStyle='#859bb6';ctx.font='600 16px system-ui';ctx.fillText(mode==='relay'?'RELAY · 3 VS 3':mode==='boss'?'BOSS RAID · 1 VS 5':'NEON ARENA · 1 VS 1',360,44);
+for(const f of engine.fighters){if(f.id!=='spider'||f.health<=0)continue;ctx.save();ctx.strokeStyle=colors[f.team]+'99';ctx.lineWidth=3*f.scale;for(const w of f.webs){ctx.beginPath();ctx.moveTo(w.x1,w.y1);ctx.lineTo(w.x2,w.y2);ctx.stroke()}if(f.webAnchor){ctx.setLineDash([5,8]);ctx.strokeStyle=colors[f.team]+'55';ctx.beginPath();ctx.moveTo(f.webAnchor.x,f.webAnchor.y);ctx.lineTo(f.x,f.y);ctx.stroke()}ctx.restore()}
+for(const f of engine.fighters){if(f.id!=='tree'||f.health<=0)continue;ctx.save();ctx.lineCap='round';for(const r of engine.rootSegments(f)){ctx.strokeStyle=colors[f.team]+'30';ctx.lineWidth=18*f.scale;ctx.beginPath();ctx.moveTo(r.x1,r.y1);ctx.lineTo(r.x2,r.y2);ctx.stroke();ctx.strokeStyle=f.attack>0?'#e1efba':colors[f.team];ctx.lineWidth=10*f.scale;ctx.beginPath();ctx.moveTo(r.x1,r.y1);ctx.lineTo(r.x2,r.y2);ctx.stroke();circle(r.x2,r.y2,6,'#b8f279')}ctx.restore()}
+for(const s of engine.shots){ctx.save();ctx.translate(s.x,s.y);ctx.rotate(Math.atan2(s.vy,s.vx));if(s.kind==='bomb'){ctx.rotate(-Math.atan2(s.vy,s.vx));ctx.font='28px "Apple Color Emoji","Segoe UI Emoji",sans-serif';ctx.fillText(s.icon,0,0)}else if(s.kind==='flame'){circle(0,0,12,'#ff702e55');circle(0,0,7,'#ff8a39');circle(2,0,3,'#ffe994')}else if(s.kind==='letter'){ctx.rotate(-Math.atan2(s.vy,s.vx));ctx.font='bold 30px system-ui';ctx.fillStyle=colors[s.team];ctx.fillText(s.letter,0,0)}else if(s.kind==='shuriken'){ctx.rotate(engine.time*18);ctx.fillStyle=s.poison?'#c2ff69':colors[s.team];ctx.beginPath();for(let i=0;i<8;i++){const a=i*Math.PI/4,r=i%2?4:13;const x=Math.cos(a)*r,y=Math.sin(a)*r;if(i===0)ctx.moveTo(x,y);else ctx.lineTo(x,y)}ctx.closePath();ctx.fill();circle(0,0,3,'#142238')}else if(s.kind==='arrow'){ctx.strokeStyle=colors[s.team];ctx.lineWidth=4;ctx.beginPath();ctx.moveTo(-16,0);ctx.lineTo(12,0);ctx.moveTo(4,-7);ctx.lineTo(13,0);ctx.lineTo(4,7);ctx.moveTo(-13,-5);ctx.lineTo(-8,0);ctx.lineTo(-13,5);ctx.stroke()}else{circle(0,0,15,colors[s.team]+'35');circle(0,0,8,colors[s.team]);circle(2,-2,3,'#fff')}ctx.restore()}
+for(const f of engine.fighters){if(f.captureTarget===null||f.health<=0)continue;const e=engine.fighters[f.captureTarget];if(!e||e.health<=0)continue;ctx.save();ctx.strokeStyle='#eefaff';ctx.lineWidth=3;ctx.setLineDash([7,5]);ctx.beginPath();ctx.moveTo(f.x,f.y);ctx.lineTo(e.x,e.y);ctx.stroke();ctx.setLineDash([]);ctx.beginPath();ctx.arc(e.x,e.y,e.radius+9,0,Math.PI*2);ctx.stroke();ctx.font='bold 18px system-ui';ctx.fillStyle='#eefaff';ctx.fillText('포획',e.x,e.y-e.radius-40);ctx.restore()}
+for(const f of engine.fighters){const c=colors[f.team],r=f.radius;ctx.globalAlpha=f.health<=0?.15:1;for(const p of f.trail){ctx.globalAlpha=p.life*.6;circle(p.x,p.y,r,c)}ctx.globalAlpha=f.health<=0?.15:1;circle(f.x,f.y+10,r+3,'#02071066');if(engine.isStudying(f)&&f.health>0){ctx.strokeStyle='#ffe78a';ctx.lineWidth=5;ctx.beginPath();ctx.arc(f.x,f.y,r+14,0,Math.PI*2);ctx.stroke();ctx.font='bold 17px system-ui';ctx.fillStyle='#ffe78a';ctx.fillText('📖 공부 · 무적',f.x,Math.min(702,f.y+r+34))}if(f.slow>0||f.rootSlow>0){ctx.strokeStyle=f.rootSlow>0?'#b8f279':'#bcacff';ctx.lineWidth=3;ctx.beginPath();ctx.arc(f.x,f.y,r+10,0,Math.PI*2);ctx.stroke()}if(f.attack>0){ctx.strokeStyle=c;ctx.globalAlpha=.8*Math.min(1,f.attack/(.35/f.scale));ctx.lineWidth=5;ctx.beginPath();ctx.arc(f.x,f.y,r+10,-.8,2.8);ctx.stroke();ctx.globalAlpha=1}if((f.poison||f.burn)&&f.health>0){ctx.strokeStyle=f.burn?'#ff8a39':'#b2f35f';ctx.lineWidth=4;ctx.beginPath();ctx.arc(f.x,f.y,r+6,0,Math.PI*2);ctx.stroke()}if((f.egg||f.stunUntil>engine.time)&&f.health>0){ctx.font='bold 17px system-ui';ctx.fillStyle='#ffe78a';ctx.fillText(f.egg?'부활 '+Math.max(0,f.eggUntil-engine.time).toFixed(1)+'초':'기절 '+(f.stunUntil-engine.time).toFixed(1)+'초',f.x,Math.min(705,f.y+r+33))}if(f.slashFx>0){ctx.strokeStyle='#edfaff';ctx.lineWidth=7;ctx.beginPath();ctx.arc(f.x,f.y,r+24*f.scale,f.slashAngle-1,f.slashAngle+1);ctx.stroke()}circle(f.x,f.y,r,f.flash>0?'#ffffff':c);circle(f.x,f.y,r-4,'#152338');ctx.font=(39*f.bodyScale)+'px "Apple Color Emoji","Segoe UI Emoji",sans-serif';ctx.fillStyle='#fff';ctx.fillText(f.icon,f.x,f.y+1);ctx.font='600 '+(f.boss?22:16)+'px system-ui';ctx.fillStyle=c;ctx.fillText((f.boss?'BOSS':mode==='boss'?f.side+'번':f.team?'R':'L')+' · '+f.name,f.x,Math.max(14,f.y-r-18));ctx.fillStyle='#31435b';ctx.fillRect(f.x-r,f.y+r+10,r*2,5);ctx.fillStyle=c;ctx.fillRect(f.x-r,f.y+r+10,r*2*f.health/f.hp,5);if(f.id==='smith'&&f.health>0){ctx.font='600 17px system-ui';ctx.fillStyle='#ffd394';ctx.fillText('ATK '+f.damage,f.x,Math.min(705,f.y+r+32));if(f.attack<=0){ctx.strokeStyle='#ffcd8260';ctx.lineWidth=3;ctx.beginPath();ctx.arc(f.x,f.y,r+6,-Math.PI/2,-Math.PI/2+Math.min(1,f.idle/f.forgeInterval)*2*Math.PI);ctx.stroke()}}ctx.globalAlpha=1}
+for(const v of engine.effects){if(v.kind==='blast'){ctx.save();ctx.globalAlpha=v.life*.35;ctx.fillStyle='#ff762e';ctx.fillRect(22,22,676,676);ctx.restore()}ctx.globalAlpha=Math.min(1,v.life*2);ctx.font=(v.kind==='hit'?'bold 25px':'600 19px')+' system-ui';ctx.fillStyle=(v.kind==='heal'||v.kind==='poison')?'#b8f279':(v.kind==='burn'||v.kind==='blast')?'#ffad63':v.kind==='forge'?'#ffd394':colors[v.team];ctx.fillText(v.text,v.x,v.y-(.8-v.life)*65);ctx.globalAlpha=1}}
+function loop(now){const dt=Math.max(0,Math.min((now-last)/1000,.08));last=now;if(engine&&!paused&&engine.result===null){acc+=dt*speed;while(acc>=1/120&&engine.result===null){engine.step(1/120);acc-=1/120}hud()}if(engine)draw();requestAnimationFrame(loop)}
+window.addEventListener('resize',fit);if(typeof ResizeObserver==='function')new ResizeObserver(fit).observe(canvas);document.addEventListener('visibilitychange',()=>{if(document.hidden&&engine&&engine.result===null&&!paused)pause();last=performance.now();acc=0});
+updateSelection();$('boot').hidden=true;$('start').disabled=false;$('random').disabled=false;requestAnimationFrame(loop);
+if(document.modelContext?.registerTool){const lifecycle=new AbortController();window.addEventListener('pagehide',()=>lifecycle.abort(),{once:true});const register=tool=>{try{Promise.resolve(document.modelContext.registerTool(tool,{signal:lifecycle.signal})).catch(()=>{})}catch{}};register({name:'start_battle',description:'현재 모드와 선택한 캐릭터로 전투를 새로 시작한다.',inputSchema:{type:'object',properties:{},additionalProperties:false},annotations:{readOnlyHint:false},execute(input){if(!input||typeof input!=='object'||Array.isArray(input)||Object.keys(input).length)throw Error('빈 객체가 필요합니다.');start();return {mode,fighters:engine.fighters.map(f=>({id:f.id,boss:f.boss,team:f.team})),running:true}}});register({name:'configure_fighters',description:'양쪽 선수를 선택하고 선택 화면으로 이동한다. 진행 중인 경기는 종료된다.',inputSchema:{type:'object',properties:{left:{type:'string',enum:ROSTER.map(c=>c.id)},right:{type:'string',enum:ROSTER.map(c=>c.id)}},required:['left','right'],additionalProperties:false},annotations:{readOnlyHint:false},execute(input){if(!input||Object.keys(input).some(k=>!['left','right'].includes(k))||!ROSTER.some(c=>c.id===input.left)||!ROSTER.some(c=>c.id===input.right))throw Error('유효한 두 캐릭터가 필요합니다.');mode='duel';selected=[input.left,input.right];selection();return {left:selected[0],right:selected[1]}}});register({name:'configure_boss_battle',description:'보스와 도전자 5명을 선택한다. 진행 중인 경기는 종료되며 전투는 시작하지 않는다.',inputSchema:{type:'object',properties:{boss:{type:'string',enum:ROSTER.map(c=>c.id)},allies:{type:'array',minItems:5,maxItems:5,items:{type:'string',enum:ROSTER.map(c=>c.id)}}},required:['boss','allies'],additionalProperties:false},annotations:{readOnlyHint:false},execute(input){const valid=id=>ROSTER.some(c=>c.id===id);if(!input||Object.keys(input).some(k=>!['boss','allies'].includes(k))||!valid(input.boss)||!Array.isArray(input.allies)||input.allies.length!==5||!input.allies.every(valid))throw Error('보스 1명과 유효한 도전자 5명이 필요합니다.');mode='boss';bossChoice=input.boss;squad=[...input.allies];bossSlot=-1;selection();return {mode,boss:bossChoice,allies:[...squad]}}})}
+})();
+
+</script>
+<script id="mobile-compat-js">
+(function(){
+  var lastTouchEnd=0;
+  document.addEventListener('touchend',function(e){var now=Date.now();if(now-lastTouchEnd<=300)e.preventDefault();lastTouchEnd=now;},{passive:false});
+  document.addEventListener('gesturestart',function(e){e.preventDefault();},{passive:false});
+  window.addEventListener('orientationchange',function(){setTimeout(function(){window.scrollTo(0,0);},100);});
+})();
+</script>
+</body></html>
