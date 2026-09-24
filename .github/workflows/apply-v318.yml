@@ -1,0 +1,28 @@
+name: Apply NEON RUMBLE v3.18
+on:
+  push:
+    paths:
+      - 'apply_v318.py'
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      - name: Apply v3.18 patch
+        run: python apply_v318.py
+      - name: Verify v3.18
+        run: |
+          grep -Fq 'BATTLE <b>v3.18</b>' index.html
+          grep -Fq 'id="mode-control"' index.html
+          grep -Fq "mode==='control'" index.html
+          grep -Fq 'id="control-stick"' index.html
+          grep -Fq "this.mode==='control'&&f.team===0" index.html
+      - name: Commit v3.18
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add index.html
+          git commit -m 'Release NEON RUMBLE v3.18'
+          git push
