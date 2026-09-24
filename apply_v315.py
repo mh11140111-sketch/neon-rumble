@@ -70,3 +70,4 @@ rep("+(f.poison?' · 중독 '+Math.max(0,Math.ceil(f.poison.expires-engine.time)
 
 p.write_text(s, encoding='utf-8')
 print('v3.15 patch applied')
+# trigger-v315
