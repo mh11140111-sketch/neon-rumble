@@ -55,3 +55,4 @@ rep(old_draw,new_draw,'shield draw')
 
 p.write_text(s,encoding='utf-8')
 print('v3.16 rotating shield hotfix applied')
+# trigger
