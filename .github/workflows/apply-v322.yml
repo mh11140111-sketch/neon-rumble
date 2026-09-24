@@ -1,0 +1,36 @@
+name: Apply NEON RUMBLE v3.22
+on:
+  push:
+    paths:
+      - 'apply_v322.py'
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      - name: Apply v3.22
+        run: python apply_v322.py
+      - name: Verify v3.22
+        run: |
+          grep -Fq 'BATTLE <b>v3.22</b>' index.html
+          grep -Fq 'v3.22 · 편의성 & 달 귀환타' index.html
+          grep -Fq 's.returning=true;s.hitTargets={}' index.html
+          python - <<'PY'
+          from pathlib import Path
+          s=Path('index.html').read_text(encoding='utf-8')
+          btn='<button class="primary start" id="start" type="button" disabled>이 조합으로 전투 시작</button>'
+          vs=s.index('<div class="versus">')
+          roster=s.index('<div class="roster" id="roster"></div>')
+          b=s.index(btn)
+          assert vs < b < roster, 'start button is not above roster'
+          assert s.count(btn)==1, 'start button duplicated'
+          PY
+      - name: Commit v3.22
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add index.html
+          git commit -m 'Release NEON RUMBLE v3.22'
+          git push
