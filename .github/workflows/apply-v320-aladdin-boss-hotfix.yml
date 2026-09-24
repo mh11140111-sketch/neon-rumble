@@ -1,0 +1,32 @@
+name: Apply NEON RUMBLE v3.20 Aladdin Boss Hotfix
+on:
+  push:
+    paths:
+      - 'apply_v320_aladdin_boss_hotfix.py'
+      - '.github/workflows/apply-v320-aladdin-boss-hotfix.yml'
+permissions:
+  contents: write
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Apply Aladdin boss hotfix
+        run: python apply_v320_aladdin_boss_hotfix.py
+      - name: Verify Aladdin boss hotfix
+        run: |
+          grep -Fq "BATTLE <b>v3.20</b>" index.html
+          grep -Fq "engine.fighters.filter(f=>f.team===1&&!f.summon).slice(0,5)" index.html
+      - name: Commit Aladdin boss hotfix
+        run: |
+          if git diff --quiet -- index.html; then
+            echo "No changes to commit"
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add index.html
+          git commit -m "Hotfix Aladdin boss battle in v3.20"
+          git push
