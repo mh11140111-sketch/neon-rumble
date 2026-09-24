@@ -4,7 +4,7 @@ on:
   push:
     branches: [main]
     paths:
-      - 'apply_v314.py'
+      - 'apply_v314_fix.py'
       - '.github/workflows/apply-v314.yml'
 
 permissions:
@@ -16,7 +16,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Apply v3.14 patch
-        run: python apply_v314.py
+        run: python apply_v314_fix.py
       - name: Verify key v3.14 features
         run: |
           grep -q 'BATTLE <b>v3.14</b>' index.html
