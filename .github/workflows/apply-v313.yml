@@ -1,0 +1,23 @@
+name: Apply NEON RUMBLE v3.13
+on:
+  push:
+    paths:
+      - '.github/workflows/apply-v313.yml'
+permissions:
+  contents: write
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Apply v3.13 patch
+        run: python apply_v313.py
+      - name: Commit v3.13
+        run: |
+          git config user.name "mh11140111-sketch"
+          git config user.email "mh11140111@gmail.com"
+          git add index.html
+          git commit -m "Release NEON RUMBLE v3.13"
+          git push
