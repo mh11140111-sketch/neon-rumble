@@ -1,0 +1,72 @@
+from pathlib import Path
+
+p=Path('index.html')
+s=p.read_text(encoding='utf-8')
+
+def one(old,new,label):
+    global s
+    if old not in s: raise SystemExit('PATCH FAILED: '+label)
+    s=s.replace(old,new,1)
+
+# version and notes
+one('BATTLE <b>v3.13</b>','BATTLE <b>v3.14</b>','version')
+one('📒 패치노트 · v3.13','📒 패치노트 · v3.14','note title')
+one('<div class="patch-body"><div class="patch-version"><h3>v3.13 · 보이지 않는 반격</h3>','<div class="patch-body"><div class="patch-version"><h3>v3.14 · 팀 배틀 & 모아이</h3><ul><li>투명인간 반사 피해 30 → 50.</li><li>달 월하강림 발동 시간이 30초 → 35초로 조정.</li><li>새 모드 단체전 추가: 왼쪽 3명과 오른쪽 3명이 동시에 출전하며 아군은 공격하지 않음.</li><li>캐릭터 선택 화면에 검색 기능 추가.</li><li>신규 캐릭터 🗿 모아이 추가: 일반 이동 없이 3초마다 점프 이동하고 착지할 때 맵 전체에 충격파 피해 70. 기본 크기는 일반 캐릭터의 1.5배.</li></ul></div><div class="patch-version"><h3>v3.13 · 보이지 않는 반격</h3>','note block')
+s=s.replace('공격 무시에 실패할 때마다 이후 무시 확률이 10%p 증가하며 성공 후에도 증가분은 유지.','공격 무시에 실패할 때마다 이후 무시 확률이 10%p 증가.',1)
+
+# search + tab
+one('.patch-version ul{margin:0;padding-left:20px;color:#b9c9dd;font-size:13px;line-height:1.7}\n</style>','.patch-version ul{margin:0;padding-left:20px;color:#b9c9dd;font-size:13px;line-height:1.7}\n.character-search{width:100%;margin:0 0 12px;padding:12px 14px;min-height:46px;border-radius:12px;border:1px solid #35465f;background:#111c2b;color:#edf3ff;font:inherit}.character-search::placeholder{color:#8195ad}.character-search:focus{outline:3px solid #c5f794;outline-offset:2px}\n</style>','search css')
+one('<button id="mode-relay" type="button" aria-pressed="false">릴레이 · 3대3</button></div>','<button id="mode-relay" type="button" aria-pressed="false">릴레이 · 3대3</button><button id="mode-group" type="button" aria-pressed="false">단체전 · 3대3</button></div>','group tab')
+one('<div class="pick-heading"><strong id="pick-label">왼쪽 선수를 골라 줘</strong><span>같은 캐릭터끼리도 대결 가능</span></div><div class="roster" id="roster"></div>','<div class="pick-heading"><strong id="pick-label">왼쪽 선수를 골라 줘</strong><span>같은 캐릭터끼리도 대결 가능</span></div><input id="character-search" class="character-search" type="search" placeholder="🔎 캐릭터 검색 (이름·능력)" autocomplete="off" aria-label="캐릭터 검색"><div class="roster" id="roster"></div>','search input')
+
+# balance
+s=s.replace("전투가 30초를 넘기면 궁극기를 준비해.","전투가 35초를 넘기면 궁극기를 준비해.",1)
+s=s.replace("30초 후 궁극기","35초 후 궁극기",1)
+s=s.replace("달 궁극기: 전투 30초 후","달 궁극기: 전투 35초 후",1)
+s=s.replace("보스 달은 반달 조각 160 / 1초, 15초 후 궁극기를 준비해","보스 달은 반달 조각 160 / 1초, 17.5초 후 궁극기를 준비해",1)
+s=s.replace("description:'몸이 투명해 기본 50% 확률로 공격을 무시해. 무시에 성공하면 공격한 상대에게 30 피해를 즉시 반사하고","description:'몸이 투명해 기본 50% 확률로 공격을 무시해. 무시에 성공하면 공격한 상대에게 50 피해를 즉시 반사하고",1)
+s=s.replace("성공 시 반사 30 · 실패할 때마다","성공 시 반사 50 · 실패할 때마다",1)
+s=s.replace('const reflected=30*e.scale','const reflected=50*e.scale',1)
+s=s.replace('moonUltAt:30/scale','moonUltAt:35/scale',1)
+
+# moai roster
+one("\n];\nconst clamp=","\n,{id:'moai',name:'모아이',icon:'🗿',tag:'점프 · 전장 충격파',hp:1000,damage:70,speed:0,cooldown:3,description:'일반 이동은 하지 않고 3초마다 점프로 위치를 바꿔. 착지할 때 맵 전체에 충격파를 일으켜 적 전원에게 피해 70. 몸 크기는 일반 캐릭터의 1.5배.',detail:'일반 이동 불가 · 점프 3초마다 · 전장 전체 충격파 70 · 기본 크기 1.5배'}\n];\nconst clamp=",'moai roster')
+
+# engine group support
+one("this.random=random;this.mode=['boss','relay'].includes(options.mode)?options.mode:'duel';this.relayTeams=options.teams?options.teams.map(t=>[...t]):null;this.relayIndex=[0,0];if(this.mode==='relay'){if(!this.relayTeams||this.relayTeams.length!==2||!this.relayTeams.every(t=>t.length===3&&t.every(id=>ROSTER.some(c=>c.id===id))))throw Error('릴레이는 팀마다 유효한 선수 3명이 필요해.');left=this.relayTeams[0][0];right=this.relayTeams[1][0]}","this.random=random;this.mode=['boss','relay','group'].includes(options.mode)?options.mode:'duel';this.relayTeams=options.teams?options.teams.map(t=>[...t]):null;this.relayIndex=[0,0];if(['relay','group'].includes(this.mode)){if(!this.relayTeams||this.relayTeams.length!==2||!this.relayTeams.every(t=>t.length===3&&t.every(id=>ROSTER.some(c=>c.id===id))))throw Error('3대3 모드는 팀마다 유효한 선수 3명이 필요해.');if(this.mode==='relay'){left=this.relayTeams[0][0];right=this.relayTeams[1][0]}}",'mode init')
+one("const ids=this.mode==='boss'?[left,...(options.allies||[right,'archer','knight','mage','vampire'])]:[left,right];","const ids=this.mode==='boss'?[left,...(options.allies||[right,'archer','knight','mage','vampire'])]:this.mode==='group'?[...this.relayTeams[0],...this.relayTeams[1]]:[left,right];",'ids')
+one("const starts=this.mode==='boss'?[[170,360],[515,135],[635,235],[515,360],[635,485],[515,585]]:[[170,360],[550,360]];","const starts=this.mode==='boss'?[[170,360],[515,135],[635,235],[515,360],[635,485],[515,585]]:this.mode==='group'?[[130,180],[130,360],[130,540],[590,180],[590,360],[590,540]]:[[170,360],[550,360]];",'starts')
+one("const boss=this.mode==='boss'&&side===0,scale=boss?2:1,bodyScale=boss?3:1,team=side===0?0:1,angle=this.rand(-1,1)+(team?Math.PI:0),hp=type.hp*(boss?2.5:1);","const boss=this.mode==='boss'&&side===0,scale=boss?2:1,bodyScale=(boss?3:1)*(type.id==='moai'?1.5:1),team=this.mode==='group'?(side<3?0:1):(side===0?0:1),angle=this.rand(-1,1)+(team?Math.PI:0),hp=type.hp*(boss?2.5:1);",'team size')
+one("vampireBat:false,dodgeChance:type.id==='invisible'?.5:0,moonHalf:false","vampireBat:false,dodgeChance:type.id==='invisible'?.5:0,nextJump:3/scale,jumpFx:0,moonHalf:false",'moai fields')
+
+# moai mechanics
+one("bombShot(f,e,icon,damage,instant){const a=this.aim(f,e);this.shots.push({x:f.x+a.x*(f.radius+8),y:f.y+a.y*(f.radius+8),vx:a.x,vy:a.y,owner:f.side,team:f.team,target:e.side,kind:'bomb',icon,damage,instant,radius:10*f.scale,speed:300*f.scale,life:4,bounces:0});this.effect(f,icon+' 투척','skill')}\nstepFighter","bombShot(f,e,icon,damage,instant){const a=this.aim(f,e);this.shots.push({x:f.x+a.x*(f.radius+8),y:f.y+a.y*(f.radius+8),vx:a.x,vy:a.y,owner:f.side,team:f.team,target:e.side,kind:'bomb',icon,damage,instant,radius:10*f.scale,speed:300*f.scale,life:4,bounces:0});this.effect(f,icon+' 투척','skill')}\nmoaiJump(f){if(f.id!=='moai'||f.health<=0||this.time<f.nextJump-1e-9)return;const {low,high}=this.bounds(f);f.x=this.rand(low,high);f.y=this.rand(low,high);f.vx=0;f.vy=0;f.nextJump=this.time+3/f.scale;f.jumpFx=.8;this.effects.push({x:f.x,y:f.y,text:'충격파!',kind:'shockwave',side:f.side,team:f.team,life:.8});this.resolvingBlast=true;for(const e of [...this.enemies(f)])if(e.health>0)this.attack(f,e,70*f.scale);this.resolvingBlast=false;this.checkEnd();this.emit('🗿 모아이 착지! 전장 전체 충격파')}\nstepFighter",'moai method')
+one("if(f.egg||f.stunUntil>this.time){f.attack=0;return}\n f.peckCd","if(f.egg||f.stunUntil>this.time){f.attack=0;return}\n if(f.id==='moai'){f.attack=0;f.jumpFx=Math.max(0,f.jumpFx-dt);this.moaiJump(f);return}\n f.peckCd",'moai step')
+s=s.replace("'moon','invisible'].includes(f.id)","'moon','invisible','moai'].includes(f.id)",1)
+s=s.replace('fresh.nextCapture+=this.time;fresh.nextStudy+=this.time;fresh.transformAt+=this.time;','fresh.nextCapture+=this.time;fresh.nextStudy+=this.time;fresh.transformAt+=this.time;fresh.moonUltAt+=this.time;fresh.nextJump+=this.time;',1)
+
+# UI team mode
+one("function currentChoices(){return mode==='boss'?[bossChoice,squad[Math.max(0,bossSlot)]]:mode==='relay'?relayTeams.map((t,i)=>t[relaySlots[i]]):selected}","function currentChoices(){return mode==='boss'?[bossChoice,squad[Math.max(0,bossSlot)]]:['relay','group'].includes(mode)?relayTeams.map((t,i)=>t[relaySlots[i]]):selected}",'choices')
+one("$('relay-picker').hidden=mode!=='relay';$('relay-rules').hidden=mode!=='relay';$('mode-relay').setAttribute('aria-pressed',String(mode==='relay'));for(let t=0;t<2;t++)for(let i=0;i<3;i++){const c=ROSTER.find(c=>c.id===relayTeams[t][i]),b=$('relay-slot'+t+i);b.textContent=(t?'오른쪽':'왼쪽')+' '+(i+1)+'번 '+c.icon+' '+c.name;b.setAttribute('aria-pressed',String(side===t&&relaySlots[t]===i))}if(mode==='relay'){$('label0').textContent='왼쪽 '+(relaySlots[0]+1)+'번';$('label1').textContent='오른쪽 '+(relaySlots[1]+1)+'번';$('pick-label').textContent=(side?'오른쪽':'왼쪽')+' '+(relaySlots[side]+1)+'번 선수를 골라 줘'}\n $('start').textContent=mode==='relay'?'릴레이 전투 시작 · 팀당 3명':mode==='boss'?'보스전 시작 · 1 vs 5':'이 조합으로 전투 시작';","const teamMode=['relay','group'].includes(mode);$('relay-picker').hidden=!teamMode;$('relay-rules').hidden=!teamMode;$('mode-relay').setAttribute('aria-pressed',String(mode==='relay'));$('mode-group').setAttribute('aria-pressed',String(mode==='group'));$('relay-rules').textContent=mode==='group'?'왼쪽 팀 3명과 오른쪽 팀 3명이 모두 동시에 출전해. 자기 팀은 공격하지 않고 상대 팀만 공격해.':'각 팀의 1·2·3번을 눌러 출전 순서를 정해 줘. 승자는 남은 체력과 강화 상태를 유지하고, 패한 쪽만 다음 선수가 나와. 세 명 모두 탈락하면 패배!';for(let t=0;t<2;t++)for(let i=0;i<3;i++){const c=ROSTER.find(c=>c.id===relayTeams[t][i]),b=$('relay-slot'+t+i);b.textContent=(t?'오른쪽':'왼쪽')+' '+(i+1)+'번 '+c.icon+' '+c.name;b.setAttribute('aria-pressed',String(side===t&&relaySlots[t]===i))}if(teamMode){$('label0').textContent='왼쪽 '+(relaySlots[0]+1)+'번';$('label1').textContent='오른쪽 '+(relaySlots[1]+1)+'번';$('pick-label').textContent=(side?'오른쪽':'왼쪽')+' '+(relaySlots[side]+1)+'번 선수를 골라 줘'}\n $('start').textContent=mode==='group'?'단체전 시작 · 3 vs 3 동시전투':mode==='relay'?'릴레이 전투 시작 · 팀당 3명':mode==='boss'?'보스전 시작 · 1 vs 5':'이 조합으로 전투 시작';",'team UI')
+s=s.replace("else if(mode==='relay')relayTeams[side][relaySlots[side]]=c.id","else if(['relay','group'].includes(mode))relayTeams[side][relaySlots[side]]=c.id",1)
+s=s.replace("else if(mode==='relay')relayTeams=relayTeams.map(t=>t.map(rand))","else if(['relay','group'].includes(mode))relayTeams=relayTeams.map(t=>t.map(rand))",1)
+one("$('mode-relay').onclick=()=>{mode='relay';side=0;updateSelection()};","$('mode-relay').onclick=()=>{mode='relay';side=0;updateSelection()};$('mode-group').onclick=()=>{mode='group';side=0;updateSelection()};",'group click')
+
+# search listener
+one("$('choose0').onclick=()=>{side=0;bossSlot=-1;updateSelection()};","$('character-search').addEventListener('input',()=>{const q=$('character-search').value.trim().toLowerCase();for(const b of $('roster').children){const c=ROSTER.find(v=>v.id===b.dataset.character);const hay=(c.name+' '+c.tag+' '+c.description+' '+c.detail).toLowerCase();b.hidden=!!q&&!hay.includes(q)}});\n$('choose0').onclick=()=>{side=0;bossSlot=-1;updateSelection()};",'search logic')
+
+# battle mode
+one("function start(){engine=mode==='relay'?new Engine(relayTeams[0][0],relayTeams[1][0],Math.random,{mode:'relay',teams:relayTeams}):mode==='boss'?new Engine(bossChoice,squad[0],Math.random,{mode:'boss',allies:squad}):new Engine(...selected);","function start(){engine=mode==='group'?new Engine(relayTeams[0][0],relayTeams[1][0],Math.random,{mode:'group',teams:relayTeams}):mode==='relay'?new Engine(relayTeams[0][0],relayTeams[1][0],Math.random,{mode:'relay',teams:relayTeams}):mode==='boss'?new Engine(bossChoice,squad[0],Math.random,{mode:'boss',allies:squad}):new Engine(...selected);",'start group')
+s=s.replace("$('event').textContent=mode==='boss'?'보스전 시작! 도전자 5명이 동시에 전투해.':'전투 시작!';","$('event').textContent=mode==='group'?'단체전 시작! 양 팀 3명이 동시에 전투해.':mode==='boss'?'보스전 시작! 도전자 5명이 동시에 전투해.':'전투 시작!';",1)
+s=s.replace("$('battle-mode').textContent=mode==='relay'?'RELAY':mode==='boss'?'BOSS RAID':'DUEL';$('relay-hud').hidden=mode!=='relay';","$('battle-mode').textContent=mode==='group'?'GROUP 3V3':mode==='relay'?'RELAY':mode==='boss'?'BOSS RAID':'DUEL';$('relay-hud').hidden=!['relay','group'].includes(mode);",1)
+one("function ability(f){return f.id==='invisible'?'공격 무시 '+Math.round(f.dodgeChance*100)+'% · 성공 시 반사 '+30*f.scale:","function ability(f){return f.id==='moai'?'점프까지 '+Math.max(0,f.nextJump-engine.time).toFixed(1)+'초 · 충격파 '+70*f.scale:f.id==='invisible'?'공격 무시 '+Math.round(f.dodgeChance*100)+'% · 성공 시 반사 '+50*f.scale:",'ability')
+one("function hud(){if(!engine)return;if(mode==='relay'){$('relay-hud').textContent=engine.relayTeams.map((t,side)=>(side?'오른쪽':'왼쪽')+' '+t.map((id,i)=>(i<engine.relayIndex[side]?'✕ ':i===engine.relayIndex[side]?'▶ ':'대기 ')+(i+1)+'. '+ROSTER.find(c=>c.id===id).name).join(' / ')).join('\\n')}\n","function hud(){if(!engine)return;if(mode==='relay'){$('relay-hud').textContent=engine.relayTeams.map((t,side)=>(side?'오른쪽':'왼쪽')+' '+t.map((id,i)=>(i<engine.relayIndex[side]?'✕ ':i===engine.relayIndex[side]?'▶ ':'대기 ')+(i+1)+'. '+ROSTER.find(c=>c.id===id).name).join(' / ')).join('\\n')}if(mode==='group'){$('relay-hud').textContent=relayTeams.map((t,side)=>(side?'오른쪽 팀: ':'왼쪽 팀: ')+t.map(id=>ROSTER.find(c=>c.id===id).icon+' '+ROSTER.find(c=>c.id===id).name).join(' / ')).join('\\n')}\n",'group hud')
+one("$('fighter'+team).textContent=fs.length>1?'도전자 '+live+' / 5':(f.boss?'👑 ':f.icon+' ')+f.name;$('hp'+team).textContent=Math.ceil(hp)+' / '+max+' HP';$('power'+team).textContent=fs.length>1?'생존 '+live+'명':(f.id==='tree'?'뿌리 피해 ':'공격력 ')+(f.id==='nerd'?f.minDamage+'~'+f.maxDamage:f.damage);$('ability'+team).textContent=fs.length>1?'보스를 처치하면 승리':ability(f)","$('fighter'+team).textContent=mode==='group'?(team?'오른쪽 팀 ':'왼쪽 팀 ')+live+' / 3':fs.length>1?'도전자 '+live+' / 5':(f.boss?'👑 ':f.icon+' ')+f.name;$('hp'+team).textContent=Math.ceil(hp)+' / '+max+' HP';$('power'+team).textContent=fs.length>1?'생존 '+live+'명':(f.id==='tree'?'뿌리 피해 ':'공격력 ')+(f.id==='nerd'?f.minDamage+'~'+f.maxDamage:f.damage);$('ability'+team).textContent=mode==='group'?'상대 팀 전원 처치 시 승리':fs.length>1?'보스를 처치하면 승리':ability(f)",'team hud')
+one("$('winner').textContent=mode==='relay'?(engine.result?'오른쪽':'왼쪽')+' 팀 릴레이 승리!':mode==='boss'?","$('winner').textContent=mode==='group'?(engine.result?'오른쪽':'왼쪽')+' 팀 단체전 승리!':mode==='relay'?(engine.result?'오른쪽':'왼쪽')+' 팀 릴레이 승리!':mode==='boss'?",'winner')
+one("ctx.fillText(mode==='relay'?'RELAY · 3 VS 3':mode==='boss'?'BOSS RAID · 1 VS 5':'NEON ARENA · 1 VS 1',360,44);","ctx.fillText(mode==='group'?'GROUP BATTLE · 3 VS 3':mode==='relay'?'RELAY · 3 VS 3':mode==='boss'?'BOSS RAID · 1 VS 5':'NEON ARENA · 1 VS 1',360,44);",'arena title')
+one("for(const v of engine.effects){if(v.kind==='blast'){ctx.save();","for(const v of engine.effects){if(v.kind==='shockwave'){ctx.save();ctx.globalAlpha=Math.max(0,v.life)*.6;ctx.strokeStyle=colors[v.team];ctx.lineWidth=10;ctx.beginPath();ctx.arc(v.x,v.y,(.8-v.life)*900,0,Math.PI*2);ctx.stroke();ctx.restore()}if(v.kind==='blast'){ctx.save();",'shockwave draw')
+
+s=s.replace("보스 달은 반달 조각 160 / 1초, 17.5초 후 궁극기를 준비해 5초 뒤 전장 전체 즉사 공격을 사용해.","보스 달은 반달 조각 160 / 1초, 17.5초 후 궁극기를 준비해 5초 뒤 전장 전체 즉사 공격을 사용해. 보스 모아이는 기본 모아이 크기 1.5배가 보스 크기 배율에도 적용되고 1.5초마다 점프하며 전장 전체 충격파 피해 140을 줘.",1)
+
+p.write_text(s,encoding='utf-8')
+print('NEON RUMBLE v3.14 applied')
