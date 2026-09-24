@@ -40,7 +40,7 @@ rep("if(this.result!==null||f.health<=0||e.health<=0||(!friendly&&f.team===e.tea
 rep("this.transformHero(f);this.updateVampire(f);this.moonSkill(f);\n if(f.moonUltPhase", "this.transformHero(f);this.updateVampire(f);this.moonSkill(f);this.updateKnightShield(f,dt);\n if(f.moonUltPhase", 'shield update')
 
 # Ability HUD
-rep("function ability(f){return f.id==='puffer'?", "function ability(f){return f.id==='knight'?(f.knightShieldReady?'🛡️ 방패 준비 · 다음 공격 완전 방어':'🛡️ 재충전 '+Math.max(0,f.knightShieldNext-engine.time).toFixed(1)+'초'):f.id==='puffer'?", 'knight hud')
+rep("function ability(f){return f.id==='moai'?", "function ability(f){return f.id==='knight'?(f.knightShieldReady?'🛡️ 방패 준비 · 다음 공격 완전 방어':'🛡️ 재충전 '+Math.max(0,f.knightShieldNext-engine.time).toFixed(1)+'초'):f.id==='moai'?", 'knight hud')
 
 # Rotating shield visual around every living knight. Full opacity when ready, dim while charging.
 draw_anchor="for(const f of engine.fighters){if(f.moonUltPhase==='air')continue;const c=colors[f.team],r=f.radius;ctx.globalAlpha=f.health<=0?.15:(f.id==='invisible'?.38:1);"
