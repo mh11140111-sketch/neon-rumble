@@ -101,7 +101,7 @@ study(f){
  if(!f.studyUntil&&this.time>=f.nextStudy-1e-9){f.studyStart=this.time;f.studyUntil=this.time+3*f.scale;this.effect(f,'공부 · 무적','skill')}
 }
 updateKnightShield(f,dt){if(f.id!=='knight'||f.health<=0)return;f.knightShieldAngle=(f.knightShieldAngle+dt*2.8)%(Math.PI*2);if(!f.knightShieldReady&&this.time>=f.knightShieldNext-1e-9){f.knightShieldReady=true;this.effect(f,'🛡️ 방패 재충전','skill')}}
-knightShockwave(f){if(f.id!=='knight'||f.health<=0)return;this.effects.push({x:f.x,y:f.y,text:'방패 충격파!',kind:'shockwave',side:f.side,team:f.team,life:.9});this.emit('🛡️ 기사가 강력한 공격을 막아 충격파를 발동!');this.resolvingBlast=true;for(const e of this.fighters){if(e===f||e.health<=0)continue;this.attack(f,e,100,true);if(e.health>0)e.stunUntil=Math.max(e.stunUntil,this.time+3)}this.resolvingBlast=false;this.checkEnd()}
+knightShockwave(f){if(f.id!=='knight'||f.health<=0)return;this.effects.push({x:f.x,y:f.y,text:'방패 충격파!',kind:'shockwave',side:f.side,team:f.team,life:.8});this.emit('🛡️ 방패 충격파!');this.resolvingBlast=true;for(const e of [...this.fighters]){if(e===f||e.health<=0)continue;const n=Math.min(e.health,100);e.health-=n;f.damageDealt+=n;e.flash=.15;this.effect(e,'−'+n);if(e.health>0)e.stunUntil=Math.max(e.stunUntil,this.time+3);if(e.health<=0){if(this.formEgg(e))continue;e.trail=[];this.emit(e.name+' 탈락!')}}this.resolvingBlast=false;this.checkEnd()}
 attack(f,e,dmg,friendly=false,bypassDodge=false){
  if(this.result!==null||f.health<=0||e.health<=0||(!friendly&&f.team===e.team)||this.isStudying(e))return 0;
  if(e.id==='knight'&&e.knightShieldReady){e.knightShieldReady=false;e.knightShieldNext=this.time+10;this.effect(e,'🛡️ 완전 방어!','skill');if(dmg>=500)this.knightShockwave(e);return 0}
