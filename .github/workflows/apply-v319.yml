@@ -1,0 +1,39 @@
+name: Apply NEON RUMBLE v3.19
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'apply_v319.py'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Apply v3.19
+        run: python apply_v319.py
+      - name: Verify v3.19
+        run: |
+          grep -Fq 'BATTLE <b>v3.19</b>' index.html
+          grep -Fq "id:'robot',name:'로봇'" index.html
+          grep -Fq "robotSkill(f)" index.html
+          grep -Fq "만능로봇팔" index.html
+          grep -Fq "robotLaserUntil" index.html
+      - name: Commit v3.19
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add index.html
+          if git diff --cached --quiet; then
+            echo 'No changes to commit'
+            exit 0
+          fi
+          git commit -m 'Release NEON RUMBLE v3.19'
+          git push
