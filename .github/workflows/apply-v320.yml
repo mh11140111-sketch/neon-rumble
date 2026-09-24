@@ -1,0 +1,32 @@
+name: Apply NEON RUMBLE v3.20
+on:
+  push:
+    paths:
+      - 'apply_v320.py'
+      - '.github/workflows/apply-v320.yml'
+permissions:
+  contents: write
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Apply v3.20
+        run: python apply_v320.py
+      - name: Verify v3.20
+        run: |
+          grep -Fq 'BATTLE <b>v3.20</b>' index.html
+          grep -Fq "id:'aladdin',name:'알라딘'" index.html
+          grep -Fq "id:'genie',name:'지니'" index.html
+          grep -Fq 'moonUltAt:45/scale' index.html
+          grep -Fq 'this.attack(f,e,70*f.scale)' index.html
+          grep -Fq 'this.attack(f,e,50*f.scale,true)' index.html
+          grep -Fq 'hitTargets:{}' index.html
+      - name: Commit v3.20
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add index.html
+          git diff --cached --quiet && exit 0
+          git commit -m 'Release NEON RUMBLE v3.20'
+          git push
