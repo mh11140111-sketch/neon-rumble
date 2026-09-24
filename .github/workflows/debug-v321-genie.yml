@@ -4,6 +4,7 @@ on:
     paths:
       - '.github/workflows/debug-v321-genie.yml'
       - 'debug_v321_genie.mjs'
+      - 'index.html'
 jobs:
   test:
     runs-on: ubuntu-latest
