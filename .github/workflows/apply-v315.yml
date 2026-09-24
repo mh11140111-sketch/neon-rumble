@@ -15,13 +15,29 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      - name: Adapt v3.15 patch to current v3.14 ability layout
+        run: |
+          sed -i "/'puffer ability')/d" apply_v315.py
       - name: Apply v3.15 patch
         run: python apply_v315.py
+      - name: Add puffer ability text
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          p=Path('index.html')
+          s=p.read_text(encoding='utf-8')
+          old=":f.id==='invisible'?'공격 무시 '"
+          new=":f.id==='puffer'?'8방향 가시 20 · 맹독 3초 · 접촉 독':f.id==='invisible'?'공격 무시 '"
+          if old not in s:
+              raise SystemExit('PATCH FAILED: puffer ability current-layout anchor')
+          s=s.replace(old,new,1)
+          p.write_text(s,encoding='utf-8')
+          PY
       - name: Verify key v3.15 features
         run: |
           grep -q 'BATTLE <b>v3.15</b>' index.html
           grep -q "id:'puffer'" index.html
-          grep -q 'const heal=Math.min(f.hp-f.health,Math.round(n\*f.lifesteal\*(f.id===' index.html
+          grep -q "f.vampireBat?1.3:1" index.html
           grep -q "kind:'spike'" index.html
           grep -q 'tickToxin' index.html
           grep -q '맹독 3초' index.html
