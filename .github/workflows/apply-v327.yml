@@ -1,0 +1,57 @@
+name: Apply NEON RUMBLE v3.27
+on:
+  push:
+    paths:
+      - 'apply_v327.py'
+      - '.github/workflows/apply-v327.yml'
+permissions:
+  contents: write
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Apply v3.27
+        run: python apply_v327.py
+      - name: Verify v3.27
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          import re
+          s=Path('index.html').read_text(encoding='utf-8')
+          checks=[
+            'BATTLE <b>v3.27</b>',
+            '📒 패치노트 · v3.27',
+            'id="settings-btn"',
+            'id="setting-control"',
+            'id="setting-stick-position"',
+            'id="setting-sound"',
+            "SETTINGS_KEY='neonRumble.settings.v1'",
+            "settings.control==='wasd'",
+            "settings.control==='arrows'",
+            "control-stick.stick-right",
+            "function playSfx(kind)",
+            "playSfx('hit')",
+            "playSfx('victory')",
+            "const cv=currentControlVector()",
+          ]
+          for x in checks:
+            assert x in s, x
+          # ensure old version badge/summary are gone
+          assert 'BATTLE <b>v3.26</b>' not in s
+          # syntax-check all inline JS blocks
+          scripts=re.findall(r'<script>(.*?)</script>',s,re.S)
+          Path('/tmp/v327-scripts').mkdir(exist_ok=True)
+          for i,src in enumerate(scripts):
+            Path(f'/tmp/v327-scripts/{i}.js').write_text(src,encoding='utf-8')
+          print('V327_STATIC_OK',len(scripts))
+          PY
+          for f in /tmp/v327-scripts/*.js; do node --check "$f"; done
+          echo V327_JS_SYNTAX_OK
+      - name: Commit v3.27
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add index.html
+          git commit -m "Release NEON RUMBLE v3.27"
+          git push
