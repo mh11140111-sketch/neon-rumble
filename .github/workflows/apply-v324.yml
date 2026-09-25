@@ -1,0 +1,49 @@
+name: Apply NEON RUMBLE v3.24
+on:
+  push:
+    paths:
+      - 'apply_v324.py'
+      - 'debug_v324_stage.mjs'
+      - '.github/workflows/apply-v324.yml'
+permissions:
+  contents: write
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Apply v3.24
+        run: python apply_v324.py
+      - name: Verify v3.24 static
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          s=Path('index.html').read_text(encoding='utf-8')
+          checks=[
+            'BATTLE <b>v3.24</b>',
+            '스테이지 모드 · 테스트버전',
+            "e.id==='moai'||e.id==='robot'",
+            'f.nextCapture=this.time+8/f.scale',
+            "engine.manualTeam0=true",
+            "v.stagePower=1.5",
+            "mode==='control'||mode==='stage'",
+            "STAGE '+stageNo",
+          ]
+          missing=[x for x in checks if x not in s]
+          if missing: raise SystemExit('Missing: '+repr(missing))
+          print('STATIC_OK')
+          PY
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Install runtime test dependency
+        run: npm install --no-save jsdom@24
+      - name: Run stage runtime diagnostic
+        run: node debug_v324_stage.mjs
+      - name: Commit v3.24
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add index.html
+          git commit -m 'Release NEON RUMBLE v3.24'
+          git push
