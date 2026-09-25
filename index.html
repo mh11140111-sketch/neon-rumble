@@ -243,7 +243,6 @@ stepFighter(f,e,dt){
  if(f.id==='lizard')this.lizardSkill(f)
  if(f.id==='devileye')this.devilEyeSkill(f)
  if(f.id==='aladdin'&&f.health>0&&f.stunUntil<=this.time){const at=this.nearest(f);if(at){const aa=this.aim(f,at),d=distance(f,at),cx=360-f.x,cy=360-f.y,edge=f.x<105||f.x>615||f.y<105||f.y>615;let x,y;if(edge){const n=Math.hypot(cx,cy)||1;x=cx/n;y=cy/n}else if(d<330*f.scale){x=-aa.x-aa.y*.35;y=-aa.y+aa.x*.35}else{x=-aa.y;y=aa.x}const n=Math.hypot(x,y)||1;f.vx=x/n;f.vy=y/n;f.turn=.35}}
- if(f.id==='ghost'&&f.health>0&&f.stunUntil<=this.time&&!f.ghostPossessing){const at=this.nearest(f);if(at){const aa=this.aim(f,at),d=distance(f,at);let x,y;if(d>150*f.scale){x=aa.x;y=aa.y}else{x=aa.x*.35-aa.y*.94;y=aa.y*.35+aa.x*.94}const n=Math.hypot(x,y)||1;f.vx=x/n;f.vy=y/n;f.turn=.18}}
  this.transformHero(f);this.updateVampire(f);this.moonSkill(f);this.updateKnightShield(f,dt);this.knightGiantSlash(f,e);if(f.id==='snowman')this.snowmanShot(f,e);if(f.id==='angryman')this.angryManSkill(f,e,dt);
  if(f.moonUltPhase==='air'){f.attack=0;return}
  if(f.egg||f.stunUntil>this.time){f.attack=0;return}
