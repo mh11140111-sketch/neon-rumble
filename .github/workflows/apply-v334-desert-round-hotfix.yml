@@ -1,0 +1,73 @@
+name: Apply NEON RUMBLE v3.34 Desert Round Hotfix
+
+on:
+  push:
+    paths:
+      - 'apply_v334_desert_round_hotfix.py'
+      - '.github/workflows/apply-v334-desert-round-hotfix.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Apply v3.34 desert round hotfix
+        run: python apply_v334_desert_round_hotfix.py
+      - name: Verify static integration
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          s=Path('index.html').read_text(encoding='utf-8')
+          checks=[
+            'BATTLE <b>v3.34</b>',
+            "hero.hp*.2",
+            "mode==='desert'&&engine.result===0",
+            "CHAPTER 2 · STAGE '+desertStageNo+' 실패",
+            "ROUND '+((f.revivals||0)+1)+' / 3 · 상대 HP 유지",
+            "상대 체력 유지",
+            "$('character-search').value=''",
+            "3라운드"
+          ]
+          missing=[x for x in checks if x not in s]
+          if missing: raise SystemExit('missing: '+repr(missing))
+          # Critical invariant: skeleton round transition restores only f.health, never enemy health.
+          start=s.index("if(['skeleton_gun','skeleton_sword','skeleton_drunk'].includes(f.id)&&!f.noSkeletonRevive")
+          end=s.index("if(f.id==='angryman'",start)
+          block=s[start:end]
+          if 'e.health=' in block or 'target.health=' in block:
+              raise SystemExit('skeleton round transition must not restore opponent health')
+          print('static checks passed')
+          PY
+      - name: Syntax check scripts
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          import re, subprocess, tempfile, os
+          s=Path('index.html').read_text(encoding='utf-8')
+          scripts=re.findall(r'<script(?:\s[^>]*)?>(.*?)</script>',s,re.S)
+          if not scripts: raise SystemExit('no scripts found')
+          for i,js in enumerate(scripts):
+            fd,path=tempfile.mkstemp(suffix=f'-{i}.js')
+            os.close(fd)
+            Path(path).write_text(js,encoding='utf-8')
+            try: subprocess.run(['node','--check',path],check=True)
+            finally: os.unlink(path)
+          print('syntax checks passed:',len(scripts))
+          PY
+      - name: Commit hotfix
+        run: |
+          if git diff --quiet -- index.html; then
+            echo 'No index changes to commit'
+            exit 0
+          fi
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add index.html
+          git commit -m 'Fix v3.34 desert defeat and skeleton rounds'
+          git push
