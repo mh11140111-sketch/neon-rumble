@@ -1,0 +1,53 @@
+name: Apply NEON RUMBLE v3.30
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'apply_v330.py'
+      - '.github/workflows/apply-v330.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+      - name: Apply v3.30
+        run: python apply_v330.py
+      - name: Verify static integration
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          s=Path('index.html').read_text(encoding='utf-8')
+          assert "BATTLE <b>v3.30</b>" in s
+          assert "v3.30 · 유령 리워크 & 눈사람 밸런스" in s
+          assert "ghostDashNext:type.id==='ghost'?3/scale:9999" in s
+          assert "f.dash=.32" in s
+          assert "this.attack(g,e,30*g.scale)" in s
+          assert "damage:60*f.scale" in s
+          assert "접촉 피해 15 → 30" in s
+          assert "눈송이 피해 30 → 60" in s
+          PY
+      - name: Syntax check scripts
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          import re
+          s=Path('index.html').read_text(encoding='utf-8')
+          scripts=re.findall(r'<script[^>]*>(.*?)</script>',s,re.S)
+          Path('/tmp/neon.js').write_text('\n'.join(scripts),encoding='utf-8')
+          PY
+          node --check /tmp/neon.js
+      - name: Commit v3.30
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add index.html
+          git diff --cached --quiet && exit 0
+          git commit -m 'Release NEON RUMBLE v3.30'
+          git push origin main
