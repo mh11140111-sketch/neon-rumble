@@ -1,0 +1,44 @@
+name: Apply NEON RUMBLE v3.26 Projectile Icons Hotfix
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'apply_v326_projectile_icons_hotfix.py'
+      - '.github/workflows/apply-v326-projectile-icons-hotfix.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Apply projectile icon hotfix
+        run: python apply_v326_projectile_icons_hotfix.py
+      - name: Verify projectile icons
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          s=Path('index.html').read_text(encoding='utf-8')
+          checks=[
+            "kind:'snow'",
+            "kind:'thumb'",
+            "s.kind==='snow'",
+            "ctx.fillText('❄️',0,0)",
+            "s.kind==='thumb'",
+            "ctx.fillText('👎',0,0)",
+            "BATTLE <b>v3.26</b>",
+          ]
+          missing=[x for x in checks if x not in s]
+          if missing: raise SystemExit('Missing: '+repr(missing))
+          print('V326_PROJECTILE_ICONS_OK')
+          PY
+      - name: Commit hotfix
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add index.html
+          git commit -m 'Use emoji projectiles for Snowman and Angry Man in v3.26'
+          git push
