@@ -21,8 +21,8 @@ if(!ROSTER.find(x=>x.id==='angryman'))throw new Error('angryman missing');
  const g=new Engine('knight','boxer',()=>.5);const k=g.fighters[0],e=g.fighters[1];g.time=k.knightGiantNext;g.knightGiantSlash(k,e);const s=g.shots.find(x=>x.kind==='giantslash');if(!s||s.damage!==150)throw new Error('knight giant slash wrong');console.log('KNIGHT_GIANT_SLASH_150_OK');
 }
 {
- const g=new Engine('snowman','phoenix',()=>.4);const s=g.fighters[0],e=g.fighters[1];g.snowmanShot(s,e);const shot=g.shots.find(x=>x.kind==='snow');if(!shot||shot.damage!==30||shot.stun!==1)throw new Error('snow shot/freeze wrong');
- e.burn={source:s.side,damage:10,interval:.5,next:.5,expires:1};g.time=.5;const before=e.health;g.tickBurn(e);if(before-e.health!==50)throw new Error('snowman burn x5 wrong');console.log('SNOWMAN_FREEZE_BURN_OK');
+ const g=new Engine('snowman','phoenix',()=>.4);const snow=g.fighters[0],src=g.fighters[1];g.snowmanShot(snow,src);const shot=g.shots.find(x=>x.kind==='snow');if(!shot||shot.damage!==30||shot.stun!==1)throw new Error('snow shot/freeze wrong');
+ snow.burn={source:src.side,damage:10,interval:.5,next:.5,expires:1};g.time=.5;const before=snow.health;g.tickBurn(snow);if(before-snow.health!==50)throw new Error('snowman burn x5 wrong');console.log('SNOWMAN_FREEZE_BURN_OK');
 }
 {
  const g=new Engine('angryman','boxer',()=>.5);const a=g.fighters[0];if(a.hp!==333||a.icon!=='😠')throw new Error('angry base wrong');a.health=0;if(!g.formEgg(a)||a.revivals!==1||a.icon!=='😡'||a.health!==333)throw new Error('angry revive 1 wrong');a.health=0;if(!g.formEgg(a)||a.revivals!==2||a.icon!=='🤬'||a.health!==333)throw new Error('angry revive 2 wrong');a.health=0;if(g.formEgg(a))throw new Error('angry revived more than twice');console.log('ANGRY_TWO_REVIVES_OK');
