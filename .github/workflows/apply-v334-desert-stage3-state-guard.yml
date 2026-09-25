@@ -1,0 +1,68 @@
+name: Apply NEON RUMBLE v3.34 Desert Stage3 State Guard
+
+on:
+  push:
+    paths:
+      - 'apply_v334_desert_stage3_state_guard.py'
+      - '.github/workflows/apply-v334-desert-stage3-state-guard.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Apply desert stage 3 state guard
+        run: python apply_v334_desert_stage3_state_guard.py
+      - name: Verify static integration
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          s=Path('index.html').read_text(encoding='utf-8')
+          checks=[
+            "function resetDesertTransient(){desertStageNo=1;desertWave=0;desertNextMageSummon=10;if(engine)engine.desertWaveMode=false}",
+            "function start(){if(mode==='desert'||mode==='desert-select'){resetDesertTransient();mode='duel'}engine=",
+            "function selection(){if(mode==='desert'||mode==='desert-select'){resetDesertTransient();mode='duel'}engine=null",
+            "function switchRegularMode(next){if(mode==='desert'||mode==='desert-select')resetDesertTransient();engine=null;mode=next;updateSelection()}",
+            "$('mode-duel').onclick=()=>{switchRegularMode('duel')}",
+            "$('mode-boss').onclick=()=>{bossSlot=-1;switchRegularMode('boss')}",
+            "$('mode-relay').onclick=()=>{side=0;switchRegularMode('relay')}",
+            "$('mode-group').onclick=()=>{side=0;switchRegularMode('group')}",
+            "$('mode-control').onclick=()=>{side=0;bossSlot=-1;switchRegularMode('control')}"
+          ]
+          missing=[x for x in checks if x not in s]
+          if missing: raise SystemExit('missing: '+repr(missing))
+          print('static checks passed')
+          PY
+      - name: Syntax check scripts
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          import re, subprocess, tempfile, os
+          s=Path('index.html').read_text(encoding='utf-8')
+          scripts=re.findall(r'<script(?:\s[^>]*)?>(.*?)</script>',s,re.S)
+          if not scripts: raise SystemExit('no scripts found')
+          for i,js in enumerate(scripts):
+            fd,path=tempfile.mkstemp(suffix=f'-{i}.js')
+            os.close(fd)
+            Path(path).write_text(js,encoding='utf-8')
+            try: subprocess.run(['node','--check',path],check=True)
+            finally: os.unlink(path)
+          print('syntax checks passed:',len(scripts))
+          PY
+      - name: Commit hotfix
+        run: |
+          if git diff --quiet -- index.html; then
+            echo 'No index changes to commit'
+            exit 0
+          fi
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add index.html
+          git commit -m 'Fix desert stage 3 mode state leak in v3.34'
+          git push
