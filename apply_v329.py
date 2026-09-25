@@ -27,8 +27,8 @@ once("{id:'lizard',name:'도마뱀',icon:'🦎',tag:'고속 · 꼬리 미끼',hp
 # Core fighter state.
 once("this.time=0;this.width=720;this.height=720;this.shots=[];this.effects=[];this.events=[];this.result=null;",
      "this.time=0;this.width=720;this.height=720;this.shots=[];this.effects=[];this.events=[];this.result=null;this.deathSerial=0;",'death serial')
-once("dash:0,dashHit:false,",
-     "dash:0,dashHit:false,retreatHit:false,ghostPhaseUntil:0,ghostReviveUsed:false,deathOrder:null,",'fighter state')
+once("x:starts[side][0],y:starts[side][1],vx:Math.cos(angle),vy:Math.sin(angle),attack:0,cd:0,skill:1.2/scale,genieRevives:0,geniePower:1,turn:1/scale,dash:0,dashHit:false,",
+     "x:starts[side][0],y:starts[side][1],vx:Math.cos(angle),vy:Math.sin(angle),attack:0,cd:0,skill:1.2/scale,genieRevives:0,geniePower:1,turn:1/scale,dash:0,dashHit:false,retreatHit:false,ghostPhaseUntil:0,ghostReviveUsed:false,deathOrder:null,",'fighter state')
 
 # During ghost phase, AI and projectiles do not select the ghost.
 once("enemies(f){return this.fighters.filter(e=>e.team!==f.team&&e.health>0&&e.moonUltPhase!=='air')}",
