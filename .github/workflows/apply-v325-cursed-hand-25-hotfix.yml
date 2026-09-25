@@ -1,0 +1,58 @@
+name: Apply NEON RUMBLE v3.25 Cursed Hand 25 Hotfix
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'apply_v325_cursed_hand_25_hotfix.py'
+      - 'debug_v325_cursed_hand_25_hotfix.mjs'
+      - '.github/workflows/apply-v325-cursed-hand-25-hotfix.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Apply Cursed Hand 25 hotfix
+        run: python apply_v325_cursed_hand_25_hotfix.py
+      - name: Verify static integration
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          s=Path('index.html').read_text(encoding='utf-8')
+          checks=[
+            'BATTLE <b>v3.25</b>',
+            "hp:666,damage:50",
+            "손 HP 113 · 유도 저주탄 피해 25 + 저주",
+            "damage:25*hs",
+            "damage:25*h.scale",
+            "persistentHand:persistent",
+            "expiresAt:persistent?Infinity:this.time+5",
+          ]
+          missing=[x for x in checks if x not in s]
+          if missing: raise SystemExit('Missing: '+repr(missing))
+          print('V325_CURSED_HAND_25_STATIC_OK')
+          PY
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: Install runtime test dependency
+        run: npm install --no-save jsdom@24
+      - name: Run Cursed Hand 25 runtime diagnostic
+        run: node debug_v325_cursed_hand_25_hotfix.mjs
+      - name: Run v3.25 regression
+        run: node debug_v325.mjs
+      - name: Run stage regression
+        run: node debug_v324_stage.mjs
+      - name: Run controlled boss regression
+        run: node debug_v324_control_boss.mjs
+      - name: Commit hotfix
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add index.html
+          git commit -m 'Nerf Cursed Hand damage to 25 in v3.25'
+          git push
