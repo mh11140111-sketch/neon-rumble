@@ -1,0 +1,63 @@
+name: Apply NEON RUMBLE v3.26
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'apply_v326.py'
+      - 'debug_v326.mjs'
+      - '.github/workflows/apply-v326.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Apply v3.26
+        run: python apply_v326.py
+      - name: Verify static integration
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          s=Path('index.html').read_text(encoding='utf-8')
+          checks=[
+            'BATTLE <b>v3.26</b>',
+            "id:'snowman'",
+            "id:'angryman'",
+            "hp=66*hs",
+            "knightGiantSlash(f,e)",
+            "kind:'giantslash'",
+            "damage:150*f.scale",
+            "kind:'snow'",
+            "stun:this.random()<.5?1*f.scale:0",
+            "e.id==='snowman'?5:e.id==='tree'?2:1",
+            "f.id==='angryman'&&f.health<=0&&f.revivals<2",
+            "f.icon=f.revivals===1?'😡':'🤬'",
+            "kind:'thumb'",
+            "this.attack(f,e,85*f.scale)",
+          ]
+          missing=[x for x in checks if x not in s]
+          if missing: raise SystemExit('Missing: '+repr(missing))
+          print('V326_STATIC_OK')
+          PY
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: Install runtime test dependency
+        run: npm install --no-save jsdom@24
+      - name: Run v3.26 runtime diagnostic
+        run: node debug_v326.mjs
+      - name: Run stage regression
+        run: node debug_v324_stage.mjs
+      - name: Run controlled boss regression
+        run: node debug_v324_control_boss.mjs
+      - name: Commit v3.26
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add index.html
+          git commit -m 'Release NEON RUMBLE v3.26'
+          git push
