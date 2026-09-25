@@ -1,0 +1,51 @@
+name: Apply NEON RUMBLE v3.33 Cool Guy Range Hotfix
+
+on:
+  push:
+    paths:
+      - 'apply_v333_coolguy_range2.py'
+      - '.github/workflows/apply-v333-coolguy-range2.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Apply Cool Guy range hotfix
+        run: python apply_v333_coolguy_range2.py
+      - name: Verify static integration
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          s=Path('index.html').read_text(encoding='utf-8')
+          assert "range=560*f.scale,half=.65" in s
+          assert "range=280*f.scale,half=.65" not in s
+          assert "BATTLE <b>v3.33</b>" in s
+          print('static verification passed')
+          PY
+      - name: Syntax check scripts
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          import re, subprocess, tempfile, os
+          s=Path('index.html').read_text(encoding='utf-8')
+          blocks=re.findall(r'<script(?:\s[^>]*)?>(.*?)</script>',s,re.S)
+          for i,b in enumerate(blocks):
+              fd,path=tempfile.mkstemp(suffix='.js'); os.close(fd)
+              Path(path).write_text(b,encoding='utf-8')
+              subprocess.run(['node','--check',path],check=True)
+              os.remove(path)
+          print('syntax verification passed')
+          PY
+      - name: Commit hotfix
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add index.html
+          git diff --cached --quiet && exit 0
+          git commit -m "Widen Cool Guy shout range in v3.33"
+          git push
