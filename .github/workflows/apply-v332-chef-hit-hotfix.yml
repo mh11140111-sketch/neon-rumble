@@ -1,0 +1,53 @@
+name: Apply NEON RUMBLE v3.32 Chef Hit Hotfix
+
+on:
+  push:
+    paths:
+      - 'apply_v332_chef_hit_hotfix.py'
+      - '.github/workflows/apply-v332-chef-hit-hotfix.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Apply chef hit hotfix
+        run: python apply_v332_chef_hit_hotfix.py
+      - name: Verify static integration
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          s=Path('index.html').read_text(encoding='utf-8')
+          assert 'BATTLE <b>v3.32</b>' in s
+          assert "id:'chef'" in s
+          assert "f.chefPanNext=this.time+3/f.scale" in s
+          assert "target.stunUntil=Math.max(target.stunUntil,this.time+1*f.scale)" in s
+          assert "knock=45*f.scale" in s
+          print('static verification passed')
+          PY
+      - name: Syntax check scripts
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          import re
+          s=Path('index.html').read_text(encoding='utf-8')
+          parts=re.findall(r'<script[^>]*>([\s\S]*?)</script>',s,re.I)
+          Path('/tmp/neon-v332-chef-hotfix.js').write_text('\n'.join(parts),encoding='utf-8')
+          PY
+          node --check /tmp/neon-v332-chef-hotfix.js
+      - name: Commit hotfix
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add index.html
+          if git diff --cached --quiet; then
+            echo 'No changes to commit'
+          else
+            git commit -m 'Add Chef stun knockback and cooldown in v3.32'
+            git push
+          fi
