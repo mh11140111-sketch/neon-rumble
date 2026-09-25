@@ -254,7 +254,7 @@ chefSkill(f){
 }
 coolGuySkill(f,e){
  if(f.id!=='coolguy'||f.health<=0||f.stunUntil>this.time||this.time<f.coolGuyNext-1e-9)return;
- const a=this.aim(f,e),ang=Math.atan2(a.y,a.x),range=280*f.scale,half=.65;
+ const a=this.aim(f,e),ang=Math.atan2(a.y,a.x),range=560*f.scale,half=.65;
  f.coolGuyNext=this.time+8/f.scale;f.coolGuyShoutUntil=this.time+.65/f.scale;f.coolGuyShoutAngle=ang;f.attack=.65/f.scale;
  this.effects.push({x:f.x,y:f.y,text:'🗣️ 샤우팅!',kind:'shoutcone',side:f.side,team:f.team,life:.65/f.scale,angle:ang,range,half});
  this.effect(f,'🗣️ 샤우팅!','shout');this.emit('👤 쿨가이가 웅장하게 샤우팅!');
