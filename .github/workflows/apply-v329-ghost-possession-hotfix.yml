@@ -1,0 +1,50 @@
+name: Apply NEON RUMBLE v3.29 Ghost Possession Hotfix
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'apply_v329_ghost_possession_hotfix.py'
+      - '.github/workflows/apply-v329-ghost-possession-hotfix.yml'
+permissions:
+  contents: write
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Apply ghost possession hotfix
+        run: python3 apply_v329_ghost_possession_hotfix.py
+      - name: Verify possession integration
+        run: |
+          grep -q 'BATTLE <b>v3.29</b>' index.html
+          grep -q "tag:'통과 · 시체 빙의'" index.html
+          grep -q "ghostPossessing:false" index.html
+          grep -q "resolveGhostPossession()" index.html
+          grep -q "possessedByGhost" index.html
+          grep -q "빙의체가 쓰러져 유령이 다시 나타났어" index.html
+          grep -q "소환수 빙의 가능" index.html
+      - name: Syntax check scripts
+        run: |
+          python3 - <<'PY'
+          import re, pathlib, subprocess
+          s=pathlib.Path('index.html').read_text(encoding='utf-8')
+          blocks=re.findall(r'<script>(.*?)</script>',s,re.S)
+          for i,b in enumerate(blocks):
+              fn=f'/tmp/v329_possession_{i}.js'
+              pathlib.Path(fn).write_text(b,encoding='utf-8')
+              subprocess.run(['node','--check',fn],check=True)
+          print('V329_GHOST_POSSESSION_SYNTAX_OK')
+          PY
+      - name: Commit hotfix
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add index.html
+          if git diff --cached --quiet; then
+            echo 'No changes to commit'
+          else
+            git commit -m 'Rework Ghost revive into possession in v3.29'
+            git push
+          fi
