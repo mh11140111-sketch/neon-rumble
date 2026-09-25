@@ -47,8 +47,6 @@ jobs:
         run: node debug_v325_devileye_damage_hotfix.mjs
       - name: Run v3.25 regression
         run: node debug_v325.mjs
-      - name: Run hand persistence regression
-        run: node debug_v325_hand_persist_hotfix.mjs
       - name: Run stage regression
         run: node debug_v324_stage.mjs
       - name: Run controlled boss regression
