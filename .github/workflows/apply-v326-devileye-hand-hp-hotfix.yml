@@ -1,0 +1,33 @@
+name: Apply NEON RUMBLE v3.26 Devil Eye Hand HP Hotfix
+on:
+  push:
+    paths:
+      - 'apply_v326_devileye_hand_hp_hotfix.py'
+      - '.github/workflows/apply-v326-devileye-hand-hp-hotfix.yml'
+permissions:
+  contents: write
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Apply hotfix
+        run: python apply_v326_devileye_hand_hp_hotfix.py
+      - name: Verify hand HP split
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          s=Path('index.html').read_text(encoding='utf-8')
+          assert "hp=(persistent?113:66)*hs" in s
+          assert "persistent?Infinity:this.time+5" in s
+          assert "damage:25*hs" in s
+          assert "BATTLE <b>v3.26</b>" in s
+          print('DEVILEYE_HAND_HP_SPLIT_OK')
+          PY
+      - name: Commit hotfix
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add index.html
+          git commit -m "Rollback Devil Eye persistent hand HP to 113 in v3.26"
+          git push
