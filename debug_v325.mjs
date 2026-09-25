@@ -20,9 +20,10 @@ if(!Engine||!ROSTER) throw new Error('DuelEngine unavailable');
 const eye=ROSTER.find(c=>c.id==='devileye');
 if(!eye||eye.hp!==666) throw new Error('Devil Eye roster missing/HP wrong');
 
-// Police barrage: exactly 5 seconds.
+// Police barrage: trigger threshold first, then verify exactly 5 seconds.
 {
   const g=new Engine('police','boxer',()=>.5);const p=g.fighters[0];
+  p.health=p.hp*.3;
   g.startPoliceBarrage(p);
   if(Math.abs((p.policeBarrageUntil-g.time)-5)>1e-9) throw new Error('Police barrage is not 5 seconds');
   console.log('POLICE_5S_OK');
@@ -38,14 +39,16 @@ if(!eye||eye.hp!==666) throw new Error('Devil Eye roster missing/HP wrong');
   if(m.health>hp-10+1e-9) throw new Error('Curse did not tick for 10 damage');
   console.log('CURSE_IMMUNITY_BYPASS_OK');
 
-  // Run long enough to exercise cursed-target 4s summons, hand homing shots, 5s expiry, and own 13s summon.
-  let firstHand=null;
+  // Run long enough to exercise 4s cursed-target summons, homing curse shots, 5s expiry, and 13s owner summon.
+  let firstHand=null,firstHandSeenAt=null;
   for(let i=0;i<1700&&g.result===null;i++){
     g.step(1/120);
-    if(!firstHand) firstHand=g.fighters.find(f=>f.id==='cursedhand');
+    if(!firstHand){firstHand=g.fighters.find(f=>f.id==='cursedhand');if(firstHand)firstHandSeenAt=g.time}
   }
   if(!firstHand) throw new Error('No cursed hand spawned');
-  if(firstHand.expiresAt-firstHand.createdAt>5.000001) throw new Error('Hand lifetime marker invalid');
+  const lifetimeAtDiscovery=firstHand.expiresAt-firstHandSeenAt;
+  if(lifetimeAtDiscovery<4.9||lifetimeAtDiscovery>5.01) throw new Error('Hand lifetime is not 5 seconds');
+  if(firstHand.health>0) throw new Error('First cursed hand did not expire after 5 seconds');
   if(d.nextCursedHand<=13) throw new Error('Devil Eye 13-second summon timer did not advance');
   if(errors.length) throw new Error('runtime errors: '+errors.join('\n'));
   console.log('CURSED_HAND_RUNTIME_OK');
