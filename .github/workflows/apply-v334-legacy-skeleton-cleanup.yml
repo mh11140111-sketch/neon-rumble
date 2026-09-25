@@ -1,0 +1,64 @@
+name: Apply NEON RUMBLE v3.34 Legacy Skeleton Cleanup
+
+on:
+  push:
+    paths:
+      - 'apply_v334_legacy_skeleton_cleanup.py'
+      - '.github/workflows/apply-v334-legacy-skeleton-cleanup.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Apply legacy skeleton cleanup
+        run: python apply_v334_legacy_skeleton_cleanup.py
+      - name: Verify static integration
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          s=Path('index.html').read_text(encoding='utf-8')
+          checks=[
+            "LEGACY_SKELETON_UNLOCK_KEY='neonRumble.skeletonUnlocked.v1'",
+            "localStorage.removeItem(LEGACY_SKELETON_UNLOCK_KEY)",
+            "SKELETON_UNLOCK_KEY='neonRumble.skeletonBundleUnlocked.v2'",
+            "id:'skeletons',name:'해골들'",
+            "BATTLE <b>v3.34</b>"
+          ]
+          missing=[x for x in checks if x not in s]
+          if missing: raise SystemExit('missing: '+repr(missing))
+          print('static checks passed')
+          PY
+      - name: Syntax check scripts
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          import re, subprocess, tempfile, os
+          s=Path('index.html').read_text(encoding='utf-8')
+          scripts=re.findall(r'<script(?:\s[^>]*)?>(.*?)</script>',s,re.S)
+          if not scripts: raise SystemExit('no scripts found')
+          for i,js in enumerate(scripts):
+            fd,path=tempfile.mkstemp(suffix=f'-{i}.js')
+            os.close(fd)
+            Path(path).write_text(js,encoding='utf-8')
+            try: subprocess.run(['node','--check',path],check=True)
+            finally: os.unlink(path)
+          print('syntax checks passed:',len(scripts))
+          PY
+      - name: Commit cleanup
+        run: |
+          if git diff --quiet -- index.html; then
+            echo 'No index changes to commit'
+            exit 0
+          fi
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add index.html
+          git commit -m 'Remove legacy skeleton unlock data in v3.34'
+          git push
