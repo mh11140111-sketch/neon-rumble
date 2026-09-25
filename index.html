@@ -488,8 +488,8 @@ function applySettingsUI(){if($('setting-control'))$('setting-control').value=se
 function keyboardVector(){let x=0,y=0;if(settings.control==='wasd'){if(keys.has('KeyA'))x--;if(keys.has('KeyD'))x++;if(keys.has('KeyW'))y--;if(keys.has('KeyS'))y++}else if(settings.control==='arrows'){if(keys.has('ArrowLeft'))x--;if(keys.has('ArrowRight'))x++;if(keys.has('ArrowUp'))y--;if(keys.has('ArrowDown'))y++}const n=Math.hypot(x,y)||1;return{x:x/n,y:y/n}}
 function currentControlVector(){return settings.control==='stick'?{x:stickX,y:stickY}:keyboardVector()}
 const CONTROL_BOSS_KEY='neonRumble.controlBossUnlocked.v1';
-const ROBOT_STAGE_KEY='neonRumble.robotStages.v1',SKELETON_UNLOCK_KEY='neonRumble.skeletonBundleUnlocked.v2';
-let robotStageMask=0,skeletonsUnlocked=false;try{robotStageMask=Number(localStorage.getItem(ROBOT_STAGE_KEY)||0)||0;skeletonsUnlocked=localStorage.getItem(SKELETON_UNLOCK_KEY)==='1'}catch{}
+const ROBOT_STAGE_KEY='neonRumble.robotStages.v1',SKELETON_UNLOCK_KEY='neonRumble.skeletonBundleUnlocked.v2',LEGACY_SKELETON_UNLOCK_KEY='neonRumble.skeletonUnlocked.v1';
+let robotStageMask=0,skeletonsUnlocked=false;try{localStorage.removeItem(LEGACY_SKELETON_UNLOCK_KEY);robotStageMask=Number(localStorage.getItem(ROBOT_STAGE_KEY)||0)||0;skeletonsUnlocked=localStorage.getItem(SKELETON_UNLOCK_KEY)==='1'}catch{}
 function chapter2Unlocked(){return (robotStageMask&7)===7}
 function markRobotStage(n){const before=chapter2Unlocked();robotStageMask|=(1<<(n-1));try{localStorage.setItem(ROBOT_STAGE_KEY,String(robotStageMask))}catch{}updateChapter2UI();return !before&&chapter2Unlocked()}
 function unlockSkeletons(){if(skeletonsUnlocked)return false;skeletonsUnlocked=true;try{localStorage.setItem(SKELETON_UNLOCK_KEY,'1')}catch{}if($('character-search'))$('character-search').value='';for(const b of $('roster').children){const c=ROSTER.find(v=>v.id===b.dataset.character);b.hidden=!!c?.stageOnly||(c?.unlock==='skeleton'&&!skeletonsUnlocked)}return true}
