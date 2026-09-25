@@ -1,0 +1,52 @@
+name: Apply NEON RUMBLE v3.31 Cowboy Mount Stack
+
+on:
+  push:
+    paths:
+      - 'apply_v331_cowboy_mount_stack.py'
+      - '.github/workflows/apply-v331-cowboy-mount-stack.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Apply cowboy mount stack hotfix
+        run: python apply_v331_cowboy_mount_stack.py
+      - name: Verify static integration
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          s=Path('index.html').read_text(encoding='utf-8')
+          assert 'BATTLE <b>v3.31</b>' in s
+          assert "id:'cowboy',name:'카우보이',icon:'🤠\\n🐴'" in s
+          assert "ctx.fillText('🤠',f.x,f.y-14*f.bodyScale)" in s
+          assert "ctx.fillText('🐴',f.x,f.y+18*f.bodyScale)" in s
+          print('static verification passed')
+          PY
+      - name: Syntax check scripts
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          import re
+          s=Path('index.html').read_text(encoding='utf-8')
+          parts=re.findall(r'<script[^>]*>([\s\S]*?)</script>',s,re.I)
+          Path('/tmp/neon-v331-cowboy.js').write_text('\n'.join(parts),encoding='utf-8')
+          PY
+          node --check /tmp/neon-v331-cowboy.js
+      - name: Commit hotfix
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add index.html
+          if git diff --cached --quiet; then
+            echo 'No changes to commit'
+          else
+            git commit -m 'Stack Cowboy above horse in v3.31'
+            git push
+          fi
