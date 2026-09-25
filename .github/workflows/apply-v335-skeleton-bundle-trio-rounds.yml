@@ -1,0 +1,52 @@
+name: Apply NEON RUMBLE v3.35 Skeleton Trio Rounds
+
+on:
+  push:
+    paths:
+      - 'apply_v335_skeleton_bundle_trio_rounds.py'
+      - '.github/workflows/apply-v335-skeleton-bundle-trio-rounds.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Apply skeleton trio rounds hotfix
+        run: python apply_v335_skeleton_bundle_trio_rounds.py
+      - name: Verify static integration
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          s=Path('index.html').read_text(encoding='utf-8')
+          checks=[
+            "BATTLE <b>v3.35</b>",
+            "3마리 동시 출전 · 3라운드",
+            "skeletonBundleLeader",
+            "새 세트 출전! ROUND",
+            "상대 체력 유지"
+          ]
+          for x in checks:
+            assert x in s, x
+          print('static verification ok')
+          PY
+      - name: Syntax check scripts
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          import re
+          s=Path('index.html').read_text(encoding='utf-8')
+          scripts=re.findall(r'<script(?:\s[^>]*)?>(.*?)</script>',s,re.S)
+          Path('/tmp/all-inline.js').write_text('\n'.join(scripts),encoding='utf-8')
+          PY
+          node --check /tmp/all-inline.js
+      - name: Commit hotfix
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add index.html
+          git diff --cached --quiet && exit 0
+          git commit -m 'Make Skeletons a three-fighter set for three rounds in v3.35'
+          git push
