@@ -1,0 +1,56 @@
+name: Apply NEON RUMBLE v3.31
+
+on:
+  push:
+    paths:
+      - 'apply_v331.py'
+      - '.github/workflows/apply-v331.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Apply v3.31
+        run: python apply_v331.py
+      - name: Verify static integration
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          s=Path('index.html').read_text(encoding='utf-8')
+          assert 'BATTLE <b>v3.31</b>' in s
+          assert "id:'cowboy'" in s
+          assert "cowboyMounted:type.id==='cowboy'" in s
+          assert "cowboyAmmo:type.id==='cowboy'?6:0" in s
+          assert "speed:450*f.scale" in s
+          assert "damage:80*f.scale" in s
+          assert "f.angryPunchCd=1.5/f.scale" in s
+          assert "f.id==='cowboy'&&f.cowboyMounted?f.speed*2:f.speed" in s
+          print('static verification passed')
+          PY
+      - name: Syntax check scripts
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          import re
+          s=Path('index.html').read_text(encoding='utf-8')
+          parts=re.findall(r'<script[^>]*>([\s\S]*?)</script>',s,re.I)
+          Path('/tmp/neon-v331.js').write_text('\n'.join(parts),encoding='utf-8')
+          PY
+          node --check /tmp/neon-v331.js
+      - name: Commit v3.31
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add index.html
+          if git diff --cached --quiet; then
+            echo 'No changes to commit'
+          else
+            git commit -m 'Release NEON RUMBLE v3.31'
+            git push
+          fi
