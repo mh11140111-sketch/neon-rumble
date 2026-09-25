@@ -1,0 +1,44 @@
+name: Apply NEON RUMBLE v3.35
+on:
+  push:
+    paths:
+      - 'apply_v335_cowboy_skeleton_mage.py'
+      - '.github/workflows/apply-v335-cowboy-skeleton-mage.yml'
+permissions:
+  contents: write
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Apply v3.35
+        run: python apply_v335_cowboy_skeleton_mage.py
+      - name: Verify static integration
+        run: |
+          grep -Fq 'BATTLE <b>v3.35</b>' index.html
+          grep -Fq 'v3.35 · 사막의 총성이 울리고, 해골 마법이 깨어나다' index.html
+          grep -Fq "damage:100,speed:150,cooldown:1" index.html
+          grep -Fq 'speed:750*f.scale,damage:100*f.scale' index.html
+          grep -Fq "hp:700,damage:65,speed:140,cooldown:1.45,unlock:'skeletonMage'" index.html
+          grep -Fq "SKELETON_MAGE_UNLOCK_KEY='neonRumble.skeletonMageUnlocked.v1'" index.html
+          grep -Fq "Math.random()>=.1" index.html
+          grep -Fq "engine.fighters[1].hp=1000;engine.fighters[1].health=1000" index.html
+          grep -Fq "10% 보상 성공! 💀🧙 해골 법사 획득!" index.html
+      - name: Syntax check scripts
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          import re
+          s=Path('index.html').read_text(encoding='utf-8')
+          scripts=re.findall(r'<script(?:\s[^>]*)?>(.*?)</script>',s,re.S|re.I)
+          Path('/tmp/neon-rumble-inline.js').write_text('\n'.join(scripts),encoding='utf-8')
+          PY
+          node --check /tmp/neon-rumble-inline.js
+      - name: Commit v3.35
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add index.html
+          git diff --cached --quiet && exit 0
+          git commit -m 'Release NEON RUMBLE v3.35'
+          git push
