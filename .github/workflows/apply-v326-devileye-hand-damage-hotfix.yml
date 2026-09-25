@@ -1,0 +1,33 @@
+name: Apply NEON RUMBLE v3.26 Devil Eye Hand Damage Hotfix
+on:
+  push:
+    paths:
+      - 'apply_v326_devileye_hand_damage_hotfix.py'
+      - '.github/workflows/apply-v326-devileye-hand-damage-hotfix.yml'
+permissions:
+  contents: write
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Apply hotfix
+        run: python apply_v326_devileye_hand_damage_hotfix.py
+      - name: Verify hand damage split
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          s=Path('index.html').read_text(encoding='utf-8')
+          assert "hp=(persistent?113:66)*hs" in s
+          assert "damage:(persistent?50:25)*hs" in s
+          assert "damage:h.damage,life:4" in s
+          assert "BATTLE <b>v3.26</b>" in s
+          print('DEVILEYE_HAND_DAMAGE_SPLIT_OK')
+          PY
+      - name: Commit hotfix
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add index.html
+          git commit -m "Rollback Devil Eye persistent hand damage to 50 in v3.26"
+          git push
