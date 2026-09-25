@@ -29,8 +29,9 @@ if marker not in s:
     raise SystemExit('PATCH FAILED: frontend marker')
 head,ui=s.split(marker,1)
 
-# Standalone frontend mode==='boss' becomes boss family. Avoid object/property .mode checks.
+# Standalone frontend boss checks become boss family. Avoid object/property .mode checks.
 ui=re.sub(r"(?<![\w.])mode==='boss'", "isBossMode()", ui)
+ui=re.sub(r"(?<![\w.])mode!=='boss'", "!isBossMode()", ui)
 
 # Add persistent unlock state and helper.
 anchor="function resetStick(){stickX=0;stickY=0;stickPointer=null;if(knob)knob.style.transform='translate(-50%,-50%)'}"
