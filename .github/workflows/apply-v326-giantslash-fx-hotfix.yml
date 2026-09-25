@@ -1,0 +1,35 @@
+name: Apply NEON RUMBLE v3.26 Giant Slash FX Hotfix
+on:
+  push:
+    paths:
+      - 'apply_v326_giantslash_fx_hotfix.py'
+      - '.github/workflows/apply-v326-giantslash-fx-hotfix.yml'
+permissions:
+  contents: write
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Apply hotfix
+        run: python apply_v326_giantslash_fx_hotfix.py
+      - name: Verify giant slash FX
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          s=Path('index.html').read_text(encoding='utf-8')
+          assert "kind:'giantslash'" in s
+          assert "fxBorn:this.time" in s
+          assert "s.kind==='giantslash'" in s
+          assert "triggerGiantSlashShake" in s
+          assert "#bdefff" in s and "#f4cf67" in s
+          assert "BATTLE <b>v3.26</b>" in s
+          print('GIANT_SLASH_FX_OK')
+          PY
+      - name: Commit hotfix
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add index.html
+          git commit -m "Add giant slash visual effect in v3.26"
+          git push
