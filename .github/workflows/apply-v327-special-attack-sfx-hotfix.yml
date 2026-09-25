@@ -1,0 +1,55 @@
+name: Apply NEON RUMBLE v3.27 Special Attack SFX Hotfix
+on:
+  push:
+    paths:
+      - 'apply_v327_special_attack_sfx_hotfix.py'
+      - '.github/workflows/apply-v327-special-attack-sfx-hotfix.yml'
+permissions:
+  contents: write
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Apply hotfix
+        run: python apply_v327_special_attack_sfx_hotfix.py
+      - name: Verify special attack sounds
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          s=Path('index.html').read_text(encoding='utf-8')
+          checks=[
+            "globalThis.NRPlaySpecialSfx",
+            "function playSpecialAttackSfx",
+            "key='giantslash'",
+            "key='laser'",
+            "key='moon'",
+            "key='curse'",
+            "key='snow'",
+            "key='thumb'",
+            "key='taser'",
+            "key='bomb'",
+            "window.NRPlaySpecialSfx=playSpecialAttackSfx",
+            "BATTLE <b>v3.27</b>",
+          ]
+          for x in checks:
+            assert x in s, x
+          print('V327_SPECIAL_ATTACK_SFX_OK')
+          PY
+      - name: Syntax check scripts
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          import re
+          s=Path('index.html').read_text(encoding='utf-8')
+          scripts=re.findall(r'<script>(.*?)</script>',s,re.S)
+          Path('/tmp/neon.js').write_text('\n'.join(scripts),encoding='utf-8')
+          PY
+          node --check /tmp/neon.js
+      - name: Commit hotfix
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add index.html
+          git commit -m "Add special attack sounds in v3.27"
+          git push
