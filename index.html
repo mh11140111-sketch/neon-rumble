@@ -84,7 +84,7 @@ const ROSTER=[
 {id:'lizard',name:'도마뱀',icon:'🦎',tag:'고속 · 꼬리 미끼',hp:1000,damage:100,speed:188.5,cooldown:.7,description:'일반 캐릭터보다 30% 빠르게 움직이며 근접 피해 100으로 공격해. 체력이 30% 이하가 되면 꼬리를 한 번 소환하고, 꼬리가 살아 있는 동안 모든 적 AI가 꼬리를 우선 공격해.',detail:'HP 1000 · 이동속도 +30% · 근접 100 · HP 30% 이하 꼬리 1회 소환 · 꼬리 HP는 본체 최대 HP의 30% · 꼬리 생존 중 적 AI 우선 타깃'},
 {id:'ghost',name:'유령',icon:'👻',tag:'3초 대쉬 · 접촉 30 · 시체 빙의',hp:1000,damage:30,speed:170,cooldown:0,description:'3초마다 가장 가까운 적에게 짧게 대쉬해. 적과 닿으면 피해 30을 주고 0.3초 동안 모든 충돌과 공격을 통과해. 팀전에서는 처음 죽은 아군이나 아군 소환수의 시체에 경기당 1회 빙의해.',detail:'HP 1000 · 3초마다 적 방향 대쉬 · 접촉 피해 30 + 0.3초 통과 · 팀전 1회 시체 빙의 · 소환수 빙의 가능 · 빙의체 HP 300 / 최대 HP가 300 미만이면 풀 회복 · 빙의체 사망 시 유령 복귀'},
 {id:'cowboy',name:'카우보이',icon:'🤠\n🐴',tag:'말 탑승 · 6발 탄창',hp:1000,damage:80,speed:150,cooldown:1,description:'🐴 말을 타고 시작해 이동속도가 100% 증가해. 피해 80의 빠른 총알을 1초마다 쏘며 탄창은 6발이야. 6발을 모두 쓰면 6초 동안 재장전하고, 체력이 30% 이하가 되면 말이 사라져 이동속도 증가도 끝나.',detail:'HP 1000 · 말 탑승 중 이동속도 +100% · 총알 80 · 탄속 약 1.5배 · 1초마다 발사 · 탄창 6발 · 재장전 6초 · HP 30% 이하 말 소멸'},
-{id:'chef',name:'요리사',icon:'👨‍🍳',tag:'프라이팬 · 계란 회복',hp:1000,damage:65,speed:155,cooldown:0,description:'🍳 프라이팬이 가장 가까운 적을 가리켜. 계란이 있을 때 팬이 적에게 닿으면 피해 90 + 화상, 없으면 피해 65를 줘. 계란은 2초 뒤 다시 생기고, 5초 동안 공격하지 않으면 계란을 먹어 최대 체력의 30%를 회복해. 팀전에서는 팬이 아군에게 닿으면 계란으로 아군도 30% 회복해.',detail:'HP 1000 · 팬 공격 65 · 계란 공격 90 + 화상 · 계란 재생 2초 · 5초 무공격 시 자기 회복 30% · 계란 팬이 아군 접촉 시 아군 회복 30%'}
+{id:'chef',name:'요리사',icon:'👨‍🍳',tag:'프라이팬 · 기절 · 계란 회복',hp:1000,damage:65,speed:155,cooldown:0,description:'🍳 프라이팬이 가장 가까운 적을 가리켜. 계란이 있을 때 팬이 적에게 닿으면 피해 90 + 화상, 없으면 피해 65를 줘. 공격이 적중하면 1초 기절과 약한 넉백을 주고 3초 동안 다시 공격할 수 없어. 계란은 2초 뒤 다시 생기고, 5초 동안 공격하지 않으면 계란을 먹어 최대 체력의 30%를 회복해. 팀전에서는 팬이 아군에게 닿으면 계란으로 아군도 30% 회복해.',detail:'HP 1000 · 팬 공격 65 · 계란 공격 90 + 화상 · 적중 시 기절 1초 + 약한 넉백 / 공격 쿨타임 3초 · 계란 재생 2초 · 5초 무공격 시 자기 회복 30% · 계란 팬이 아군 접촉 시 아군 회복 30%'}
 ];
 const clamp=(n,a,b)=>Math.max(a,Math.min(b,n)),distance=(a,b)=>Math.hypot(a.x-b.x,a.y-b.y);
 const ROOT_DIRECTIONS=Array.from({length:8},(_,i)=>[Math.cos(i*Math.PI/4),Math.sin(i*Math.PI/4)]);
@@ -240,8 +240,13 @@ chefSkill(f){
    if(allies.length){allies.sort((a,b)=>distance(a,pan)-distance(b,pan));if(this.chefHeal(f,allies[0],'👨‍🍳 아군이 계란을 먹고 회복!'))return}
  }
  if(pan.enemy&&pan.enemy.health>0&&distance(pan.enemy,pan)<=pan.enemy.radius+pr&&this.time>=f.chefPanNext-1e-9){
-   const egg=f.chefEggReady,dmg=(egg?90:65)*f.scale,cd=f.cd,atk=f.attack;this.attack(f,pan.enemy,dmg);f.cd=cd;f.attack=atk;f.chefLastAttackAt=this.time;f.chefPanNext=this.time+1/f.scale;
-   if(egg){this.chefConsumeEgg(f);if(pan.enemy.health>0)this.applyBurn(f,pan.enemy);this.effect(f,'🍳 90 + 화상!','skill')}else this.effect(f,'🍳 65','skill');
+   const target=pan.enemy,egg=f.chefEggReady,dmg=(egg?90:65)*f.scale,cd=f.cd,atk=f.attack,dealt=this.attack(f,target,dmg);f.cd=cd;f.attack=atk;
+   if(egg){this.chefConsumeEgg(f);if(dealt>0&&target.health>0)this.applyBurn(f,target)}
+   if(dealt>0){
+     f.chefLastAttackAt=this.time;f.chefPanNext=this.time+3/f.scale;
+     if(target.health>0){const push=this.aim(f,target),knock=45*f.scale;target.x+=push.x*knock;target.y+=push.y*knock;this.keepInside(target);target.vx=push.x;target.vy=push.y;target.stunUntil=Math.max(target.stunUntil,this.time+1*f.scale)}
+     this.effect(f,egg?'🍳 90 + 화상 · 기절!':'🍳 65 · 기절!','skill')
+   }else f.chefPanNext=this.time+.15/f.scale;
    return
  }
  if(f.chefEggReady&&f.health<f.hp&&this.time-f.chefLastAttackAt>=5/f.scale-1e-9)this.chefHeal(f,f,'👨‍🍳 요리사가 계란을 먹고 회복!')
