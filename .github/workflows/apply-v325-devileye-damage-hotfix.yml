@@ -1,0 +1,62 @@
+name: Apply NEON RUMBLE v3.25 Devil Eye Damage Hotfix
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'apply_v325_devileye_damage_hotfix.py'
+      - 'debug_v325_devileye_damage_hotfix.mjs'
+      - '.github/workflows/apply-v325-devileye-damage-hotfix.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Apply damage hotfix
+        run: python apply_v325_devileye_damage_hotfix.py
+      - name: Verify static integration
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          s=Path('index.html').read_text(encoding='utf-8')
+          checks=[
+            'BATTLE <b>v3.25</b>',
+            "id:'devileye'",
+            "hp:666,damage:50",
+            "const freshCurse=this.applyCurse(f,e);if(freshCurse&&e.health>0)this.attack(f,e,50*f.scale);",
+            "damage:50*hs",
+            "damage:50*h.scale",
+            "if(s.curseOnly){const cd=f.cd,attack=f.attack;this.attack(f,e,s.damage);",
+            "persistentHand:persistent",
+            "expiresAt:persistent?Infinity:this.time+5",
+          ]
+          missing=[x for x in checks if x not in s]
+          if missing: raise SystemExit('Missing: '+repr(missing))
+          print('V325_DEVILEYE_DAMAGE_STATIC_OK')
+          PY
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: Install runtime test dependency
+        run: npm install --no-save jsdom@24
+      - name: Run Devil Eye damage runtime diagnostic
+        run: node debug_v325_devileye_damage_hotfix.mjs
+      - name: Run v3.25 regression
+        run: node debug_v325.mjs
+      - name: Run hand persistence regression
+        run: node debug_v325_hand_persist_hotfix.mjs
+      - name: Run stage regression
+        run: node debug_v324_stage.mjs
+      - name: Run controlled boss regression
+        run: node debug_v324_control_boss.mjs
+      - name: Commit hotfix
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add index.html
+          git commit -m 'Add 50 damage to Devil Eye and Cursed Hand in v3.25'
+          git push
