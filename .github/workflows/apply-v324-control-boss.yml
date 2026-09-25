@@ -1,0 +1,55 @@
+name: Apply NEON RUMBLE v3.24 Controlled Boss Unlock
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'apply_v324_control_boss.py'
+      - 'debug_v324_control_boss.mjs'
+      - '.github/workflows/apply-v324-control-boss.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Apply controlled boss unlock
+        run: python apply_v324_control_boss.py
+      - name: Verify static integration
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          s=Path('index.html').read_text(encoding='utf-8')
+          checks=[
+            'BATTLE <b>v3.24</b>',
+            'id="boss-control-entry"',
+            "neonRumble.controlBossUnlocked.v1",
+            "mode==='boss-control'",
+            "engine.manualTeam0=true",
+            "CONTROL BOSS",
+            "unlockControlBoss()",
+            "STAGE 2 클리어 보상",
+          ]
+          missing=[x for x in checks if x not in s]
+          if missing: raise SystemExit('Missing: '+repr(missing))
+          print('CONTROL_BOSS_STATIC_OK')
+          PY
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Install runtime test dependency
+        run: npm install --no-save jsdom@24
+      - name: Run existing stage regression
+        run: node debug_v324_stage.mjs
+      - name: Run controlled boss runtime diagnostic
+        run: node debug_v324_control_boss.mjs
+      - name: Commit controlled boss unlock
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add index.html
+          git commit -m 'Add controlled boss unlock to v3.24'
+          git push
