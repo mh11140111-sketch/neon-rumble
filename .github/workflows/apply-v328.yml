@@ -1,9 +1,9 @@
-name: Apply NEON RUMBLE v3.28
+name: Apply NEON RUMBLE v3.29
 on:
   push:
     branches: [main]
     paths:
-      - 'apply_v328.py'
+      - 'apply_v329.py'
       - '.github/workflows/apply-v328.yml'
 permissions:
   contents: write
@@ -14,30 +14,31 @@ jobs:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
-      - name: Apply v3.28
-        run: python3 apply_v328.py
-      - name: Verify v3.28 static integration
+      - name: Apply v3.29
+        run: python3 apply_v329.py
+      - name: Verify v3.29 static integration
         run: |
-          grep -q 'BATTLE <b>v3.28</b>' index.html
+          grep -q 'BATTLE <b>v3.29</b>' index.html
+          grep -q "id:'ghost'" index.html
+          grep -q "ghostPhaseUntil=this.time+.3" index.html
+          grep -q "ghost.ghostReviveUsed=true;dead.health=Math.min(300,dead.hp)" index.html
+          grep -q "f.hp=(333-50\*f.revivals)" index.html
+          grep -q "damage:100,speed:188.5" index.html
+          grep -q "f.heroPhase==='retreat'&&!f.retreatHit" index.html
           grep -q "moonUltAt:35/scale" index.html
-          grep -q "id:'lizard'" index.html
-          grep -q "spawnLizardTail(owner)" index.html
-          grep -q "boxerUppercut(f,e)" index.html
-          grep -q "알라딘: 본체 AI" index.html
-          grep -q "key='uppercut'" index.html
       - name: Syntax check scripts
         run: |
           python3 - <<'PY'
-          import re, pathlib, subprocess, tempfile, os
+          import re, pathlib, subprocess
           s=pathlib.Path('index.html').read_text(encoding='utf-8')
           blocks=re.findall(r'<script>(.*?)</script>',s,re.S)
           for i,b in enumerate(blocks):
-              fn=f'/tmp/v328_{i}.js'
+              fn=f'/tmp/v329_{i}.js'
               pathlib.Path(fn).write_text(b,encoding='utf-8')
               subprocess.run(['node','--check',fn],check=True)
-          print('V328_SYNTAX_OK')
+          print('V329_SYNTAX_OK')
           PY
-      - name: Commit v3.28
+      - name: Commit v3.29
         run: |
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
@@ -45,6 +46,6 @@ jobs:
           if git diff --cached --quiet; then
             echo 'No changes to commit'
           else
-            git commit -m 'Release NEON RUMBLE v3.28'
+            git commit -m 'Release NEON RUMBLE v3.29'
             git push
           fi
