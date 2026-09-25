@@ -1,0 +1,58 @@
+name: Apply NEON RUMBLE v3.25
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'apply_v325.py'
+      - 'debug_v325.mjs'
+      - '.github/workflows/apply-v325.yml'
+permissions:
+  contents: write
+jobs:
+  patch:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - name: Apply v3.25
+        run: python apply_v325.py
+      - name: Verify v3.25 static
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          s=Path('index.html').read_text(encoding='utf-8')
+          checks=[
+            'BATTLE <b>v3.25</b>',
+            "id:'devileye'",
+            "hp:666",
+            "f.policeBarrageUntil=this.time+5",
+            "applyCurse(source,e)",
+            "tickCurse(e)",
+            "spawnCursedHand(owner,near=null)",
+            "id:'cursedhand'",
+            "kind:'curseorb'",
+            "hs=owner.boss?1.5:1",
+            "nextHand:this.time+4",
+            "nextCursedHand:type.id==='devileye'?13/scale:9999",
+          ]
+          missing=[x for x in checks if x not in s]
+          if missing: raise SystemExit('Missing: '+repr(missing))
+          print('V325_STATIC_OK')
+          PY
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: Install runtime test dependency
+        run: npm install --no-save jsdom@24
+      - name: Run v3.25 runtime diagnostic
+        run: node debug_v325.mjs
+      - name: Run stage regression
+        run: node debug_v324_stage.mjs
+      - name: Run controlled boss regression
+        run: node debug_v324_control_boss.mjs
+      - name: Commit v3.25
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add index.html
+          git commit -m 'Release NEON RUMBLE v3.25'
+          git push
