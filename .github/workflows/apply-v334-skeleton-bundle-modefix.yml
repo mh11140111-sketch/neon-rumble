@@ -1,0 +1,71 @@
+name: Apply NEON RUMBLE v3.34 Skeleton Bundle Modefix
+
+on:
+  push:
+    paths:
+      - 'apply_v334_skeleton_bundle_modefix.py'
+      - '.github/workflows/apply-v334-skeleton-bundle-modefix.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Apply v3.34 skeleton bundle modefix
+        run: python apply_v334_skeleton_bundle_modefix.py
+      - name: Verify static integration
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          s=Path('index.html').read_text(encoding='utf-8')
+          checks=[
+            'BATTLE <b>v3.34</b>',
+            "id:'skeletons',name:'해골들'",
+            "stageOnly:true,description:'몸 주위를 도는 총",
+            "SKELETON_UNLOCK_KEY='neonRumble.skeletonBundleUnlocked.v2'",
+            "skeletonBundle=id==='skeletons'",
+            "f.skeletonBundleRound=nextRound",
+            "nextId=nextRound===2?'skeleton_sword':'skeleton_drunk'",
+            "if(mode==='desert')mode='duel'",
+            "상대 HP 유지",
+            "💀 해골들 캐릭터 해금!"
+          ]
+          missing=[x for x in checks if x not in s]
+          if missing: raise SystemExit('missing: '+repr(missing))
+          if "SKELETON_UNLOCK_KEY='neonRumble.skeletonUnlocked.v1'" in s:
+            raise SystemExit('old skeleton unlock key still active')
+          print('static checks passed')
+          PY
+      - name: Syntax check scripts
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          import re, subprocess, tempfile, os
+          s=Path('index.html').read_text(encoding='utf-8')
+          scripts=re.findall(r'<script(?:\s[^>]*)?>(.*?)</script>',s,re.S)
+          if not scripts: raise SystemExit('no scripts found')
+          for i,js in enumerate(scripts):
+            fd,path=tempfile.mkstemp(suffix=f'-{i}.js')
+            os.close(fd)
+            Path(path).write_text(js,encoding='utf-8')
+            try: subprocess.run(['node','--check',path],check=True)
+            finally: os.unlink(path)
+          print('syntax checks passed:',len(scripts))
+          PY
+      - name: Commit hotfix
+        run: |
+          if git diff --quiet -- index.html; then
+            echo 'No index changes to commit'
+            exit 0
+          fi
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add index.html
+          git commit -m 'Remake skeletons as bundle and fix desert mode state'
+          git push
