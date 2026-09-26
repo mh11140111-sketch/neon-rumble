@@ -1,0 +1,69 @@
+name: Apply NEON RUMBLE v3.38 Chapter 3
+
+on:
+  push:
+    paths:
+      - 'apply_v338_chapter3_zombie_mansion.py'
+      - '.github/workflows/apply-v338-chapter3-zombie-mansion.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Apply v3.38 Chapter 3
+        run: python apply_v338_chapter3_zombie_mansion.py
+      - name: Verify v3.38 integration
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          s=Path('index.html').read_text(encoding='utf-8')
+          checks=[
+            'BATTLE <b>v3.38</b>',
+            'v3.38 · 피의 저택, 좀비 반란의 밤',
+            "f.firetruckNext=this.time+10/f.scale",
+            "old.expires=this.time+3*f.scale",
+            "id:'zombie',name:'좀비'",
+            "id:'king_zombie',name:'왕좀비'",
+            "id:'zombie_mage',name:'법사좀비'",
+            "DESERT_STAGE_KEY='neonRumble.desertStages.v1'",
+            "ZOMBIE_MAGE_UNLOCK_KEY='neonRumble.zombieMageUnlocked.v1'",
+            "function chapter3Unlocked(){return (desertStageMask&7)===7}",
+            "function startMansionStage(n)",
+            "function updateMansionStage()",
+            "mansionStageNo===3?tryUnlockZombieMage():null",
+            "kind:'zombiemagic'",
+            "this.spawnZombieMinion(f,'zombie',e,true)",
+            "if(this.random()<.7)this.applyPoison(f,e);else this.applyToxin(f,e)",
+            "g.x<115||g.x>605||g.y<115||g.y>605",
+            'CHAPTER 3 · BLOOD MANSION',
+          ]
+          missing=[x for x in checks if x not in s]
+          if missing:
+            raise SystemExit('Missing v3.38 checks: '+repr(missing))
+          if s.count("f.firetruckNext=this.time+10/f.scale") < 2:
+            raise SystemExit('Firetruck 10 second cadence not fully applied')
+          print('v3.38 static checks passed')
+          PY
+      - name: Syntax check scripts
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          import re
+          s=Path('index.html').read_text(encoding='utf-8')
+          scripts=re.findall(r'<script(?:\s[^>]*)?>(.*?)</script>',s,re.S)
+          Path('/tmp/neon-inline.js').write_text('\n'.join(scripts),encoding='utf-8')
+          print('inline scripts:',len(scripts))
+          PY
+          node --check /tmp/neon-inline.js
+      - name: Commit v3.38
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add index.html
+          git diff --cached --quiet && exit 0
+          git commit -m "Release NEON RUMBLE v3.38"
+          git push
