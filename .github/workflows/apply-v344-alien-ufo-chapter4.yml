@@ -1,0 +1,55 @@
+name: Apply NEON RUMBLE v3.44 Alien UFO Chapter 4
+
+on:
+  push:
+    paths:
+      - 'apply_v344_alien_ufo_chapter4.py'
+      - '.github/workflows/apply-v344-alien-ufo-chapter4.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Apply v3.44 patch
+        run: python apply_v344_alien_ufo_chapter4.py
+      - name: Verify v3.44
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          import re
+          s=Path('index.html').read_text(encoding='utf-8')
+          checks=[
+            'BATTLE <b>v3.44</b>',
+            "id:'alien_creature'",
+            "id:'infected_ufo'",
+            '🛸 UFO 탑승 · HP 300',
+            "e.cowUntil=this.time+5",
+            "function chapter4Unlocked()",
+            'id="chapter4-entry"',
+            'id="space-panel"',
+            'function startSpaceStage(n)',
+            'function updateSpaceStage()',
+            "Math.random()>=.05",
+            '파멸의 레이저',
+            "damage:50*f.scale,life:Infinity",
+          ]
+          missing=[x for x in checks if x not in s]
+          if missing:
+            raise SystemExit('Missing v3.44 checks: '+repr(missing))
+          scripts=re.findall(r'<script(?:\s[^>]*)?>(.*?)</script>',s,re.S)
+          Path('/tmp/neon-inline.js').write_text('\n'.join(scripts),encoding='utf-8')
+          print('v3.44 checks passed; inline scripts:',len(scripts))
+          PY
+          node --check /tmp/neon-inline.js
+      - name: Commit v3.44 release
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add index.html
+          git diff --cached --quiet && exit 0
+          git commit -m "Release NEON RUMBLE v3.44 Alien UFO Chapter 4"
+          git push
