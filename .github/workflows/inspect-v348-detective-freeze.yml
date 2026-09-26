@@ -1,0 +1,29 @@
+name: Inspect v3.48 Detective Freeze
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [ main ]
+    paths:
+      - '.github/workflows/inspect-v348-detective-freeze.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  inspect:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Inspect Detective runtime context
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          s=Path('index.html').read_text(encoding='utf-8')
+          keys=['detectiveJailSkill(f){','detectiveSkill(f,e){','this.detectiveJailSkill(f);','this.fighters','this.units','for(const f of this.','render()','draw()']
+          for k in keys:
+              i=s.find(k)
+              print('\n===',k,'@',i,'===')
+              if i>=0:
+                  print(s[max(0,i-900):i+2600])
+          PY
