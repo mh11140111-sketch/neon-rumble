@@ -1,0 +1,60 @@
+name: Apply NEON RUMBLE v3.37
+
+on:
+  push:
+    paths:
+      - 'apply_v337.py'
+      - '.github/workflows/apply-v337.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Apply v3.37
+        run: python apply_v337.py
+      - name: Verify v3.37 integration
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          s=Path('index.html').read_text(encoding='utf-8')
+          checks=[
+            'BATTLE <b>v3.37</b>',
+            'v3.37 · 화염을 가르는 소방대, 더 빨라진 해골 군단',
+            "cooldown:4,description:'4초마다 가장 가까운 적 방향",
+            "cooldown:1.5,stageOnly:true,description:'몸 주위를 도는 총이 가장 가까운 적을 향해 1.5초마다",
+            "cooldown:1,stageOnly:true,description:'맥주잔이 적을 노리지만 술에 취해 조준 오차가 커. 1초마다",
+            "id:'firefighter',name:'소방관'",
+            "if(s.kind==='moon'&&owner){owner.moonShot=null;owner.moonHalf=false;owner.icon='🌝'",
+            "e.id==='firefighter'&&e.firetruckMounted&&e.firetruckHp>0",
+            "firefighterSkill(f,e){",
+            "if(f.id==='firefighter')this.firefighterSkill(f,e)",
+            "e.id==='phoenix'||e.id==='moai'||e.id==='firefighter'",
+          ]
+          missing=[x for x in checks if x not in s]
+          if missing:
+            raise SystemExit('Missing v3.37 checks: '+repr(missing))
+          print('v3.37 static checks passed')
+          PY
+      - name: Syntax check scripts
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          import re
+          s=Path('index.html').read_text(encoding='utf-8')
+          scripts=re.findall(r'<script(?:\s[^>]*)?>(.*?)</script>',s,re.S)
+          Path('/tmp/neon-inline.js').write_text('\n'.join(scripts),encoding='utf-8')
+          print('inline scripts:',len(scripts))
+          PY
+          node --check /tmp/neon-inline.js
+      - name: Commit v3.37
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add index.html
+          git diff --cached --quiet && exit 0
+          git commit -m "Release NEON RUMBLE v3.37"
+          git push
