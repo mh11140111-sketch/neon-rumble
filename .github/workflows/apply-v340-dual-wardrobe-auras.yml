@@ -1,0 +1,66 @@
+name: Apply NEON RUMBLE v3.40 Dual Wardrobe Auras
+
+on:
+  push:
+    paths:
+      - 'apply_v340_dual_wardrobe_auras.py'
+      - '.github/workflows/apply-v340-dual-wardrobe-auras.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Apply v3.40 patch
+        run: python apply_v340_dual_wardrobe_auras.py
+      - name: Verify v3.40 patch
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          s=Path('index.html').read_text(encoding='utf-8')
+          checks=[
+            'BATTLE <b>v3.40</b>',
+            '패치노트 · v3.40',
+            'v3.40 · 두 선수의 스타일, 오라가 깨어나다',
+            "id:'aura_red'",
+            "id:'aura_green'",
+            "id:'aura_purple'",
+            "id:'aura_space'",
+            "price:120,type:'aura'",
+            'id="wardrobe-left"',
+            'id="wardrobe-right"',
+            "equippedAccessory=[null,null]",
+            "equippedAura=[null,null]",
+            'function drawEquippedAura(f,item)',
+            'currentAccessory(f.team)',
+            'currentAura(f.team)',
+          ]
+          missing=[x for x in checks if x not in s]
+          if missing:
+            raise SystemExit('Missing v3.40 checks: '+repr(missing))
+          if 'function currentCosmetic()' in s:
+            raise SystemExit('legacy single-slot currentCosmetic still present')
+          print('v3.40 feature checks passed')
+          PY
+      - name: Syntax check scripts
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          import re
+          s=Path('index.html').read_text(encoding='utf-8')
+          scripts=re.findall(r'<script(?:\s[^>]*)?>(.*?)</script>',s,re.S)
+          Path('/tmp/neon-inline.js').write_text('\n'.join(scripts),encoding='utf-8')
+          print('inline scripts:',len(scripts))
+          PY
+          node --check /tmp/neon-inline.js
+      - name: Commit v3.40
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add index.html
+          git diff --cached --quiet && exit 0
+          git commit -m "Release NEON RUMBLE v3.40 dual wardrobe auras"
+          git push
