@@ -1,0 +1,57 @@
+name: Apply NEON RUMBLE v3.35 Balance Ninja Skeleton Modes
+on:
+  push:
+    paths:
+      - 'apply_v335_balance_ninja_skeleton_modes.py'
+      - '.github/workflows/apply-v335-balance-ninja-skeleton-modes.yml'
+permissions:
+  contents: write
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Apply v3.35 balance and mode fixes
+        run: python apply_v335_balance_ninja_skeleton_modes.py
+      - name: Verify static integration
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          s=Path('index.html').read_text(encoding='utf-8')
+          checks=[
+            "hp:750,damage:100",
+            "ninjaCloneSpawned:false,ninjaClone:false",
+            "spawnNinjaClone(owner)",
+            "cooldown:2,stageOnly:true",
+            "cooldown:1.5,stageOnly:true",
+            "skeletonBundleKey:key",
+            "spawnSkeletonBundleMates(owner)",
+            "skeletonBundle?1.5:3",
+            "heroAuto=f.id==='hero'&&f.heroReady",
+            "카우보이 기본 체력 1000 → 750",
+          ]
+          missing=[x for x in checks if x not in s]
+          if missing: raise SystemExit('missing: '+repr(missing))
+          print('static integration OK')
+          PY
+      - name: Syntax check scripts
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          import re, subprocess, tempfile
+          s=Path('index.html').read_text(encoding='utf-8')
+          scripts=re.findall(r'<script>(.*?)</script>',s,re.S)
+          for i,js in enumerate(scripts):
+            f=Path(tempfile.gettempdir())/f'nr_v335_{i}.js'
+            f.write_text(js,encoding='utf-8')
+            subprocess.run(['node','--check',str(f)],check=True)
+          print('JS syntax OK')
+          PY
+      - name: Commit hotfix
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add index.html
+          git diff --cached --quiet && exit 0
+          git commit -m 'Apply v3.35 balance and mode fixes'
+          git push
