@@ -1,0 +1,59 @@
+name: Diagnose Detective Browser v3.48.2
+on:
+  push:
+    branches: [ main ]
+    paths:
+      - '.github/workflows/diagnose-detective-browser-v3482.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  diagnose:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Install Playwright
+        run: |
+          npm init -y >/dev/null 2>&1
+          npm install playwright@1.55.0 >/dev/null 2>&1
+          npx playwright install chromium >/dev/null 2>&1
+      - name: Serve game
+        run: |
+          python3 -m http.server 8123 > /tmp/server.log 2>&1 &
+          sleep 2
+      - name: Run Detective browser diagnostic
+        run: |
+          node <<'JS'
+          const { chromium } = require('playwright');
+          (async()=>{
+            const browser=await chromium.launch({headless:true});
+            const page=await browser.newPage({viewport:{width:1280,height:900}});
+            const errors=[];
+            page.on('console',m=>{ if(m.type()==='error') errors.push('console: '+m.text()); });
+            page.on('pageerror',e=>errors.push('pageerror: '+e.stack));
+            await page.goto('http://127.0.0.1:8123/index.html',{waitUntil:'load'});
+            await page.evaluate(()=>localStorage.setItem('neonRumble.detectiveUnlocked.v1','1'));
+            await page.reload({waitUntil:'load'});
+            const cards=page.locator('.fighter-card');
+            const n=await cards.count();
+            console.log('fighter cards',n);
+            let clicked=false;
+            for(let i=0;i<n;i++){
+              const t=await cards.nth(i).innerText().catch(()=> '');
+              if(t.includes('탐정')){ await cards.nth(i).click(); clicked=true; console.log('clicked detective card',i); break; }
+            }
+            if(!clicked) throw new Error('Detective card not found');
+            const start=page.locator('button.start').first();
+            console.log('start count',await start.count());
+            await start.click();
+            await page.waitForTimeout(2500);
+            console.log('battle hidden',await page.locator('#battle').getAttribute('hidden'));
+            console.log('canvas visible',await page.locator('canvas').isVisible().catch(()=>false));
+            console.log('errors',JSON.stringify(errors,null,2));
+            await browser.close();
+            if(errors.length) process.exit(2);
+          })().catch(e=>{console.error(e.stack||e);process.exit(1)});
+          JS
