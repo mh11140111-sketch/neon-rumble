@@ -1,0 +1,42 @@
+name: Apply NEON RUMBLE v3.35 Skeleton Relay Round Guard
+on:
+  push:
+    paths:
+      - 'apply_v335_skeleton_relay_round_guard.py'
+      - '.github/workflows/apply-v335-skeleton-relay-round-guard.yml'
+permissions:
+  contents: write
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Apply relay guard
+        run: python apply_v335_skeleton_relay_round_guard.py
+      - name: Verify relay bundle guard
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          s=Path('index.html').read_text(encoding='utf-8')
+          assert "if(old.skeletonBundle){const key=old.skeletonBundleKey" in s
+          assert "if(members.some(x=>x.health>0))continue" in s
+          print('relay guard OK')
+          PY
+      - name: Syntax check scripts
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          import re, subprocess, tempfile
+          s=Path('index.html').read_text(encoding='utf-8')
+          for i,js in enumerate(re.findall(r'<script>(.*?)</script>',s,re.S)):
+            f=Path(tempfile.gettempdir())/f'nr_relay_guard_{i}.js';f.write_text(js,encoding='utf-8');subprocess.run(['node','--check',str(f)],check=True)
+          print('JS syntax OK')
+          PY
+      - name: Commit relay guard
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add index.html
+          git diff --cached --quiet && exit 0
+          git commit -m 'Fix Skeletons relay round progression in v3.35'
+          git push
