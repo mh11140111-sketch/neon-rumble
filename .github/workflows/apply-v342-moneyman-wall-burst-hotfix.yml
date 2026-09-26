@@ -1,0 +1,47 @@
+name: Apply NEON RUMBLE v3.42 Money Man Wall Burst Hotfix
+
+on:
+  push:
+    paths:
+      - 'apply_v342_moneyman_wall_burst_hotfix.py'
+      - '.github/workflows/apply-v342-moneyman-wall-burst-hotfix.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Apply v3.42 submarine hotfix
+        run: python apply_v342_moneyman_wall_burst_hotfix.py
+      - name: Verify hotfix
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          import re
+          s=Path('index.html').read_text(encoding='utf-8')
+          checks=[
+            'BATTLE <b>v3.42</b>',
+            "if(s.kind==='moneybag'){const bx=clamp(s.x,22,698),by=clamp(s.y,22,698);this.moneyBagBurst(f,bx,by);s.x=bx;s.y=by;s.life=0}",
+            "moneyBagBurst(f,x,y)",
+          ]
+          missing=[x for x in checks if x not in s]
+          if missing:
+            raise SystemExit('Missing wall-burst hotfix checks: '+repr(missing))
+          if 'BATTLE <b>v3.43</b>' in s:
+            raise SystemExit('visible version must remain v3.42')
+          scripts=re.findall(r'<script(?:\s[^>]*)?>(.*?)</script>',s,re.S)
+          Path('/tmp/neon-inline.js').write_text('\n'.join(scripts),encoding='utf-8')
+          print('hotfix checks passed; inline scripts:',len(scripts))
+          PY
+          node --check /tmp/neon-inline.js
+      - name: Commit submarine hotfix
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add index.html
+          git diff --cached --quiet && exit 0
+          git commit -m "Hotfix v3.42 Money Man moneybag wall burst"
+          git push
