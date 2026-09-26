@@ -367,7 +367,7 @@ collide(a,b){
 }
 step(dt){if(this.result!==null||dt<=0)return;this.updateAirborne();for(const f of this.fighters)if(f.id==='lizard')this.lizardSkill(f);this.stepRound(dt);if(this.result===null)this.resolveGhostPossession();if(this.mode==='relay'&&this.result===null)this.advanceRelay()}
 advanceRelay(){
- for(let side=0;side<2;side++){const old=this.fighters[side];if(old.health>0)continue;if(this.relayIndex[side]>=2){this.result=1-side;return}
+ for(let side=0;side<2;side++){const old=this.fighters[side];if(old.skeletonBundle){const key=old.skeletonBundleKey||('legacy-'+(old.skeletonBundleLeader??old.side)),members=this.fighters.filter(x=>x.skeletonBundle&&(x.skeletonBundleKey||('legacy-'+(x.skeletonBundleLeader??x.side)))===key);if(members.some(x=>x.health>0))continue}if(old.health>0)continue;if(this.relayIndex[side]>=2){this.result=1-side;return}
   this.releaseCapture(old);for(const g of this.fighters)if(g.summon&&g.ownerSide===side)g.health=0;const other=this.fighters[1-side];if(other.captureTarget===side)this.releaseCapture(other);
   this.relayIndex[side]++;const id=this.relayTeams[side][this.relayIndex[side]],fresh=new Engine(id,id,this.random).fighters[side];fresh.nextCapture+=this.time;fresh.nextStudy+=this.time;fresh.transformAt+=this.time;fresh.moonUltAt+=this.time;fresh.nextJump+=this.time;this.fighters[side]=fresh;if(fresh.skeletonBundle)this.spawnSkeletonBundleMates(fresh);if(fresh.id==='aladdin')this.spawnGenie(fresh);this.shots=this.shots.filter(s=>s.owner!==side);this.emit((side?'오른쪽':'왼쪽')+' '+(this.relayIndex[side]+1)+'번 '+fresh.name+' 출전!');
  }
