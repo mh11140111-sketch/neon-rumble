@@ -1,0 +1,56 @@
+name: Build NEON RUMBLE Offline APK
+
+on:
+  push:
+    branches: [ main ]
+    paths:
+      - 'index.html'
+      - 'android-offline/**'
+      - '.github/workflows/build-neon-rumble-offline-apk.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build-apk:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Java 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Set up Android SDK
+        uses: android-actions/setup-android@v3
+
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.10.2'
+
+      - name: Bundle current game into APK assets
+        run: |
+          mkdir -p android-offline/app/src/main/assets
+          cp index.html android-offline/app/src/main/assets/index.html
+          grep -q 'BATTLE <b>v3.47</b>' android-offline/app/src/main/assets/index.html
+
+      - name: Build installable debug APK
+        working-directory: android-offline
+        run: gradle --no-daemon :app:assembleDebug
+
+      - name: Rename APK
+        run: |
+          cp android-offline/app/build/outputs/apk/debug/app-debug.apk NEON_RUMBLE_v3.47_OFFLINE.apk
+
+      - name: Upload APK artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: NEON_RUMBLE_v3.47_OFFLINE_APK
+          path: NEON_RUMBLE_v3.47_OFFLINE.apk
+          if-no-files-found: error
+          retention-days: 30
