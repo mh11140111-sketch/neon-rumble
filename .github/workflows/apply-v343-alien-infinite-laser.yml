@@ -1,0 +1,51 @@
+name: Apply NEON RUMBLE v3.43 Alien Infinite Laser
+
+on:
+  push:
+    paths:
+      - 'apply_v343_alien_infinite_laser.py'
+      - '.github/workflows/apply-v343-alien-infinite-laser.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Apply v3.43 Alien patch
+        run: python apply_v343_alien_infinite_laser.py
+      - name: Verify v3.43 Alien patch
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          import re
+          s=Path('index.html').read_text(encoding='utf-8')
+          checks=[
+            'BATTLE <b>v3.43</b>',
+            "id:'alien',name:'외계인',icon:'👽'",
+            "kind:'alienlaser'",
+            "life:Infinity",
+            "s.kind==='alienlaser'",
+            "피해 50~70",
+            "2초마다 레이저",
+          ]
+          missing=[x for x in checks if x not in s]
+          if missing:
+            raise SystemExit('Missing v3.43 checks: '+repr(missing))
+          if "BATTLE <b>v3.42</b>" in s:
+            raise SystemExit('visible version did not advance to v3.43')
+          scripts=re.findall(r'<script(?:\s[^>]*)?>(.*?)</script>',s,re.S)
+          Path('/tmp/neon-inline.js').write_text('\n'.join(scripts),encoding='utf-8')
+          print('v3.43 checks passed; inline scripts:',len(scripts))
+          PY
+          node --check /tmp/neon-inline.js
+      - name: Commit v3.43 release
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add index.html
+          git diff --cached --quiet && exit 0
+          git commit -m "Release NEON RUMBLE v3.43 Alien"
+          git push
