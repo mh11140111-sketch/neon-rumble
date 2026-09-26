@@ -1,0 +1,66 @@
+name: Apply NEON RUMBLE v3.36
+
+on:
+  push:
+    paths:
+      - 'apply_v336.py'
+      - '.github/workflows/apply-v336.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Apply v3.36
+        run: python apply_v336.py
+      - name: Verify static integration
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          s=Path('index.html').read_text(encoding='utf-8')
+          checks=[
+            '<b>v3.36</b>',
+            'v3.36 · 그림자의 분신, 사막 군단의 재편',
+            "hp:800,damage:100",
+            'ninjaCloneSkill(owner)',
+            'base.hp=150;base.health=150',
+            "f.ninjaClone?.5:1",
+            'spawnSkeletonBundleMates(owner)',
+            "skeletonBundle?1.5:3",
+            "f.cd=2/f.scale;f.attack=.16/f.scale",
+            "f.cd=1.5/f.scale;f.attack=.18/f.scale",
+            "heroAuto=f.id==='hero'&&f.heroReady",
+          ]
+          missing=[x for x in checks if x not in s]
+          if missing: raise SystemExit('missing checks: '+repr(missing))
+          print('static checks passed')
+          PY
+      - name: Syntax check scripts
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          import re, subprocess, tempfile
+          s=Path('index.html').read_text(encoding='utf-8')
+          scripts=re.findall(r'<script(?:\s[^>]*)?>(.*?)</script>',s,re.S)
+          for i,code in enumerate(scripts):
+            if not code.strip(): continue
+            p=Path(tempfile.gettempdir())/f'neon_rumble_v336_{i}.js'
+            p.write_text(code,encoding='utf-8')
+            subprocess.run(['node','--check',str(p)],check=True)
+          print('node syntax checks passed')
+          PY
+      - name: Commit v3.36
+        run: |
+          if git diff --quiet -- index.html; then
+            echo 'No index.html changes to commit'
+            exit 0
+          fi
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add index.html
+          git commit -m 'Release NEON RUMBLE v3.36'
+          git push
