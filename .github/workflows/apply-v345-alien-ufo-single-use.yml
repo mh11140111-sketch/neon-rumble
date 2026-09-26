@@ -1,0 +1,48 @@
+name: Apply NEON RUMBLE v3.45 Alien UFO Single Use
+
+on:
+  push:
+    paths:
+      - 'apply_v345_alien_ufo_single_use.py'
+      - '.github/workflows/apply-v345-alien-ufo-single-use.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Apply v3.45 patch
+        run: python apply_v345_alien_ufo_single_use.py
+      - name: Verify v3.45
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          import re
+          s=Path('index.html').read_text(encoding='utf-8')
+          checks=[
+            'BATTLE <b>v3.45</b>',
+            'v3.45 · 외계인 UFO 일회용 변경',
+            'if(f.ufoUsed)return;',
+            'f.ufoUsed=true;f.ufoMounted=true;f.ufoHp=300',
+            'e.ufoUsed=true;e.ufoNext=Infinity',
+            '이번 전투에서는 다시 탑승하지 않아!',
+          ]
+          missing=[x for x in checks if x not in s]
+          if missing:
+            raise SystemExit('Missing v3.45 checks: '+repr(missing))
+          scripts=re.findall(r'<script(?:\s[^>]*)?>(.*?)</script>',s,re.S)
+          Path('/tmp/neon-inline.js').write_text('\n'.join(scripts),encoding='utf-8')
+          print('v3.45 checks passed; inline scripts:',len(scripts))
+          PY
+          node --check /tmp/neon-inline.js
+      - name: Commit v3.45 release
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add index.html
+          git diff --cached --quiet && exit 0
+          git commit -m "Release NEON RUMBLE v3.45 Alien UFO single use"
+          git push
