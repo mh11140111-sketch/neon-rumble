@@ -1,0 +1,27 @@
+name: Inspect v3.48.1 Magnifier Render
+on:
+  push:
+    branches: [ main ]
+    paths:
+      - '.github/workflows/inspect-v3481-magnifier-render.yml'
+permissions:
+  contents: read
+jobs:
+  inspect:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Inspect magnifier render
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          s=Path('index.html').read_text(encoding='utf-8')
+          for key in ["fillText('🔎'", "kind==='magnifier'", "for(const s of this.shots)", "for(const s of engine.shots)", "for(const f of engine.fighters)"]:
+              start=0
+              while True:
+                  i=s.find(key,start)
+                  if i<0: break
+                  print('\n===',key,'@',i,'===')
+                  print(s[max(0,i-900):i+1900])
+                  start=i+1
+          PY
