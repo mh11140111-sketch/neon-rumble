@@ -1,0 +1,47 @@
+name: Apply NEON RUMBLE v3.46 Infected UFO HP Buff
+
+on:
+  push:
+    paths:
+      - 'apply_v346_infected_ufo_hp_buff.py'
+      - '.github/workflows/apply-v346-infected-ufo-hp-buff.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Apply v3.46 patch
+        run: python apply_v346_infected_ufo_hp_buff.py
+      - name: Verify v3.46
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          import re
+          s=Path('index.html').read_text(encoding='utf-8')
+          checks=[
+            'BATTLE <b>v3.46</b>',
+            "id:'infected_ufo'",
+            "hp:1500,damage:350",
+            "boss.hp=1500;boss.health=1500",
+            'v3.46 · 감염 UFO 체력 상향',
+          ]
+          missing=[x for x in checks if x not in s]
+          if missing:
+            raise SystemExit('Missing v3.46 checks: '+repr(missing))
+          scripts=re.findall(r'<script(?:\s[^>]*)?>(.*?)</script>',s,re.S)
+          Path('/tmp/neon-inline.js').write_text('\n'.join(scripts),encoding='utf-8')
+          print('v3.46 checks passed; inline scripts:',len(scripts))
+          PY
+          node --check /tmp/neon-inline.js
+      - name: Commit v3.46 release
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add index.html
+          git diff --cached --quiet && exit 0
+          git commit -m "Release NEON RUMBLE v3.46 Infected UFO HP buff"
+          git push
