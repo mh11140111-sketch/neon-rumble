@@ -1,0 +1,63 @@
+name: Apply NEON RUMBLE v3.39 Coin Shop Wardrobe Retry
+
+on:
+  push:
+    paths:
+      - 'apply_v339_coin_shop_wardrobe_retry.py'
+      - '.github/workflows/apply-v339-coin-shop-wardrobe-retry.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Apply corrected v3.39 patch
+        run: python apply_v339_coin_shop_wardrobe_retry.py
+      - name: Verify corrected v3.39 patch
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          s=Path('index.html').read_text(encoding='utf-8')
+          checks=[
+            'BATTLE <b>v3.39</b>',
+            '패치노트 · v3.39',
+            "id:'zombie_mage',name:'법사좀비'",
+            "hp:1000,damage:85",
+            "m.hp=2000;m.health=2000",
+            "const COIN_KEY='neonRumble.coins.v1'",
+            "function awardStageCoins(n){const reward=n===3?50:1+Math.floor(Math.random()*30)",
+            'id="shop-btn"',
+            'id="wardrobe-btn"',
+            '네온 캡',
+            '로봇 전용 안테나',
+            "coinReward=awardStageCoins(stageNo)",
+            "coinReward=awardStageCoins(desertStageNo)",
+            "coinReward=awardStageCoins(mansionStageNo)",
+            "const cosmetic=currentCosmetic();if(f.team===0&&!f.summon",
+          ]
+          missing=[x for x in checks if x not in s]
+          if missing: raise SystemExit('Missing corrected v3.39 checks: '+repr(missing))
+          print('corrected v3.39 checks passed')
+          PY
+      - name: Syntax check scripts
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          import re
+          s=Path('index.html').read_text(encoding='utf-8')
+          scripts=re.findall(r'<script(?:\s[^>]*)?>(.*?)</script>',s,re.S)
+          Path('/tmp/neon-inline.js').write_text('\n'.join(scripts),encoding='utf-8')
+          print('inline scripts:',len(scripts))
+          PY
+          node --check /tmp/neon-inline.js
+      - name: Commit v3.39
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add index.html
+          git diff --cached --quiet && exit 0
+          git commit -m "Release NEON RUMBLE v3.39 coin shop wardrobe"
+          git push
