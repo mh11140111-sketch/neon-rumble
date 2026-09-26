@@ -1,0 +1,48 @@
+name: Apply NEON RUMBLE v3.46 Infected UFO balance r2
+
+on:
+  push:
+    paths:
+      - 'apply_v346_infected_ufo_balance_r2.py'
+      - '.github/workflows/apply-v346-infected-ufo-balance-r2.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Apply v3.46 patch
+        run: python apply_v346_infected_ufo_balance_r2.py
+      - name: Verify v3.46
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          import re
+          s=Path('index.html').read_text(encoding='utf-8')
+          checks=[
+            'BATTLE <b>v3.46</b>',
+            'v3.46 · 감염 UFO 밸런스',
+            "id:'infected_ufo',name:'감염 UFO',icon:'🛸👾',tag:'파멸의 레이저',hp:1500,damage:350,speed:105,cooldown:8",
+            "detail:'HP 1500 · 파멸의 레이저 350 / 8초",
+            'if(!Number.isFinite(f.doomNext))f.doomNext=this.time+8;',
+            "f.doomNext=this.time+8;this.emit('🛸👾 파멸의 레이저 발사! 피해 350')",
+          ]
+          missing=[x for x in checks if x not in s]
+          if missing:
+            raise SystemExit('Missing v3.46 checks: '+repr(missing))
+          scripts=re.findall(r'<script(?:\s[^>]*)?>(.*?)</script>',s,re.S)
+          Path('/tmp/neon-inline.js').write_text('\n'.join(scripts),encoding='utf-8')
+          print('v3.46 checks passed; inline scripts:',len(scripts))
+          PY
+          node --check /tmp/neon-inline.js
+      - name: Commit v3.46 release
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add index.html
+          git diff --cached --quiet && exit 0
+          git commit -m "Release NEON RUMBLE v3.46 Infected UFO balance"
+          git push
