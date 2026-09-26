@@ -1,0 +1,67 @@
+name: Apply NEON RUMBLE v3.36 Shadow Skeleton Army Retry
+
+on:
+  push:
+    paths:
+      - 'apply_v336_shadow_skeleton_army_retry.py'
+      - '.github/workflows/apply-v336-shadow-skeleton-army-retry.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Apply corrected v3.36
+        run: python apply_v336_shadow_skeleton_army_retry.py
+      - name: Verify static integration
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          s=Path('index.html').read_text(encoding='utf-8')
+          need=[
+            'BATTLE <b>v3.36</b>',
+            'v3.36 · 그림자 분신과 해골 군단의 역습',
+            "hp:800,damage:100",
+            'spawnNinjaClone(owner)',
+            "ninjaClone?.5:1",
+            "f.cd=2/f.scale",
+            "f.cd=1.5/f.scale",
+            'skeletonBundle?1.5:3',
+            'three simultaneous fighters in every combat mode',
+            "if(f.id==='hero'&&f.heroReady)",
+            'freshEngine=new Engine(id,id,this.random)',
+          ]
+          for x in need:
+              assert x in s, x
+          assert "if(this.mode==='duel'||this.mode==='control'){" not in s
+          print('static verification ok')
+          PY
+      - name: Syntax check scripts
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          import re, subprocess, tempfile, os
+          s=Path('index.html').read_text(encoding='utf-8')
+          blocks=re.findall(r'<script(?:\s[^>]*)?>(.*?)</script>',s,re.S)
+          for i,b in enumerate(blocks):
+              fd,path=tempfile.mkstemp(suffix='.js')
+              os.close(fd)
+              Path(path).write_text(b,encoding='utf-8')
+              r=subprocess.run(['node','--check',path],capture_output=True,text=True)
+              os.unlink(path)
+              if r.returncode:
+                  raise SystemExit(f'script {i}: {r.stderr}')
+          print('syntax ok',len(blocks))
+          PY
+      - name: Commit v3.36
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add index.html
+          git diff --cached --quiet && exit 0
+          git commit -m 'Release NEON RUMBLE v3.36'
+          git push
