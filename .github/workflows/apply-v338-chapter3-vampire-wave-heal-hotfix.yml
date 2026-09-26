@@ -1,0 +1,57 @@
+name: Apply NEON RUMBLE v3.38 Chapter 3 Vampire Wave Heal Hotfix
+
+on:
+  push:
+    paths:
+      - 'apply_v338_chapter3_vampire_wave_heal_hotfix.py'
+      - '.github/workflows/apply-v338-chapter3-vampire-wave-heal-hotfix.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Apply v3.38 vampire/wave heal hotfix
+        run: python apply_v338_chapter3_vampire_wave_heal_hotfix.py
+      - name: Verify hotfix
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          s=Path('index.html').read_text(encoding='utf-8')
+          checks=[
+            'BATTLE <b>v3.38</b>',
+            "v.hp=1000;v.health=1000",
+            "m.speed=105;spawnFemaleVampire()",
+            "$('score-label0').textContent='🧛 흡혈귀 + 🧛‍♀️';",
+            "heal=ally.hp*.3",
+            "WAVE CLEAR +",
+            "여자 뱀파이어 HP 1000 지원",
+            "웨이브 클리어 시 모든 아군 최대 HP 30% 회복",
+          ]
+          missing=[x for x in checks if x not in s]
+          if missing:
+            raise SystemExit('Missing hotfix checks: '+repr(missing))
+          print('v3.38 vampire/wave heal hotfix checks passed')
+          PY
+      - name: Syntax check scripts
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          import re
+          s=Path('index.html').read_text(encoding='utf-8')
+          scripts=re.findall(r'<script(?:\s[^>]*)?>(.*?)</script>',s,re.S)
+          Path('/tmp/neon-inline.js').write_text('\n'.join(scripts),encoding='utf-8')
+          print('inline scripts:',len(scripts))
+          PY
+          node --check /tmp/neon-inline.js
+      - name: Commit hotfix
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add index.html
+          git diff --cached --quiet && exit 0
+          git commit -m "Hotfix Chapter 3 Vampire ally and wave healing in v3.38"
+          git push
