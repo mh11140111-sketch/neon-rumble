@@ -1,0 +1,62 @@
+name: Apply NEON RUMBLE v3.42 Money Man Balance Rainbow Hat
+
+on:
+  push:
+    paths:
+      - 'apply_v342_moneyman_balance_rainbow_hat.py'
+      - '.github/workflows/apply-v342-moneyman-balance-rainbow-hat.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Apply v3.42 patch
+        run: python apply_v342_moneyman_balance_rainbow_hat.py
+      - name: Verify v3.42 patch
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          s=Path('index.html').read_text(encoding='utf-8')
+          checks=[
+            'BATTLE <b>v3.42</b>',
+            '패치노트 · v3.42',
+            'v3.42 · 머니맨 밸런스 & 상점 확장',
+            "id:'moneyman',name:'머니맨',icon:'🤑',tag:'돈가방 · 나는 돈 · 돈의 행복',hp:650",
+            "e.moneyHappyNext=this.time+3",
+            "e.moneyHappyNext+=3",
+            "id:'aura_rainbow'",
+            "price:130,type:'aura',auraStyle:'rainbow'",
+            "id:'magic_hat'",
+            "price:30,type:'accessory'",
+            "item.auraStyle==='rainbow'",
+          ]
+          missing=[x for x in checks if x not in s]
+          if missing:
+            raise SystemExit('Missing v3.42 checks: '+repr(missing))
+          if "hp:1000,damage:20,speed:155,cooldown:1.5,unlock:'moneyManShop'" in s:
+            raise SystemExit('Money Man old HP still present')
+          print('v3.42 feature checks passed')
+          PY
+      - name: Syntax check scripts
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          import re
+          s=Path('index.html').read_text(encoding='utf-8')
+          scripts=re.findall(r'<script(?:\s[^>]*)?>(.*?)</script>',s,re.S)
+          Path('/tmp/neon-inline.js').write_text('\n'.join(scripts),encoding='utf-8')
+          print('inline scripts:',len(scripts))
+          PY
+          node --check /tmp/neon-inline.js
+      - name: Commit v3.42
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add index.html
+          git diff --cached --quiet && exit 0
+          git commit -m "Release NEON RUMBLE v3.42 balance and shop"
+          git push
