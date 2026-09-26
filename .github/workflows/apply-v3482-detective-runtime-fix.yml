@@ -1,0 +1,39 @@
+name: Apply v3.48.2 Detective Runtime Fix
+on:
+  push:
+    branches: [ main ]
+    paths:
+      - 'apply_v3482_detective_runtime_fix.py'
+      - '.github/workflows/apply-v3482-detective-runtime-fix.yml'
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Apply hotfix
+        run: python apply_v3482_detective_runtime_fix.py
+      - name: Validate inline JavaScript syntax
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          import re
+          s=Path('index.html').read_text(encoding='utf-8')
+          scripts=re.findall(r'<script(?:\s[^>]*)?>(.*?)</script>',s,re.S)
+          Path('/tmp/neon-inline.js').write_text('\n'.join(scripts),encoding='utf-8')
+          PY
+          node --check /tmp/neon-inline.js
+      - name: Verify runtime fix
+        run: |
+          grep -q "ctx.fillText('🔎',0,0)" index.html
+          grep -q "if((f.jailedUntil||0)>engine.time){const rr=Math.max(22,f.radius\*1.3);ctx.save();" index.html
+          ! grep -q "for(const s of this.shots){if(s.kind==='magnifier'){ctx.save()" index.html
+      - name: Commit fixed index
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add index.html
+          git commit -m "Hotfix NEON RUMBLE v3.48.2 Detective runtime freeze" || exit 0
+          git push
