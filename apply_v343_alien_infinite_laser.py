@@ -40,7 +40,7 @@ rep(old,new)
 
 # Laser rendering.
 old="if(s.kind==='moneybag'||s.kind==='cash'||s.kind==='flyingmoney'){ctx.rotate(-Math.atan2(s.vy,s.vx));ctx.font=(s.kind==='moneybag'?30:s.kind==='flyingmoney'?31:27)+'px \\\"Apple Color Emoji\\\",\\\"Segoe UI Emoji\\\",sans-serif';ctx.fillText(s.kind==='moneybag'?'💰':s.kind==='flyingmoney'?'💸':'💵',0,0)}else if(s.kind==='beer')"
-new="if(s.kind==='alienlaser'){ctx.save();ctx.strokeStyle='#74f7ff';ctx.shadowColor='#4be9ff';ctx.shadowBlur=16;ctx.lineWidth=7*f.scale;ctx.beginPath();ctx.moveTo(-24*f.scale,0);ctx.lineTo(12*f.scale,0);ctx.stroke();ctx.fillStyle='#eaffff';ctx.beginPath();ctx.arc(10*f.scale,0,5*f.scale,0,Math.PI*2);ctx.fill();ctx.restore()}else if(s.kind==='moneybag'||s.kind==='cash'||s.kind==='flyingmoney'){ctx.rotate(-Math.atan2(s.vy,s.vx));ctx.font=(s.kind==='moneybag'?30:s.kind==='flyingmoney'?31:27)+'px \\\"Apple Color Emoji\\\",\\\"Segoe UI Emoji\\\",sans-serif';ctx.fillText(s.kind==='moneybag'?'💰':s.kind==='flyingmoney'?'💸':'💵',0,0)}else if(s.kind==='beer')"
+new="if(s.kind==='alienlaser'){const lr=s.radius/7;ctx.save();ctx.strokeStyle='#74f7ff';ctx.shadowColor='#4be9ff';ctx.shadowBlur=16;ctx.lineWidth=7*lr;ctx.beginPath();ctx.moveTo(-24*lr,0);ctx.lineTo(12*lr,0);ctx.stroke();ctx.fillStyle='#eaffff';ctx.beginPath();ctx.arc(10*lr,0,5*lr,0,Math.PI*2);ctx.fill();ctx.restore()}else if(s.kind==='moneybag'||s.kind==='cash'||s.kind==='flyingmoney'){ctx.rotate(-Math.atan2(s.vy,s.vx));ctx.font=(s.kind==='moneybag'?30:s.kind==='flyingmoney'?31:27)+'px \\\"Apple Color Emoji\\\",\\\"Segoe UI Emoji\\\",sans-serif';ctx.fillText(s.kind==='moneybag'?'💰':s.kind==='flyingmoney'?'💸':'💵',0,0)}else if(s.kind==='beer')"
 rep(old,new)
 
 # HUD ability text.
