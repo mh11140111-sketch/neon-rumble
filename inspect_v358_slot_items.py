@@ -5,3 +5,4 @@ for k in ["slotMachineSkill(f,e){","dragon_rain","slotemoji","slotgrape","slotco
  i=s.find(k)
  print('INDEX',i)
  if i>=0: print(s[max(0,i-1800):i+6500])
+# trigger v3.58 inspection
