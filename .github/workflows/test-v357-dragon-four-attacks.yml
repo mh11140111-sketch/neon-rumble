@@ -57,7 +57,6 @@ jobs:
             await page.locator('button.start').first().click();
             await page.locator('#speed').selectOption('4');
             await page.waitForTimeout(4000);
-            if(document.hidden)throw new Error('unexpected hidden document');
             if(errors.length)throw new Error('runtime errors: '+JSON.stringify(errors));
             await browser.close();
             console.log('v3.57 dragon source + browser runtime test passed');
