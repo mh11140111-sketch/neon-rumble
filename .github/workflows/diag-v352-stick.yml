@@ -1,0 +1,31 @@
+name: Diagnose v3.52 Stick
+on:
+  push:
+    paths:
+      - '.github/workflows/diag-v352-stick.yml'
+permissions:
+  contents: read
+jobs:
+  diag:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Show stick/settings code
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          s=Path('index.html').read_text(encoding='utf-8')
+          keys=['setting-stick-position','control-stick','control-knob','resetStick','refreshControlUI','pointerdown','touchstart','mousedown','stickPos','stickPosition','controlSetting','controlMode','joystick']
+          for k in keys:
+              print('\n===== '+k+' =====')
+              start=0
+              found=0
+              while True:
+                  i=s.find(k,start)
+                  if i<0: break
+                  found+=1
+                  print(s[max(0,i-900):min(len(s),i+1800)])
+                  start=i+len(k)
+                  if found>=8: break
+              if not found: print('(none)')
+          PY
