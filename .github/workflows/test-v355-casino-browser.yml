@@ -21,7 +21,7 @@ jobs:
         run: python3 -m http.server 8080 >/tmp/v355-http.log 2>&1 &
       - name: Test casino system
         run: |
-          cat > /tmp/test-v355.js <<'JS'
+          cat > test-v355.js <<'JS'
           const { chromium } = require('playwright');
           const assert = (v,m)=>{if(!v)throw new Error(m)};
           async function scenario(randomValue, owned, expectedCoins, expectedOwned, label){
@@ -52,4 +52,4 @@ jobs:
             console.log('v3.55 casino browser test passed');
           })().catch(e=>{console.error(e);process.exit(1)});
           JS
-          node /tmp/test-v355.js
+          node test-v355.js
