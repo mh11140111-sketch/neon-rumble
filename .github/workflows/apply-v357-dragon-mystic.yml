@@ -1,0 +1,43 @@
+name: Apply v3.57 Dragon Mystic
+on:
+  push:
+    branches: [ main ]
+    paths:
+      - 'apply_v357_dragon_mystic.py'
+      - '.github/workflows/apply-v357-dragon-mystic.yml'
+permissions:
+  contents: write
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Apply v3.57 patch
+        run: python3 apply_v357_dragon_mystic.py
+      - name: Validate inline JavaScript syntax
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          import re
+          s=Path('index.html').read_text(encoding='utf-8')
+          blocks=re.findall(r'<script(?: [^>]*)?>(.*?)</script>',s,re.S)
+          Path('/tmp/all-inline.js').write_text('\n'.join(blocks),encoding='utf-8')
+          print('script blocks',len(blocks))
+          PY
+          node --check /tmp/all-inline.js
+      - name: Verify v3.57 markers
+        run: |
+          grep -q 'BATTLE <b>v3.57</b>' index.html
+          grep -q "dragonMysticAttack(f,e)" index.html
+          grep -q "dragon_wind" index.html
+          grep -q "dragon_thunder" index.html
+          grep -q "dragon_bubble" index.html
+          grep -q "dragon_leaf" index.html
+          grep -q "damage:70\*f.scale" index.html
+      - name: Commit v3.57
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add index.html
+          git commit -m 'Release NEON RUMBLE v3.57 dragon mystic'
+          git push
