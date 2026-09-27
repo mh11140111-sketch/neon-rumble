@@ -1,0 +1,84 @@
+name: Test v3.51 Browser
+
+on:
+  push:
+    branches: [ main ]
+    paths:
+      - '.github/workflows/test-v351-browser.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  browser-test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Install Playwright
+        run: |
+          npm init -y >/dev/null 2>&1
+          npm install playwright@1.55.0 >/dev/null 2>&1
+          npx playwright install chromium >/dev/null 2>&1
+      - name: Serve game
+        run: |
+          python3 -m http.server 8123 >/tmp/server.log 2>&1 &
+          sleep 2
+      - name: Test v3.51 runtime
+        run: |
+          node <<'JS'
+          const { chromium } = require('playwright');
+          (async()=>{
+            const browser=await chromium.launch({headless:true});
+            const page=await browser.newPage({viewport:{width:1280,height:900}});
+            const errors=[];
+            page.on('console',m=>{if(m.type()==='error')errors.push('console: '+m.text())});
+            page.on('pageerror',e=>errors.push('pageerror: '+(e.stack||e.message)));
+            await page.goto('http://127.0.0.1:8123/index.html',{waitUntil:'load'});
+            await page.evaluate(()=>{
+              localStorage.setItem('neonRumble.desertStages.v1','7');
+              localStorage.setItem('neonRumble.mansionStages.v1','7');
+              localStorage.setItem('neonRumble.spaceStages.v1','7');
+              localStorage.setItem('neonRumble.casinoStages.v1','7');
+              localStorage.setItem('neonRumble.coins.v1','5000');
+            });
+            await page.reload({waitUntil:'load'});
+            if(errors.length)throw new Error('boot errors: '+JSON.stringify(errors));
+
+            // Buy a chapter background.
+            await page.locator('#shop-btn').click();
+            const desertRow=page.locator('.shop-item').filter({hasText:'사막 배경'});
+            if(await desertRow.count()!==1)throw new Error('Desert background shop item missing');
+            const buy=desertRow.locator('button');
+            if(await buy.isDisabled())throw new Error('Desert background should be purchasable after chapter clear');
+            await buy.click();
+
+            // Equip from wardrobe.
+            await page.locator('#shop-btn').click();
+            await page.locator('#wardrobe-btn').click();
+            const ward=page.locator('.wardrobe-item').filter({hasText:'사막 배경'});
+            if(await ward.count()!==1)throw new Error('Purchased background missing from wardrobe');
+            await ward.locator('button').click();
+            const equipped=await page.evaluate(()=>localStorage.getItem('neonRumble.equip.background.v1'));
+            if(equipped!=='bg_desert')throw new Error('Background equip did not persist');
+            await page.locator('#wardrobe-btn').click();
+
+            // Select crab on left, smith on right and run beyond first molt.
+            const card=name=>page.locator('.fighter-card').filter({hasText:name}).first();
+            await card('꽃게').click();
+            await page.locator('#choose1').click();
+            await card('대장장이').click();
+            await page.locator('button.start').first().click();
+            await page.waitForTimeout(12500);
+            if(await page.locator('#battle').isHidden())throw new Error('Crab battle not visible');
+            if(errors.length)throw new Error('runtime errors: '+JSON.stringify(errors));
+            console.log('v3.51 background purchase/equip ok');
+            console.log('v3.51 crab >12s runtime ok');
+            await browser.close();
+          })().catch(e=>{console.error(e.stack||e);process.exit(1)});
+          JS
