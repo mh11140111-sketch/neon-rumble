@@ -1,0 +1,16 @@
+name: Inspect v3.57 Dragon Attack
+on:
+  push:
+    branches: [ main ]
+    paths:
+      - 'inspect_v357_dragon_attack.py'
+      - '.github/workflows/inspect-v357-dragon-attack.yml'
+permissions:
+  contents: read
+jobs:
+  inspect:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Inspect v3.57 anchors
+        run: python3 inspect_v357_dragon_attack.py
