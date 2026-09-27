@@ -1,4 +1,5 @@
 from pathlib import Path
+import re
 p=Path('index.html')
 s=p.read_text(encoding='utf-8')
 orig=s
@@ -54,11 +55,12 @@ new_ticks="if(f.health>0)this.tickBurn(f);if(this.result!==null)return;if(f.heal
 rep(old_ticks,new_ticks,'bleed tick loop')
 
 # Wave custom physics: damage once, push continuously until projectile disappears.
-proj_anchor="s.x+=s.vx*s.speed*dt;s.y+=s.vy*s.speed*dt;\n   if(s.x<22||s.x>698||s.y<22||s.y>698){"
-wave_block="""s.x+=s.vx*s.speed*dt;s.y+=s.vy*s.speed*dt;
-   if(s.kind==='wave'){for(const e of this.enemies(f)){if(e.health<=0||distance(s,e)>=e.radius+s.radius)continue;s.hitTargets=s.hitTargets||{};if(!s.hitTargets[e.side]){this.attackProjectile(f,e,s);s.hitTargets[e.side]=true;if(this.result!==null)break}if(e.health>0){e.x+=s.vx*s.speed*.62*dt;e.y+=s.vy*s.speed*.62*dt;this.keepInside(e)}}if(s.x<22||s.x>698||s.y<22||s.y>698)s.life=0;continue}
-   if(s.x<22||s.x>698||s.y<22||s.y>698){"""
-rep(proj_anchor,wave_block,'wave projectile physics')
+wave_pattern=r"s\.x\+=s\.vx\*s\.speed\*dt;s\.y\+=s\.vy\*s\.speed\*dt;(?P<ws>\s*)if\(s\.x<22\|\|s\.x>698\|\|s\.y<22\|\|s\.y>698\)\{"
+m=re.search(wave_pattern,s)
+if not m: raise SystemExit('wave projectile physics regex anchor missing')
+ws=m.group('ws')
+wave_block="s.x+=s.vx*s.speed*dt;s.y+=s.vy*s.speed*dt;"+ws+"if(s.kind==='wave'){for(const e of this.enemies(f)){if(e.health<=0||distance(s,e)>=e.radius+s.radius)continue;s.hitTargets=s.hitTargets||{};if(!s.hitTargets[e.side]){this.attackProjectile(f,e,s);s.hitTargets[e.side]=true;if(this.result!==null)break}if(e.health>0){e.x+=s.vx*s.speed*.62*dt;e.y+=s.vy*s.speed*.62*dt;this.keepInside(e)}}if(s.x<22||s.x>698||s.y<22||s.y>698)s.life=0;continue}"+ws+"if(s.x<22||s.x>698||s.y<22||s.y>698){"
+s=re.sub(wave_pattern,lambda _m:wave_block,s,count=1)
 
 # Contact specials and exclude ocean fighters from generic melee.
 contact_anchor="if(f.id==='boxer'&&f.health>0&&f.stunUntil<=this.time&&this.boxerUppercut(f,e))continue;"
@@ -72,7 +74,11 @@ ch6='<button id="chapter6-entry" class="stage-entry" type="button" disabled>🔒
 if ch6 not in s: rep(ch5,ch5+ch6,'chapter6 entry')
 ocean_panel='''<div id="ocean-panel" class="stage-panel" hidden><h2>🌊 CHAPTER 6 · 바닷속</h2><p>주인공은 🦀 꽃게. CHAPTER 5 STAGE 1·2·3을 모두 클리어하면 입장할 수 있어.</p><div class="stage-grid"><button id="ocean-1" type="button"><strong>STAGE 1</strong><span>🪼🐠🐟 · 3마리 × 5웨이브</span><small>HP 125 · 해파리 근접 50+기절 · 물고기 물 70</small></button><button id="ocean-2" type="button"><strong>STAGE 2</strong><span>🦈 상어</span><small>3초 대쉬 · 피해 50 · 출혈 6초 · 20% 획득</small></button><button id="ocean-3" type="button"><strong>STAGE 3</strong><span>🧜‍♂️ 인어</span><small>3초마다 🌊 피해 100 · 파도 밀치기 · 10% 획득</small></button></div></div>'''
 if 'id="ocean-panel"' not in s:
-    rep('</section><section id="battle"',ocean_panel+'</section><section id="battle"','ocean panel')
+    m=re.search(r'</section>\s*<section id="battle"',s)
+    if not m: raise SystemExit('ocean panel regex anchor missing')
+    original=m.group(0)
+    replacement='</section>'+ocean_panel+original[len('</section>'):]
+    s=s[:m.start()]+replacement+s[m.end():]
 
 # Persistence / unlock state.
 rep("CASINO_STAGE_KEY='neonRumble.casinoStages.v1',LEGACY_SKELETON_UNLOCK_KEY", "CASINO_STAGE_KEY='neonRumble.casinoStages.v1',OCEAN_STAGE_KEY='neonRumble.oceanStages.v1',SHARK_UNLOCK_KEY='neonRumble.sharkUnlocked.v1',MERMAN_UNLOCK_KEY='neonRumble.mermanUnlocked.v1',LEGACY_SKELETON_UNLOCK_KEY",'ocean keys')
