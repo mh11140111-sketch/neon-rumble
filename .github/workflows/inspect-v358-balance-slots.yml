@@ -1,0 +1,16 @@
+name: Inspect v3.58 Balance Slots
+on:
+  push:
+    branches: [ main ]
+    paths:
+      - 'inspect_v358_balance_slots.py'
+      - '.github/workflows/inspect-v358-balance-slots.yml'
+permissions:
+  contents: read
+jobs:
+  inspect:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Inspect anchors
+        run: python3 inspect_v358_balance_slots.py
