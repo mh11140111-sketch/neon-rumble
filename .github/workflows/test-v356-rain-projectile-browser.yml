@@ -1,0 +1,52 @@
+name: Test v3.56 Falling Rain Browser
+on:
+  push:
+    paths:
+      - '.github/workflows/test-v356-rain-projectile-browser.yml'
+  workflow_dispatch:
+jobs:
+  browser-test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install Playwright
+        run: |
+          npm init -y >/dev/null 2>&1
+          npm i playwright >/dev/null 2>&1
+          npx playwright install --with-deps chromium >/dev/null 2>&1
+      - name: Serve game
+        run: |
+          python3 -m http.server 8123 >/tmp/v356-rain-http.log 2>&1 &
+          sleep 2
+      - name: Test falling rain projectiles
+        run: |
+          node <<'JS'
+          const { chromium } = require('playwright');
+          (async()=>{
+            const browser=await chromium.launch({headless:true});
+            const page=await browser.newPage({viewport:{width:430,height:900},hasTouch:true,isMobile:true});
+            const errors=[];page.on('pageerror',e=>errors.push(String(e)));page.on('console',m=>{if(m.type()==='error')errors.push(m.text())});
+            await page.addInitScript(()=>localStorage.setItem('neonRumble.tutorialSeen.v1','1'));
+            await page.goto('http://127.0.0.1:8123/index.html',{waitUntil:'load'});
+            const cards=page.locator('.fighter-card');let found=false;
+            for(let i=0;i<await cards.count();i++){const t=await cards.nth(i).innerText().catch(()=> '');if(t.includes('용')){await cards.nth(i).click();found=true;break}}
+            if(!found)throw new Error('dragon card not found');
+            await page.locator('button.start').first().click();
+            await page.waitForTimeout(300);
+            await page.evaluate(()=>{engine.random=()=>.01;const d=engine.fighters.find(f=>f.id==='dragon');d.dragonRainNext=engine.time;});
+            await page.waitForTimeout(250);
+            const a=await page.evaluate(()=>engine.shots.filter(s=>s.kind==='dragon_rain'||s.kind==='dragon_lightning').map(s=>({kind:s.kind,x:s.x,y:s.y,vy:s.vy,speed:s.speed})));
+            if(!a.some(s=>s.kind==='dragon_rain'))throw new Error('no rain projectile');
+            if(!a.some(s=>s.kind==='dragon_lightning'))throw new Error('no lightning projectile');
+            if(!a.every(s=>s.vy===1&&s.y>22))throw new Error('projectiles not falling from top: '+JSON.stringify(a));
+            await page.waitForTimeout(300);
+            const b=await page.evaluate(()=>engine.shots.filter(s=>s.kind==='dragon_rain'||s.kind==='dragon_lightning').map(s=>s.y));
+            if(errors.length)throw new Error('runtime errors '+errors.join(' | '));
+            console.log('falling rain sample',a,'later y',b);
+            console.log('v3.56 falling rain browser test passed');
+            await browser.close();
+          })().catch(e=>{console.error(e.stack||e);process.exit(1)});
+          JS
