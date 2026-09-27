@@ -1,0 +1,42 @@
+name: Apply v3.52 Crab Joystick
+on:
+  push:
+    paths:
+      - '.github/workflows/apply-v352-crab-joystick.yml'
+permissions:
+  contents: write
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Apply v3.52 patch
+        run: python3 apply_v352_crab_joystick.py
+      - name: Validate inline JavaScript syntax
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          import re
+          s=Path('index.html').read_text(encoding='utf-8')
+          scripts=re.findall(r'<script>(.*?)</script>',s,re.S)
+          Path('/tmp/all-inline.js').write_text('\n'.join(scripts),encoding='utf-8')
+          print('scripts',len(scripts))
+          PY
+          node --check /tmp/all-inline.js
+      - name: Verify v3.52 markers
+        run: |
+          grep -q 'BATTLE <b>v3.52</b>' index.html
+          grep -q 'setting-stick-lock' index.html
+          grep -q 'function placeStickAt(ev)' index.html
+          grep -q "arenaEl.addEventListener('pointerdown'" index.html
+          grep -q 'f.crabVulnerableUntil=this.time+5/f.scale;f.crabMoltNext=this.time+10/f.scale' index.html
+          grep -q "dmg\*=3" index.html
+          ! grep -q 'id="setting-stick-position"' index.html
+      - name: Commit v3.52 index
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add index.html
+          git diff --cached --quiet && exit 1 || true
+          git commit -m 'Release NEON RUMBLE v3.52 crab balance and floating joystick'
+          git push
