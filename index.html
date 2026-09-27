@@ -581,7 +581,7 @@ crabSkill(f,e,dt){
  if(!Number.isFinite(f.crabMoltNext))f.crabMoltNext=this.time+10/f.scale;
  if(!Number.isFinite(f.crabVulnerableUntil))f.crabVulnerableUntil=0;
  if(!Array.isArray(f.crabClaws))f.crabClaws=[{x:f.x-48,y:f.y,side:-1,touch:null},{x:f.x+48,y:f.y,side:1,touch:null}];
- if(this.time>=f.crabMoltNext-1e-9&&this.time>=f.crabVulnerableUntil-1e-9){this.spawnCrabShell(f);f.clawDamage+=30*f.scale;f.crabVulnerableUntil=this.time+5/f.scale;f.crabMoltNext=f.crabVulnerableUntil;this.effect(f,'🦀 탈피! 집게 +30 · 피해 ×10','doom');this.emit('🦀 꽃게가 탈피! 껍질 HP 200 · 5초간 받는 피해 10배')}
+ if(this.time>=f.crabMoltNext-1e-9&&this.time>=f.crabVulnerableUntil-1e-9){this.spawnCrabShell(f);f.clawDamage+=30*f.scale;f.crabVulnerableUntil=this.time+5/f.scale;f.crabMoltNext=this.time+10/f.scale;this.effect(f,'🦀 탈피! 집게 +30 · 피해 ×10','doom');this.emit('🦀 꽃게가 탈피! 껍질 HP 200 · 5초간 받는 피해 10배')}
  const target=e&&e.health>0?e:this.nearest(f);if(!target)return;
  const base=Math.atan2(target.y-f.y,target.x-f.x),orbit=52*f.scale,clawR=14*f.scale,speed=7*dt*f.scale;
  for(let i=0;i<2;i++){const c=f.crabClaws[i],want=base+(i===0?-.42:.42),tx=f.x+Math.cos(want)*orbit,ty=f.y+Math.sin(want)*orbit;c.x+=(tx-c.x)*Math.min(1,speed);c.y+=(ty-c.y)*Math.min(1,speed);}
