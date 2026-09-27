@@ -1,0 +1,55 @@
+name: Test v3.55 Casino Browser
+on:
+  push:
+    paths:
+      - '.github/workflows/test-v355-casino-browser.yml'
+  workflow_dispatch:
+jobs:
+  browser-test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install Playwright
+        run: |
+          npm init -y >/dev/null 2>&1
+          npm i playwright >/dev/null 2>&1
+          npx playwright install --with-deps chromium >/dev/null 2>&1
+      - name: Serve game
+        run: python3 -m http.server 8080 >/tmp/v355-http.log 2>&1 &
+      - name: Test casino system
+        run: |
+          cat > /tmp/test-v355.js <<'JS'
+          const { chromium } = require('playwright');
+          const assert = (v,m)=>{if(!v)throw new Error(m)};
+          async function scenario(randomValue, owned, expectedCoins, expectedOwned, label){
+            const browser=await chromium.launch({headless:true});
+            const page=await browser.newPage({viewport:{width:390,height:844}});
+            const errors=[];page.on('pageerror',e=>errors.push(String(e)));page.on('console',m=>{if(m.type()==='error')errors.push(m.text())});
+            await page.addInitScript(({owned})=>{localStorage.setItem('neonRumble.casinoStages.v1','7');localStorage.setItem('neonRumble.coins.v1','1000');localStorage.setItem('neonRumble.shopOwned.v1',JSON.stringify(owned));localStorage.setItem('neonRumble.tutorialSeen.v1','1')},{owned});
+            await page.goto('http://127.0.0.1:8080',{waitUntil:'load'});
+            const enabled=await page.locator('#casino-system-btn').isEnabled(); assert(enabled,label+' casino should unlock');
+            await page.locator('#casino-system-btn').click();
+            await page.evaluate(v=>{Math.random=()=>v},randomValue);
+            await page.locator('#casino-spin').click();
+            await page.waitForTimeout(1100);
+            const state=await page.evaluate(()=>({coins:Number(localStorage.getItem('neonRumble.coins.v1')),owned:JSON.parse(localStorage.getItem('neonRumble.shopOwned.v1')||'[]'),reels:[0,1,2].map(i=>document.getElementById('casino-reel-'+i).textContent),result:document.getElementById('casino-result').textContent}));
+            console.log(label,state,errors);
+            assert(state.coins===expectedCoins,label+' coins '+state.coins+' != '+expectedCoins);
+            if(expectedOwned) assert(state.owned.includes(expectedOwned),label+' missing '+expectedOwned);
+            assert(errors.length===0,label+' runtime errors '+errors.join(' | '));
+            await browser.close();
+          }
+          (async()=>{
+            await scenario(.10,[],800,'casino_ribbon_hat','cosmetic-new');
+            await scenario(.10,['casino_ribbon_hat'],1050,'casino_ribbon_hat','cosmetic-duplicate');
+            await scenario(.35,[],800,'slotmachine','character-new');
+            await scenario(.35,['slotmachine'],1200,'slotmachine','character-duplicate');
+            await scenario(.80,[],800,null,'miss');
+            const browser=await chromium.launch({headless:true});const page=await browser.newPage();await page.addInitScript(()=>{localStorage.setItem('neonRumble.casinoStages.v1','0');localStorage.setItem('neonRumble.tutorialSeen.v1','1')});await page.goto('http://127.0.0.1:8080');assert(!(await page.locator('#casino-system-btn').isEnabled()),'casino should be locked before chapter5 clear');await browser.close();
+            console.log('v3.55 casino browser test passed');
+          })().catch(e=>{console.error(e);process.exit(1)});
+          JS
+          node /tmp/test-v355.js
