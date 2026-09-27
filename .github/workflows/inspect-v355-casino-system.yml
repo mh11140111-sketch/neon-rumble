@@ -1,0 +1,14 @@
+name: Inspect v3.55 Casino System
+on:
+  push:
+    paths:
+      - 'inspect_v355_casino_system.py'
+      - '.github/workflows/inspect-v355-casino-system.yml'
+  workflow_dispatch:
+jobs:
+  inspect:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Inspect anchors
+        run: python3 inspect_v355_casino_system.py
