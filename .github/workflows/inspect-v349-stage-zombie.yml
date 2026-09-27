@@ -1,0 +1,30 @@
+name: Inspect v3.49 Zombie Stage
+
+on:
+  push:
+    branches: [ main ]
+    paths:
+      - '.github/workflows/inspect-v349-stage-zombie.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  inspect:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Inspect chapter 3 stage
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          s=Path('index.html').read_text(encoding='utf-8')
+          for key in ['startMansionStage','zombie_mage','mansionStageNo']:
+            start=0
+            for _ in range(8):
+              i=s.find(key,start)
+              if i<0: break
+              print('\n===',key,'@',i,'===')
+              print(s[max(0,i-1000):i+2600])
+              start=i+1
+          PY
