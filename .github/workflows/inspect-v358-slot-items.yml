@@ -1,0 +1,15 @@
+name: Inspect v3.58 Slot Items
+on:
+  push:
+    branches: [ main ]
+    paths:
+      - 'inspect_v358_slot_items.py'
+permissions:
+  contents: read
+jobs:
+  inspect:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Inspect v3.58 anchors
+        run: python3 inspect_v358_slot_items.py
