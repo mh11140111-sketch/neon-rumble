@@ -1,0 +1,38 @@
+name: Apply v3.57 Dragon Slow Fix
+on:
+  push:
+    branches: [ main ]
+    paths:
+      - 'apply_v357_dragon_slow_fix.py'
+      - '.github/workflows/apply-v357-dragon-slow-fix.yml'
+permissions:
+  contents: write
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Apply v3.57 water slow fix
+        run: python3 apply_v357_dragon_slow_fix.py
+      - name: Validate inline JavaScript syntax
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          s=Path('index.html').read_text(encoding='utf-8')
+          a=s.rfind('<script>'); b=s.find('</script>',a)
+          Path('/tmp/game.js').write_text(s[a+8:b],encoding='utf-8')
+          PY
+          node --check /tmp/game.js
+      - name: Verify v3.57 markers
+        run: |
+          grep -Fq 'BATTLE <b>v3.57</b>' index.html
+          grep -Fq 'dragonMysticAttack(f,e)' index.html
+          grep -Fq 'hit.slow=Math.max(hit.slow,2)' index.html
+          grep -Fq 'hit.slowPower=Math.max(hit.slowPower,.5)' index.html
+      - name: Commit v3.57 correction
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add index.html
+          git commit -m 'Finalize NEON RUMBLE v3.57 dragon mystic balance'
+          git push
