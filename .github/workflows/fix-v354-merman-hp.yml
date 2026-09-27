@@ -1,0 +1,33 @@
+name: Fix v3.54 Merman HP
+on:
+  push:
+    paths:
+      - '.github/workflows/fix-v354-merman-hp.yml'
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Fix merman HP
+        run: python3 fix_v354_merman_hp.py
+      - name: Validate JavaScript
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          import re
+          s=Path('index.html').read_text(encoding='utf-8')
+          scripts=re.findall(r'<script(?:\s[^>]*)?>(.*?)</script>',s,re.S)
+          for i,x in enumerate(scripts): Path(f'/tmp/v354fix{i}.js').write_text(x,encoding='utf-8')
+          PY
+          for f in /tmp/v354fix*.js; do node --check "$f"; done
+          grep -F "id:'merman',name:'인어',icon:'🧜‍♂️',tag:'파도 · 밀치기',hp:1200" index.html
+      - name: Commit fix
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add index.html
+          git commit -m 'Fix v3.54 merman HP to 1200'
+          git push
