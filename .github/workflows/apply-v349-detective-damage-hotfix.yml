@@ -1,0 +1,49 @@
+name: Apply v3.49 Detective Damage Hotfix
+
+on:
+  push:
+    branches: [ main ]
+    paths:
+      - 'apply_v349_detective_damage_hotfix.py'
+      - '.github/workflows/apply-v349-detective-damage-hotfix.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Apply detective hotfix
+        run: python apply_v349_detective_damage_hotfix.py
+
+      - name: Validate inline JavaScript syntax
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          import re
+          s=Path('index.html').read_text(encoding='utf-8')
+          blocks=re.findall(r'<script(?:\s[^>]*)?>(.*?)</script>',s,re.S)
+          Path('/tmp/all-inline.js').write_text('\n;\n'.join(blocks),encoding='utf-8')
+          print('scripts',len(blocks))
+          PY
+          node --check /tmp/all-inline.js
+
+      - name: Verify hotfix markers
+        run: |
+          grep -q "e.health=Math.max(0,e.health-100\*f.scale);" index.html
+          grep -q "기절 3초 + 피해 100" index.html
+          grep -q "BATTLE <b>v3.49</b>" index.html
+
+      - name: Commit hotfix
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add index.html
+          git diff --cached --quiet && exit 0
+          git commit -m "Hotfix detective 15 percent damage in v3.49"
+          git push
