@@ -1,0 +1,14 @@
+name: Inspect v3.56 Dragon
+on:
+  push:
+    paths:
+      - 'inspect_v356_dragon.py'
+      - '.github/workflows/inspect-v356-dragon.yml'
+  workflow_dispatch:
+jobs:
+  inspect:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Inspect dragon anchors
+        run: python3 inspect_v356_dragon.py
