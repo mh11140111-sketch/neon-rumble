@@ -1,0 +1,40 @@
+name: Apply v3.54 Ocean Hotfix
+on:
+  push:
+    paths:
+      - 'apply_v354_ocean_hotfix.py'
+      - '.github/workflows/apply-v354-ocean-hotfix.yml'
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Apply hotfix
+        run: python3 apply_v354_ocean_hotfix.py
+      - name: Validate inline JavaScript syntax
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          import re
+          s=Path('index.html').read_text(encoding='utf-8')
+          scripts=re.findall(r'<script(?:\s[^>]*)?>(.*?)</script>',s,re.S)
+          for i,code in enumerate(scripts): Path(f'/tmp/v354hot_{i}.js').write_text(code,encoding='utf-8')
+          print('scripts',len(scripts))
+          PY
+          for f in /tmp/v354hot_*.js; do node --check "$f"; done
+      - name: Verify hotfix markers
+        run: |
+          grep -F 's.speed*3.0*dt' index.html
+          grep -F "🦈 물기 50" index.html
+          grep -F 'BATTLE <b>v3.54</b>' index.html
+      - name: Commit hotfix
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add index.html
+          git diff --cached --quiet && exit 0
+          git commit -m 'Hotfix v3.54 ocean combat'
+          git push
