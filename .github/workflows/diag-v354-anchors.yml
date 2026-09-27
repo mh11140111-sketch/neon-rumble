@@ -1,0 +1,23 @@
+name: Diagnose v3.54 Patch Anchors
+on:
+  push:
+    paths:
+      - '.github/workflows/diag-v354-anchors.yml'
+  workflow_dispatch:
+jobs:
+  diag:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Show exact anchors
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          s=Path('index.html').read_text(encoding='utf-8')
+          keys=["{id:'crab'","{id:'casino_boss'","return {id:c.id","bleed:null","attackProjectile(f,e,s)","function updateStageUI()","function updateSelection()","function start(){","function selection(){","function switchRegularMode","$('chapter5-entry').onclick","$('casino-3').onclick","function hud()","for(const s of engine.shots)"]
+          for k in keys:
+              print('\n===== '+k+' =====')
+              i=s.find(k)
+              if i<0: print('(none)')
+              else: print(s[max(0,i-1800):min(len(s),i+5500)])
+          PY
