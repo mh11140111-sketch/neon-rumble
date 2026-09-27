@@ -1,0 +1,50 @@
+name: Apply v3.49 Balance and Slot Machine
+
+on:
+  push:
+    branches: [ main ]
+    paths:
+      - 'apply_v349_balance_slotmachine.py'
+      - '.github/workflows/apply-v349-balance-slotmachine.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Apply v3.49 patch
+        run: python apply_v349_balance_slotmachine.py
+      - name: Validate inline JavaScript syntax
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          import re
+          s=Path('index.html').read_text(encoding='utf-8')
+          blocks=re.findall(r'<script(?:\s[^>]*)?>(.*?)</script>',s,re.S)
+          Path('/tmp/all-inline.js').write_text('\n;\n'.join(blocks),encoding='utf-8')
+          print('scripts',len(blocks))
+          PY
+          node --check /tmp/all-inline.js
+      - name: Verify v3.49 markers
+        run: |
+          grep -q 'BATTLE <b>v3.49</b>' index.html
+          grep -q "id:'slotmachine'" index.html
+          grep -q "price:777,type:'character'" index.html
+          grep -q 'slotMachineSkill(f,e)' index.html
+          grep -q 'm.zombieMageDamage=85' index.html
+          grep -q 'normalSpeed\*1.7' index.html
+      - name: Commit v3.49 index
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add index.html
+          if git diff --cached --quiet; then
+            echo 'No index changes to commit'
+          else
+            git commit -m 'Release NEON RUMBLE v3.49 Slot Machine and balance patch'
+            git push
+          fi
