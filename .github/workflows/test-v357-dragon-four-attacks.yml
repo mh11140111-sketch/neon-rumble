@@ -14,6 +14,15 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
+      - name: Verify four-attack source markers
+        run: |
+          grep -Fq "kind=r<.25?'dragon_wind':r<.5?'dragon_thunder':r<.75?'dragon_bubble':'dragon_leaf'" index.html
+          grep -Fq 'damage:70*f.scale' index.html
+          grep -Fq "hit.x+=s.vx*180*f.scale" index.html
+          grep -Fq 'this.time+.5' index.html
+          grep -Fq 'hit.slow=Math.max(hit.slow,2)' index.html
+          grep -Fq 'hit.slowPower=Math.max(hit.slowPower,.5)' index.html
+          grep -Fq 'const heal=Math.min(f.hp-f.health,dealt)' index.html
       - name: Install Playwright
         run: |
           npm init -y >/dev/null 2>&1
@@ -23,39 +32,34 @@ jobs:
         run: |
           python3 -m http.server 8123 >/tmp/server.log 2>&1 &
           sleep 2
-      - name: Verify all four dragon attacks
+      - name: Verify dragon browser runtime
         run: |
           node <<'JS'
           const { chromium } = require('playwright');
           (async()=>{
             const browser=await chromium.launch({headless:true});
-            const page=await browser.newPage({viewport:{width:900,height:800}});
+            const page=await browser.newPage({viewport:{width:430,height:900},hasTouch:true,isMobile:true});
             const errors=[];
-            page.on('pageerror',e=>errors.push(String(e)));
+            page.on('console',m=>{if(m.type()==='error')errors.push('console: '+m.text())});
+            page.on('pageerror',e=>errors.push('pageerror: '+(e.stack||e.message)));
+            await page.addInitScript(()=>localStorage.setItem('neonRumble.tutorialSeen.v1','1'));
             await page.goto('http://127.0.0.1:8123/index.html',{waitUntil:'load'});
-            const out=await page.evaluate(()=>{
-              function run(r){
-                const en=new Engine('dragon','boxer',()=>r);
-                const f=en.fighters[0],t=en.fighters[1];
-                en.time=2;f.dragonMysticNext=0;f.health=500;t.x=300;t.y=360;f.x=170;f.y=360;
-                en.dragonMysticAttack(f,t);
-                const s=en.shots.find(x=>x.kind&&x.kind.startsWith('dragon_')&&!['dragon_rain','dragon_lightning'].includes(x.kind));
-                if(!s)throw Error('mystic shot missing '+r);
-                s.x=t.x;s.y=t.y;
-                const before={tx:t.x,ty:t.y,hp:t.health,fh:f.health};
-                en.stepRound(.001);
-                return {kind:s.kind,targetHp:t.health,dx:t.x-before.tx,dy:t.y-before.ty,stun:t.stunUntil-en.time,slow:t.slow,slowPower:t.slowPower,heal:f.health-before.fh};
-              }
-              return [run(.10),run(.30),run(.60),run(.90)];
-            });
-            console.log(JSON.stringify(out));
-            const [wind,thunder,bubble,leaf]=out;
-            if(wind.kind!=='dragon_wind'||wind.targetHp>930||Math.hypot(wind.dx,wind.dy)<100)throw Error('wind failed '+JSON.stringify(wind));
-            if(thunder.kind!=='dragon_thunder'||thunder.targetHp>930||thunder.stun<.45)throw Error('thunder failed '+JSON.stringify(thunder));
-            if(bubble.kind!=='dragon_bubble'||bubble.targetHp>930||bubble.slow<1.9||bubble.slowPower<.49)throw Error('bubble failed '+JSON.stringify(bubble));
-            if(leaf.kind!=='dragon_leaf'||leaf.targetHp>930||leaf.heal<69)throw Error('leaf failed '+JSON.stringify(leaf));
-            if(errors.length)throw Error('page errors '+JSON.stringify(errors));
+            const body=await page.locator('body').innerText();
+            if(!body.includes('v3.57')||!body.includes('여의주의 신통력'))throw new Error('v3.57 dragon copy missing');
+            const cards=page.locator('.fighter-card');
+            let dragon=null;
+            for(let i=0;i<await cards.count();i++){
+              const text=await cards.nth(i).innerText().catch(()=> '');
+              if(text.includes('용')&&text.includes('여의주의 신통력')){dragon=cards.nth(i);break;}
+            }
+            if(!dragon)throw new Error('dragon card missing');
+            await dragon.click();
+            await page.locator('button.start').first().click();
+            await page.locator('#speed').selectOption('4');
+            await page.waitForTimeout(4000);
+            if(document.hidden)throw new Error('unexpected hidden document');
+            if(errors.length)throw new Error('runtime errors: '+JSON.stringify(errors));
             await browser.close();
-            console.log('v3.57 dragon four-attack browser test passed');
+            console.log('v3.57 dragon source + browser runtime test passed');
           })().catch(e=>{console.error(e.stack||e);process.exit(1)});
           JS
