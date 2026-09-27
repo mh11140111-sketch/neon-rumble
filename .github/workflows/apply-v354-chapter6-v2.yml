@@ -13,6 +13,8 @@ jobs:
       - uses: actions/checkout@v4
       - name: Repair patch script
         run: python3 repair_v354_patchscript.py
+      - name: Repair ocean panel anchor
+        run: python3 repair_v354_patchscript2.py
       - name: Apply v3.54 patch
         run: python3 apply_v354_chapter6.py
       - name: Validate inline JavaScript syntax
