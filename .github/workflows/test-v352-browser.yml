@@ -1,0 +1,87 @@
+name: Test v3.52 Browser
+on:
+  push:
+    paths:
+      - '.github/workflows/test-v352-browser.yml'
+permissions:
+  contents: read
+jobs:
+  browser-test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: Install Playwright
+        run: |
+          npm init -y >/dev/null 2>&1
+          npm install playwright@1.55.0 >/dev/null 2>&1
+          npx playwright install chromium >/dev/null 2>&1
+      - name: Serve game
+        run: |
+          python3 -m http.server 8123 >/tmp/server.log 2>&1 &
+          sleep 2
+      - name: Test v3.52 joystick runtime
+        run: |
+          node <<'JS'
+          const { chromium } = require('playwright');
+          (async()=>{
+            const browser=await chromium.launch({headless:true});
+            const page=await browser.newPage({viewport:{width:430,height:900},hasTouch:true,isMobile:true});
+            const errors=[];
+            page.on('console',m=>{if(m.type()==='error')errors.push('console: '+m.text())});
+            page.on('pageerror',e=>errors.push('pageerror: '+(e.stack||e.message)));
+            await page.goto('http://127.0.0.1:8123/index.html',{waitUntil:'load'});
+            if(!await page.locator('body').innerText().then(t=>t.includes('v3.52')))throw new Error('v3.52 label missing');
+            if(await page.locator('#setting-stick-position').count())throw new Error('old stick-position setting remains');
+            if(await page.locator('#setting-stick-lock').count()!==1)throw new Error('stick lock setting missing');
+            await page.locator('#mode-control').click();
+            await page.locator('#start').click();
+            await page.waitForTimeout(300);
+            const arena=page.locator('.arena');
+            const stick=page.locator('#control-stick');
+            const knob=page.locator('#control-knob');
+            if(await stick.isHidden())throw new Error('stick hidden in control mode');
+            const box=await arena.boundingBox();
+            if(!box)throw new Error('arena box missing');
+            // Default is unlocked: touch far from default base; base must relocate.
+            const x=box.x+box.width*.62,y=box.y+box.height*.45;
+            await page.touchscreen.tap(x,y);
+            // tap releases immediately, but base must remain where the touch placed it.
+            const moved=await stick.evaluate(el=>({left:el.style.left,top:el.style.top}));
+            if(!moved.left||!moved.top)throw new Error('unlocked stick did not relocate: '+JSON.stringify(moved));
+            console.log('unlocked floating base ok',moved);
+            // Use synthetic pointer sequence so knob direction can be checked.
+            await page.evaluate(({x,y})=>{
+              const a=document.querySelector('.arena');
+              a.dispatchEvent(new PointerEvent('pointerdown',{pointerId:91,pointerType:'touch',clientX:x,clientY:y,bubbles:true,cancelable:true}));
+              a.dispatchEvent(new PointerEvent('pointermove',{pointerId:91,pointerType:'touch',clientX:x+45,clientY:y,bubbles:true,cancelable:true}));
+            },{x,y});
+            const tr=await knob.evaluate(el=>el.style.transform);
+            if(!tr||tr==='translate(-50%,-50%)')throw new Error('knob did not move from arena pointer drag');
+            await page.evaluate(()=>document.querySelector('.arena').dispatchEvent(new PointerEvent('pointerup',{pointerId:91,pointerType:'touch',clientX:300,clientY:300,bubbles:true,cancelable:true})));
+            console.log('arena anywhere drag input ok');
+            // Enable fixed mode. Base should return to CSS fixed location and not relocate.
+            await page.locator('#settings-btn').click();
+            await page.locator('#setting-stick-lock').selectOption('on');
+            const fixedBefore=await stick.evaluate(el=>({left:el.style.left,top:el.style.top,right:el.style.right,bottom:el.style.bottom}));
+            if(fixedBefore.left||fixedBefore.top)throw new Error('fixed mode did not clear floating inline position: '+JSON.stringify(fixedBefore));
+            await page.locator('#settings-btn').click();
+            const x2=box.x+box.width*.82,y2=box.y+box.height*.25;
+            await page.evaluate(({x,y})=>{
+              const a=document.querySelector('.arena');
+              a.dispatchEvent(new PointerEvent('pointerdown',{pointerId:92,pointerType:'touch',clientX:x,clientY:y,bubbles:true,cancelable:true}));
+              a.dispatchEvent(new PointerEvent('pointermove',{pointerId:92,pointerType:'touch',clientX:x-30,clientY:y+20,bubbles:true,cancelable:true}));
+            },{x:x2,y:y2});
+            const fixedAfter=await stick.evaluate(el=>({left:el.style.left,top:el.style.top}));
+            if(fixedAfter.left||fixedAfter.top)throw new Error('fixed stick base moved: '+JSON.stringify(fixedAfter));
+            const fixedKnob=await knob.evaluate(el=>el.style.transform);
+            if(!fixedKnob||fixedKnob==='translate(-50%,-50%)')throw new Error('fixed stick did not accept anywhere input');
+            await page.evaluate(()=>document.querySelector('.arena').dispatchEvent(new PointerEvent('pointerup',{pointerId:92,pointerType:'touch',clientX:300,clientY:300,bubbles:true,cancelable:true})));
+            if(errors.length)throw new Error('runtime errors: '+JSON.stringify(errors));
+            console.log('fixed base + anywhere control ok');
+            console.log('v3.52 browser runtime test passed');
+            await browser.close();
+          })().catch(e=>{console.error(e.stack||e);process.exit(1)});
+          JS
