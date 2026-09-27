@@ -1,0 +1,43 @@
+name: Apply v3.56 Dragon
+on:
+  push:
+    paths:
+      - '.github/workflows/apply-v356-dragon.yml'
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Apply v3.56 patch
+        run: python3 apply_v356_dragon.py
+      - name: Validate inline JavaScript syntax
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          import re
+          s=Path('index.html').read_text(encoding='utf-8')
+          scripts=re.findall(r'<script(?:\s[^>]*)?>(.*?)</script>',s,re.S)
+          for i,code in enumerate(scripts): Path(f'/tmp/v356_{i}.js').write_text(code,encoding='utf-8')
+          print('scripts',len(scripts))
+          PY
+          for f in /tmp/v356_*.js; do node --check "$f"; done
+      - name: Verify v3.56 markers
+        run: |
+          grep -F 'BATTLE <b>v3.56</b>' index.html
+          grep -F "id:'dragon'" index.html
+          grep -F 'coins-=50' index.html
+          grep -F 'dragonRainDrop(f)' index.html
+          grep -F 'dragonMirageActive(f)' index.html
+          grep -F 'formDragonOrb(f)' index.html
+          grep -F 'reviveDragon(f)' index.html
+          grep -F 'dragonOrbUntil=this.time+5' index.html
+      - name: Commit v3.56
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add index.html apply_v356_dragon.py
+          git commit -m 'Release NEON RUMBLE v3.56 dragon'
+          git push
