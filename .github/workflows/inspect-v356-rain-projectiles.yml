@@ -1,0 +1,14 @@
+name: Inspect v3.56 Rain Projectiles
+on:
+  push:
+    paths:
+      - 'inspect_v356_rain_projectiles.py'
+      - '.github/workflows/inspect-v356-rain-projectiles.yml'
+  workflow_dispatch:
+jobs:
+  inspect:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Inspect rain projectile anchors
+        run: python3 inspect_v356_rain_projectiles.py
