@@ -1,0 +1,45 @@
+name: Apply v3.54 Chapter 6 v2
+on:
+  push:
+    paths:
+      - '.github/workflows/apply-v354-chapter6-v2.yml'
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Repair patch script
+        run: python3 repair_v354_patchscript.py
+      - name: Apply v3.54 patch
+        run: python3 apply_v354_chapter6.py
+      - name: Validate inline JavaScript syntax
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          import re
+          s=Path('index.html').read_text(encoding='utf-8')
+          scripts=re.findall(r'<script(?:\s[^>]*)?>(.*?)</script>',s,re.S)
+          for i,code in enumerate(scripts): Path(f'/tmp/v354_{i}.js').write_text(code,encoding='utf-8')
+          print('scripts',len(scripts))
+          PY
+          for f in /tmp/v354_*.js; do node --check "$f"; done
+      - name: Verify v3.54 markers
+        run: |
+          grep -F 'BATTLE <b>v3.54</b>' index.html
+          grep -F 'id="chapter6-entry"' index.html
+          grep -F 'id="ocean-panel"' index.html
+          grep -F "id:'shark'" index.html
+          grep -F "id:'merman'" index.html
+          grep -F "tickBleed(e)" index.html
+          grep -F "s.kind==='wave'" index.html
+          grep -F 'function startOceanStage' index.html
+      - name: Commit v3.54
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add index.html apply_v354_chapter6.py
+          git commit -m 'Release NEON RUMBLE v3.54 Chapter 6'
+          git push
