@@ -1,0 +1,40 @@
+name: Apply v3.56 Rain Projectile Hotfix
+on:
+  push:
+    paths:
+      - 'apply_v356_rain_projectile_hotfix.py'
+      - '.github/workflows/apply-v356-rain-projectile-hotfix.yml'
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Apply rain projectile hotfix
+        run: python3 apply_v356_rain_projectile_hotfix.py
+      - name: Validate inline JavaScript syntax
+        run: |
+          python3 - <<'PY'
+          import re, pathlib
+          s=pathlib.Path('index.html').read_text(encoding='utf-8')
+          scripts=re.findall(r'<script[^>]*>(.*?)</script>',s,re.S)
+          pathlib.Path('/tmp/v356-rain.js').write_text('\n'.join(scripts),encoding='utf-8')
+          PY
+          node --check /tmp/v356-rain.js
+      - name: Verify projectile markers
+        run: |
+          grep -q "kind:'dragon_rain'" index.html
+          grep -q "kind:'dragon_lightning'" index.html
+          grep -q "speed:520\*f.scale" index.html
+          grep -q "speed:760\*f.scale" index.html
+          grep -q "s.kind==='dragon_rain'||s.kind==='dragon_lightning'" index.html
+      - name: Commit hotfix
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add index.html
+          git diff --cached --quiet && exit 0
+          git commit -m "Hotfix v3.56 falling rain projectiles"
+          git push
