@@ -1,0 +1,58 @@
+name: Test v3.57 Dragon Mystic Browser
+on:
+  push:
+    branches: [ main ]
+    paths:
+      - '.github/workflows/test-v357-dragon-mystic-browser.yml'
+permissions:
+  contents: read
+jobs:
+  browser-test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install Playwright
+        run: |
+          npm init -y >/dev/null 2>&1
+          npm install playwright@1.55.0 >/dev/null 2>&1
+          npx playwright install chromium >/dev/null 2>&1
+      - name: Serve game
+        run: |
+          python3 -m http.server 8123 >/tmp/server.log 2>&1 &
+          sleep 2
+      - name: Test v3.57 dragon runtime
+        run: |
+          node <<'JS'
+          const { chromium } = require('playwright');
+          (async()=>{
+            const browser=await chromium.launch({headless:true});
+            const page=await browser.newPage({viewport:{width:430,height:900},hasTouch:true,isMobile:true});
+            const errors=[];
+            page.on('console',m=>{if(m.type()==='error')errors.push('console: '+m.text())});
+            page.on('pageerror',e=>errors.push('pageerror: '+(e.stack||e.message)));
+            await page.addInitScript(()=>localStorage.setItem('neonRumble.tutorialSeen.v1','1'));
+            await page.goto('http://127.0.0.1:8123/index.html',{waitUntil:'load'});
+            const body=await page.locator('body').innerText();
+            if(!body.includes('v3.57'))throw new Error('v3.57 missing');
+            const cards=page.locator('.fighter-card');
+            let dragon=null;
+            for(let i=0;i<await cards.count();i++){
+              const text=await cards.nth(i).innerText().catch(()=> '');
+              if(text.includes('용')&&text.includes('여의주의 신통력')){dragon=cards.nth(i);break;}
+            }
+            if(!dragon)throw new Error('dragon v3.57 card not found');
+            await dragon.click();
+            await page.locator('button.start').first().click();
+            await page.locator('#speed').selectOption('4');
+            await page.waitForTimeout(5000);
+            const state=await page.evaluate(()=>({battle:!document.getElementById('battle').hidden,event:document.getElementById('event').textContent,info:document.getElementById('battle-info').textContent}));
+            console.log('v3.57 state',state,'errors',errors);
+            if(!state.battle)throw new Error('dragon battle not running');
+            if(errors.length)throw new Error('runtime errors: '+JSON.stringify(errors));
+            await browser.close();
+            console.log('v3.57 dragon mystic browser test passed');
+          })().catch(e=>{console.error(e.stack||e);process.exit(1)});
+          JS
