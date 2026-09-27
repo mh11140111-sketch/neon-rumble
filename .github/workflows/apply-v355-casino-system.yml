@@ -1,0 +1,44 @@
+name: Apply v3.55 Casino System
+on:
+  push:
+    paths:
+      - 'apply_v355_casino_system.py'
+      - '.github/workflows/apply-v355-casino-system.yml'
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Apply v3.55 patch
+        run: python3 apply_v355_casino_system.py
+      - name: Validate inline JavaScript syntax
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          import re
+          s=Path('index.html').read_text(encoding='utf-8')
+          scripts=re.findall(r'<script(?:\s[^>]*)?>(.*?)</script>',s,re.S)
+          for i,code in enumerate(scripts): Path(f'/tmp/v355_{i}.js').write_text(code,encoding='utf-8')
+          print('scripts',len(scripts))
+          PY
+          for f in /tmp/v355_*.js; do node --check "$f"; done
+      - name: Verify v3.55 casino markers
+        run: |
+          grep -F 'BATTLE <b>v3.55</b>' index.html
+          grep -F 'id="casino-system-panel"' index.html
+          grep -F 'casino_ribbon_hat' index.html
+          grep -F 'coins-=200' index.html
+          grep -F 'coins+=250' index.html
+          grep -F 'coins+=400' index.html
+          grep -F "const CASINO_CHARACTER_IDS=['slotmachine','moneyman']" index.html
+      - name: Commit v3.55
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add index.html
+          git diff --cached --quiet && exit 0
+          git commit -m 'Release NEON RUMBLE v3.55 casino system'
+          git push
