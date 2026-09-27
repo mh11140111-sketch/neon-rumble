@@ -1,0 +1,72 @@
+name: Test v3.49 Slot Machine and Detective Browser
+
+on:
+  push:
+    branches: [ main ]
+    paths:
+      - '.github/workflows/test-v349-slot-detective-browser.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  browser-test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Install Playwright
+        run: |
+          npm init -y >/dev/null 2>&1
+          npm install playwright@1.55.0 >/dev/null 2>&1
+          npx playwright install chromium >/dev/null 2>&1
+      - name: Serve game
+        run: |
+          python3 -m http.server 8123 >/tmp/server.log 2>&1 &
+          sleep 2
+      - name: Test Slot Machine and Detective
+        run: |
+          node <<'JS'
+          const { chromium } = require('playwright');
+          (async()=>{
+            const browser=await chromium.launch({headless:true});
+            const page=await browser.newPage({viewport:{width:1280,height:900}});
+            const errors=[];
+            page.on('console',m=>{if(m.type()==='error')errors.push('console: '+m.text())});
+            page.on('pageerror',e=>errors.push('pageerror: '+(e.stack||e.message)));
+            await page.goto('http://127.0.0.1:8123/index.html',{waitUntil:'load'});
+            await page.evaluate(()=>{
+              localStorage.setItem('neonRumble.shopOwned.v1',JSON.stringify(['slotmachine']));
+              localStorage.setItem('neonRumble.detectiveUnlocked.v1','1');
+            });
+            await page.reload({waitUntil:'load'});
+
+            async function selectCharacter(name){
+              const cards=page.locator('.fighter-card');
+              for(let i=0;i<await cards.count();i++){
+                const text=await cards.nth(i).innerText().catch(()=> '');
+                if(text.includes(name)){await cards.nth(i).click();return true;}
+              }
+              return false;
+            }
+            if(!await selectCharacter('슬롯머신'))throw new Error('Slot Machine card not found/unlocked');
+            await page.locator('button.start').first().click();
+            await page.waitForTimeout(6500);
+            const slotState=await page.evaluate(()=>({visible:!document.getElementById('battle').hidden,canvas:!!document.querySelector('canvas')}));
+            console.log('slot state',slotState,'errors',errors);
+            if(!slotState.visible||!slotState.canvas||errors.length)throw new Error('Slot Machine runtime failed: '+JSON.stringify(errors));
+
+            await page.locator('#back').click();
+            if(!await selectCharacter('탐정'))throw new Error('Detective card not found/unlocked');
+            await page.locator('button.start').first().click();
+            await page.waitForTimeout(12500);
+            const detectiveState=await page.evaluate(()=>({visible:!document.getElementById('battle').hidden,canvas:!!document.querySelector('canvas')}));
+            console.log('detective state',detectiveState,'errors',errors);
+            if(!detectiveState.visible||!detectiveState.canvas||errors.length)throw new Error('Detective runtime failed: '+JSON.stringify(errors));
+
+            await browser.close();
+            console.log('v3.49 browser runtime test passed');
+          })().catch(e=>{console.error(e.stack||e);process.exit(1)});
+          JS
