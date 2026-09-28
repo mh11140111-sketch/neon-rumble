@@ -3,6 +3,7 @@ on:
   push:
     paths:
       - '.github/workflows/apply-v361-dragon-balance.yml'
+# retry after patch-helper correction
 jobs:
   patch:
     runs-on: ubuntu-latest
