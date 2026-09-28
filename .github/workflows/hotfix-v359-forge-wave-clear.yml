@@ -1,0 +1,34 @@
+name: Hotfix v3.59 forge wave clear
+on:
+  push:
+    paths:
+      - '.github/workflows/hotfix-v359-forge-wave-clear.yml'
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      - name: Apply hotfix
+        run: python hotfix_v359_forge_wave_clear.py
+      - name: Validate JavaScript
+        run: |
+          python - <<'PY'
+          import re, pathlib
+          s=pathlib.Path('index.html').read_text(encoding='utf-8')
+          scripts=re.findall(r'<script[^>]*>(.*?)</script>',s,re.S)
+          pathlib.Path('/tmp/check.js').write_text('\n'.join(scripts),encoding='utf-8')
+          PY
+          node --check /tmp/check.js
+      - name: Verify forge wave guard
+        run: |
+          grep -F "engine.forgeMode=true;engine.desertWaveMode=true" index.html
+          grep -F "engine.forgeMode=false;engine.desertWaveMode=false" index.html
+      - name: Commit
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add index.html
+          git commit -m 'Hotfix v3.59 forge wave clear condition'
+          git push
