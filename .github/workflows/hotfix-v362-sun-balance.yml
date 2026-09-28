@@ -44,3 +44,4 @@ jobs:
           git add index.html
           git commit -m 'Hotfix v3.62 Sun balance'
           git push
+# retry after helper correction
