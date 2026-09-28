@@ -1,0 +1,35 @@
+name: Hotfix v3.59 stage panels
+on:
+  push:
+    paths:
+      - 'hotfix_v359_hide_stage_panels.py'
+      - '.github/workflows/hotfix-v359-hide-stage-panels.yml'
+permissions:
+  contents: write
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: python hotfix_v359_hide_stage_panels.py
+      - name: Validate JavaScript
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          import re, subprocess
+          s=Path('index.html').read_text(encoding='utf-8')
+          for i,js in enumerate(re.findall(r'<script(?:\s[^>]*)?>(.*?)</script>',s,re.S|re.I)):
+              if js.strip():
+                  p=Path('/tmp/check.js'); p.write_text(js,encoding='utf-8'); subprocess.run(['node','--check',str(p)],check=True)
+          PY
+      - name: Verify
+        run: |
+          grep -q "function hideStageSelectionPanels" index.html
+          grep -q "BATTLE <b>v3.59</b>" index.html
+      - name: Commit
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add index.html
+          git diff --cached --quiet || git commit -m 'Hotfix v3.59 hide stage panels during battle'
+          git push
