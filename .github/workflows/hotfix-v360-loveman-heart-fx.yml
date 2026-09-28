@@ -1,0 +1,45 @@
+name: Hotfix v3.60 Love Man heart FX
+on:
+  push:
+    paths:
+      - 'hotfix_v360_loveman_heart_fx.py'
+      - '.github/workflows/hotfix-v360-loveman-heart-fx.yml'
+permissions:
+  contents: write
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Apply hotfix
+        run: python hotfix_v360_loveman_heart_fx.py
+      - name: Validate JavaScript
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          import re
+          s=Path('index.html').read_text(encoding='utf-8')
+          scripts=re.findall(r'<script>(.*?)</script>',s,re.S)
+          Path('/tmp/all.js').write_text('\n'.join(scripts),encoding='utf-8')
+          PY
+          node --check /tmp/all.js
+      - name: Verify heart FX
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          s=Path('index.html').read_text(encoding='utf-8')
+          assert 'v3.60 loveman heart projectile FX hotfix' in s
+          assert "s.icon||(s.kind==='love_burn'?'❤️‍🔥':s.kind==='love_heal'?'❤️':s.kind==='love_stun'?'💖':'💓')" in s
+          draw=s.split('for(const s of engine.shots){ctx.save();ctx.translate(s.x,s.y);ctx.rotate(Math.atan2(s.vy,s.vx));',1)[1]
+          assert "['love_burn','love_heal','love_stun','love_charm'].includes(s.kind)" in draw
+          engine=s.split('for(const s of this.shots){',1)[1].split('for(const s of engine.shots){',1)[0]
+          assert "ctx.fillText(s.kind==='love_burn'" not in engine
+          print('heart FX markers OK')
+          PY
+      - name: Commit
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add index.html
+          git commit -m 'Hotfix v3.60 Love Man heart projectile effects' || exit 0
+          git push
