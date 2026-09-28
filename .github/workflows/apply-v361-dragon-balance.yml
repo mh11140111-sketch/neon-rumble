@@ -1,0 +1,49 @@
+name: Apply v3.61 Dragon Balance
+on:
+  push:
+    paths:
+      - '.github/workflows/apply-v361-dragon-balance.yml'
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      - name: Apply v3.61 patch
+        run: python apply_v361_dragon_mystic_balance.py
+      - name: Validate JavaScript
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          import re, subprocess, tempfile
+          s=Path('index.html').read_text(encoding='utf-8')
+          scripts=re.findall(r'<script[^>]*>(.*?)</script>',s,re.S)
+          code='\n'.join(scripts)
+          Path('/tmp/neon.js').write_text(code,encoding='utf-8')
+          subprocess.run(['node','--check','/tmp/neon.js'],check=True)
+          PY
+      - name: Verify v3.61 markers
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          s=Path('index.html').read_text(encoding='utf-8')
+          req=[
+            'BATTLE <b>v3.61</b>',
+            '패치노트 · v3.61',
+            '여의주의 신통력 공격 주기 2초 → 3초',
+            "dragonMysticNext:type.id==='dragon'?3/scale:9999",
+            'f.dragonMysticNext=this.time+3/f.scale;',
+            "detail:'HP 1000 · 신통력 70 / 3초 · 💨",
+          ]
+          miss=[x for x in req if x not in s]
+          if miss: raise SystemExit('missing markers: '+repr(miss))
+          print('v3.61 markers OK')
+          PY
+      - name: Commit release
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add index.html
+          git commit -m 'Release NEON RUMBLE v3.61 dragon balance'
+          git push
