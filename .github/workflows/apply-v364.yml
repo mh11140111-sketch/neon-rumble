@@ -1,0 +1,60 @@
+name: Apply v3.64
+on:
+  push:
+    paths:
+      - '.github/workflows/apply-v364.yml'
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      - name: Apply v3.64 patch
+        run: python apply_v364_balance_casino_skins.py
+      - name: Validate JavaScript
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          import re, subprocess
+          s=Path('index.html').read_text(encoding='utf-8')
+          scripts=re.findall(r'<script[^>]*>(.*?)</script>',s,re.S)
+          Path('/tmp/neon.js').write_text('\n'.join(scripts),encoding='utf-8')
+          subprocess.run(['node','--check','/tmp/neon.js'],check=True)
+          PY
+      - name: Verify v3.64 markers
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          s=Path('index.html').read_text(encoding='utf-8')
+          req=[
+            'BATTLE <b>v3.64</b>',
+            '패치노트 · v3.64',
+            "dragonMysticNext:type.id==='dragon'?2.7/scale:9999",
+            'f.dragonMysticNext=this.time+2.7/f.scale',
+            'heroStatusImmune(f)',
+            "this.effect(f,'🦸 변신! HP +'",
+            "f.id==='hero'&&f.heroReady&&f.heroPhase==='rush'",
+            'coins<100',
+            'coins-=100',
+            'coins+=150',
+            'coins+=200',
+            "id:'skin_vampire'",
+            "id:'skin_alien'",
+            "id:'skin_mage'",
+            "id:'skin_genie'",
+            "price:700,type:'skin'",
+            'currentSkinForFighter(f)',
+            'EQUIP_LEFT_SKIN_KEY'
+          ]
+          miss=[x for x in req if x not in s]
+          if miss: raise SystemExit('missing markers: '+repr(miss))
+          print('v3.64 markers OK')
+          PY
+      - name: Commit release
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add index.html
+          git commit -m 'Release NEON RUMBLE v3.64'
+          git push
