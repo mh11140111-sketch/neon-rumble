@@ -1,0 +1,55 @@
+name: Apply v3.65
+on:
+  push:
+    paths:
+      - '.github/workflows/apply-v365.yml'
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      - name: Apply v3.65 patch
+        run: python apply_v365_balance_rework.py
+      - name: Validate JavaScript
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          import re, subprocess
+          s=Path('index.html').read_text(encoding='utf-8')
+          scripts=re.findall(r'<script[^>]*>(.*?)</script>',s,re.S)
+          Path('/tmp/neon.js').write_text('\n'.join(scripts),encoding='utf-8')
+          subprocess.run(['node','--check','/tmp/neon.js'],check=True)
+          PY
+      - name: Verify v3.65 markers
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          s=Path('index.html').read_text(encoding='utf-8')
+          req=[
+            'BATTLE <b>v3.65</b>',
+            "id:'moai',name:'모아이',icon:'🗿',tag:'점프 · 전장 충격파',hp:1250",
+            "f.icon='🔮';f.hp=100;f.health=100",
+            "cooldown:7.5,unlock:'infectedUfo'",
+            'boss.doomInterval=7.5;boss.doomNext=7.5',
+            "id:'ninja',name:'닌자',icon:'🥷',tag:'표창 · 독 · 베기',hp:670",
+            'smithWeaponSkill(f,e)',
+            "kind:'smith_weapon'",
+            "hp=600*(owner.boss?2.5:1)",
+            'speed:45*owner.scale',
+            "f.firetruckNext=this.time+10/f.scale",
+            'f.firetruckNext=Infinity',
+            'e.firetruckNext=this.time+10/e.scale'
+          ]
+          miss=[x for x in req if x not in s]
+          if miss: raise SystemExit('missing markers: '+repr(miss))
+          print('v3.65 markers OK')
+          PY
+      - name: Commit release
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add index.html
+          git commit -m 'Release NEON RUMBLE v3.65'
+          git push
