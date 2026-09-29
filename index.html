@@ -124,7 +124,7 @@ const ROSTER=[
 {id:'zombie_mage',name:'법사좀비',icon:'🧌',tag:'유도탄 · 미니좀비 소환',hp:1000,damage:60,speed:105,cooldown:2,unlock:'zombieMage',description:'샌드박스에서는 2초마다 피해 60의 유도탄을 발사하며 적중 시 HP 10의 미니좀비를 소환한다.',detail:'HP 1000 · 이동속도 -30% · 크기 1.5배 · 유도탄 60 / 2초 · 명중 시 HP 10 미니좀비 · 미니좀비 피해 5~20'},
 {id:'skeleton_mage',name:'해골 법사',icon:'💀🧙',tag:'추적 마법 · 10초 해골 소환',hp:700,damage:65,speed:140,cooldown:1.45,unlock:'skeletonMage',description:'추적 마법탄을 발사하고 10초마다 총잡이·칼잡이·취한 해골 중 1마리를 소환해. CHAPTER 2 STAGE 3 클리어 시 10% 확률로 획득할 수 있어.',detail:'HP 700 · 추적 마법탄 65 / 1.45초 · 10초마다 해골 1마리 소환 · CHAPTER 2 STAGE 3 클리어 보상 10%'}
 ,{id:'boxing_master',name:'사부',icon:'🫡',tag:'복서식 돌진 · 어퍼컷 없음',hp:1000,damage:65,speed:195,cooldown:.42,stageOnly:true,description:'복서와 거의 같은 근접 전투와 돌진을 사용하지만 어퍼컷은 사용할 수 없어.',detail:'HP 1000 · 접촉 65 · 돌진 130 / 2.8초 · 어퍼컷 없음'},
-{id:'psychic',name:'초능력자',icon:'🧘‍♂️',tag:'염력탄 · 벽 밀치기 · 투사체 궤도',hp:1000,damage:20,speed:150,cooldown:2,unlock:'psychic',description:'2초마다 염력 마법탄으로 피해 20과 넉백. 5초마다 상대를 벽으로 날려 피해 50과 1초 기절. 가까운 적 투사체를 자기 주위 궤도로 끌어당겨 되돌려 이용한다.',detail:'HP 1000 · 염력탄 20 / 2초 + 넉백 · 벽 밀치기 50 / 5초 + 기절 1초 · 적 투사체 궤도 포획 · 궤도탄 벽 접촉 시 자신이 원래 피해 · CH8 STAGE 3 10% 획득'},
+{id:'psychic',name:'초능력자',icon:'🧘‍♂️',tag:'염력탄 · 벽 밀치기 · 투사체 궤도',hp:1000,damage:20,speed:150,cooldown:2,unlock:'psychic',description:'적과 궤도 공격에 유리한 거리를 유지하며 이동한다. 2초마다 염력 마법탄으로 피해 20과 넉백. 5초마다 상대를 벽으로 날려 피해 50과 1초 기절. 가까운 적 투사체를 자기 주위 궤도로 끌어당겨 되돌려 이용한다.',detail:'HP 1000 · 염력탄 20 / 2초 + 넉백 · 벽 밀치기 50 / 5초 + 기절 1초 · 적 투사체 궤도 포획 · 궤도탄 벽 접촉 시 자신이 원래 피해 · CH8 STAGE 3 10% 획득'},
 ];
 const clamp=(n,a,b)=>Math.max(a,Math.min(b,n)),distance=(a,b)=>Math.hypot(a.x-b.x,a.y-b.y);
 const ROOT_DIRECTIONS=Array.from({length:8},(_,i)=>[Math.cos(i*Math.PI/4),Math.sin(i*Math.PI/4)]);
@@ -403,6 +403,20 @@ sharkSkill(f,e){if(!f||!e||f.health<=0||f.stunUntil>this.time||this.time<(f.shar
 applyBleed(f,e){if(!f||!e||e.health<=0||f.team===e.team||this.heroStatusImmune(e))return;e.bleed={source:f.side,damage:15*f.scale,next:this.time+.5,expires:this.time+6};this.effect(e,'🩸 출혈 6초','doom')}
 tickBleed(e){const b=e.bleed;if(!b)return;while(b.next<=this.time+1e-9&&b.next<=b.expires+1e-9){const source=this.fighters[b.source];if(!source||source.team===e.team){e.bleed=null;return}const n=Math.min(e.health,Math.max(0,Math.round(b.damage*(1-e.armor))));e.health-=n;source.damageDealt+=n;source.hits++;this.effect(e,'🩸 −'+n,'doom');b.next+=.5;if(e.health<=0){if(this.formEgg(e)){e.bleed=null;return}e.trail=[];e.bleed=null;this.emit(e.name+' 출혈로 탈락!');this.checkEnd();return}}if(this.time>=b.expires-1e-9)e.bleed=null}
 mermanSkill(f,e){if(!f||!e||f.health<=0||f.stunUntil>this.time||this.time<(f.mermanWaveNext||0)-1e-9)return;f.mermanWaveNext=this.time+3/f.scale;const a=this.aim(f,e);this.shots.push({x:f.x+a.x*(f.radius+22),y:f.y+a.y*(f.radius+22),vx:a.x,vy:a.y,owner:f.side,team:f.team,target:e.side,kind:'wave',radius:34*f.scale,speed:225*f.scale,damage:100*f.scale,life:4/f.scale,bounces:0,hitTargets:{}});this.effect(f,'🌊 파도!','skill')}
+psychicMaintainRange(f,e,dt){
+ if(!f||f.id!=='psychic'||!e||f.health<=0||e.health<=0||f.stunUntil>this.time)return;
+ const dx=e.x-f.x,dy=e.y-f.y,d=Math.max(1,Math.hypot(dx,dy)),nx=dx/d,ny=dy/d;
+ const target=150*f.scale,near=125*f.scale,far=180*f.scale,spd=f.speed*f.scale;
+ let mx=0,my=0;
+ if(d<near){mx=-nx;my=-ny}
+ else if(d>far){mx=nx;my=ny}
+ else{const dir=(f.side%2===0?1:-1);mx=-ny*dir;my=nx*dir}
+ const margin=78*f.scale,b=this.bounds(f);
+ if(f.x<Math.max(b.low,margin))mx+=.9;if(f.x>Math.min(b.high,720-margin))mx-=.9;
+ if(f.y<Math.max(b.low,margin))my+=.9;if(f.y>Math.min(b.high,720-margin))my-=.9;
+ const m=Math.hypot(mx,my)||1;mx/=m;my/=m;
+ const step=spd*dt*.78;f.x+=mx*step;f.y+=my*step;this.keepInside(f);f.vx=mx;f.vy=my;
+}
 psychicSkill(f,e){
  if(!f||f.id!=='psychic'||f.health<=0||f.stunUntil>this.time||!e||e.health<=0)return;
  if(!Number.isFinite(f.psychicPushNext))f.psychicPushNext=this.time+5/f.scale;
@@ -471,7 +485,7 @@ stepFighter(f,e,dt){
  if(f.id==='smith')this.smithWeaponSkill(f,e)
  if(f.id==='devileye')this.devilEyeSkill(f)
  if(f.id==='aladdin'&&f.health>0&&f.stunUntil<=this.time){const at=this.nearest(f);if(at){const aa=this.aim(f,at),d=distance(f,at),cx=360-f.x,cy=360-f.y,edge=f.x<105||f.x>615||f.y<105||f.y>615;let x,y;if(edge){const n=Math.hypot(cx,cy)||1;x=cx/n;y=cy/n}else if(d<330*f.scale){x=-aa.x-aa.y*.35;y=-aa.y+aa.x*.35}else{x=-aa.y;y=aa.x}const n=Math.hypot(x,y)||1;f.vx=x/n;f.vy=y/n;f.turn=.35}}
- if((f.magnifiedUntil||0)>0&&this.time>=f.magnifiedUntil){if(f.magnifyBaseRadius)f.radius=f.magnifyBaseRadius;f.magnifiedUntil=0;f.magnifyBaseRadius=0}this.transformHero(f);this.updateVampire(f);this.moonSkill(f);this.updateKnightShield(f,dt);this.knightGiantSlash(f,e);if(f.id==='snowman')this.snowmanShot(f,e);if(f.id==='angryman')this.angryManSkill(f,e,dt);if(f.id==='cowboy')this.cowboySkill(f,e);if(f.id==='chef')this.chefSkill(f);if(f.id==='coolguy')this.coolGuySkill(f,e);if(f.id==='firefighter')this.firefighterSkill(f,e);if(f.id==='moneyman')this.moneyManSkill(f,e);if(f.id==='slotmachine')this.slotMachineSkill(f,e);if(f.id==='casino_boss')this.casinoBossSkill(f,e);if(f.id==='crab')this.crabSkill(f,e,dt);if(f.id==='tropical_fish'||f.id==='fish')this.oceanFishSkill(f,e);if(f.id==='shark')this.sharkSkill(f,e);if(f.id==='merman')this.mermanSkill(f,e);if(f.id==='psychic')this.psychicSkill(f,e);if(f.id==='dragon')this.dragonMysticAttack(f,e);if(f.id==='sun')this.sunSkill(f,e);if(f.id==='loveman')this.loveManSkill(f,e);if(f.id==='detective'){this.detectiveJailSkill(f);this.detectiveSkill(f,e);}if(f.id==='alien'){this.updateAlienUfo(f);this.alienSkill(f,e)}if(f.id==='alien_creature')this.alienCreatureSkill(f,e);if(f.id==='infected_ufo')this.infectedUfoSkill(f,e);if(['zombie','king_zombie','zombie_mini','zombie_mage'].includes(f.id))this.zombieSkill(f,e);if(f.id.startsWith('skeleton_'))this.skeletonSkill(f,e);if(f.id==='goblin'||f.id==='goblin_king')this.goblinSkill(f,e);
+ if((f.magnifiedUntil||0)>0&&this.time>=f.magnifiedUntil){if(f.magnifyBaseRadius)f.radius=f.magnifyBaseRadius;f.magnifiedUntil=0;f.magnifyBaseRadius=0}this.transformHero(f);this.updateVampire(f);this.moonSkill(f);this.updateKnightShield(f,dt);this.knightGiantSlash(f,e);if(f.id==='snowman')this.snowmanShot(f,e);if(f.id==='angryman')this.angryManSkill(f,e,dt);if(f.id==='cowboy')this.cowboySkill(f,e);if(f.id==='chef')this.chefSkill(f);if(f.id==='coolguy')this.coolGuySkill(f,e);if(f.id==='firefighter')this.firefighterSkill(f,e);if(f.id==='moneyman')this.moneyManSkill(f,e);if(f.id==='slotmachine')this.slotMachineSkill(f,e);if(f.id==='casino_boss')this.casinoBossSkill(f,e);if(f.id==='crab')this.crabSkill(f,e,dt);if(f.id==='tropical_fish'||f.id==='fish')this.oceanFishSkill(f,e);if(f.id==='shark')this.sharkSkill(f,e);if(f.id==='merman')this.mermanSkill(f,e);if(f.id==='psychic'){this.psychicMaintainRange(f,e,dt);this.psychicSkill(f,e)}if(f.id==='dragon')this.dragonMysticAttack(f,e);if(f.id==='sun')this.sunSkill(f,e);if(f.id==='loveman')this.loveManSkill(f,e);if(f.id==='detective'){this.detectiveJailSkill(f);this.detectiveSkill(f,e);}if(f.id==='alien'){this.updateAlienUfo(f);this.alienSkill(f,e)}if(f.id==='alien_creature')this.alienCreatureSkill(f,e);if(f.id==='infected_ufo')this.infectedUfoSkill(f,e);if(['zombie','king_zombie','zombie_mini','zombie_mage'].includes(f.id))this.zombieSkill(f,e);if(f.id.startsWith('skeleton_'))this.skeletonSkill(f,e);if(f.id==='goblin'||f.id==='goblin_king')this.goblinSkill(f,e);
  if(f.moonUltPhase==='air'){f.attack=0;return}
  if(f.egg||f.stunUntil>this.time){f.attack=0;return}
  if(f.id==='robot')this.robotSkill(f,dt);
