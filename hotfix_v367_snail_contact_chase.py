@@ -32,8 +32,8 @@ insert=anchor+"\n if(f.id==='snail'){const touching=e&&e.health>0&&distance(f,e)
 once(anchor,insert,'snail contact attack')
 
 # 5) Prevent legacy generic melee from firing instantly on collision.
-once("'goblin','goblin_king','psychic'].includes(f.id)",
-     "'goblin','goblin_king','psychic','snail'].includes(f.id)",
+once("'skeleton_mage','goblin','goblin_king','psychic'].includes(f.id)&&f.cd<=0)",
+     "'skeleton_mage','goblin','goblin_king','psychic','snail'].includes(f.id)&&f.cd<=0)",
      'exclude snail generic melee')
 
 # Required invariants.
