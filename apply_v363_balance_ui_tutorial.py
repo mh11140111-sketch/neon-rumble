@@ -18,7 +18,7 @@ once('<details class="patch-notes"><summary>📒 패치노트 · v3.62</summary>
 once("🤬 단계는 👎 70/0.8초", "🤬 단계는 👎 70/0.7초", 'angry desc')
 once("🤬 👎70/0.8초", "🤬 👎70/0.7초", 'angry detail')
 once("rate=stage===0?1:stage===1?.5:.8;", "rate=stage===0?1:stage===1?.5:.7;", 'angry final rate')
-once("expires:this.time+3*f.scale", "expires:this.time+5*f.scale", 'burn duration')
+once("e.burn={source:f.side,damage:10*f.scale,interval,next:old?Math.min(old.next,this.time+interval):this.time+interval,expires:this.time+3*f.scale};", "e.burn={source:f.side,damage:10*f.scale,interval,next:old?Math.min(old.next,this.time+interval):this.time+interval,expires:this.time+5*f.scale};", 'burn duration')
 once("{id:'sun',name:'태양',icon:'🌞',tag:'태양 투사체 · 월하강림 면역',hp:1000,damage:50,speed:150,cooldown:2.5,description:'2.5초마다 ☀️ 투사체를 던진다.", "{id:'sun',name:'태양',icon:'🌞',tag:'태양 투사체 · 월하강림 면역',hp:1000,damage:50,speed:150,cooldown:3.3,description:'3.3초마다 ☀️ 투사체를 던진다.", 'sun cooldown')
 once("detail:'HP 1000 · ☀️ 50 / 2.5초 + 화상", "detail:'HP 1000 · ☀️ 50 / 3.3초 + 화상", 'sun detail')
 
