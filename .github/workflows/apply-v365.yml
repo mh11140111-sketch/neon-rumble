@@ -10,6 +10,34 @@ jobs:
       contents: write
     steps:
       - uses: actions/checkout@v4
+      - name: Fix precise smith render anchor
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          p=Path('apply_v365_balance_rework.py')
+          s=p.read_text(encoding='utf-8')
+          marker='def at_least(old,new,label,min_count=1):'
+          helper="""def last_once(old,new,label):
+              global s
+              n=s.count(old)
+              if n<1:
+                  raise SystemExit(f'{label}: expected >= 1 match, got {n}')
+              head,sep,tail=s.rpartition(old)
+              s=head+new+tail
+
+          """
+          if 'def last_once(' not in s:
+              s=s.replace(marker,helper+marker,1)
+          lines=s.splitlines()
+          changed=False
+          for i,line in enumerate(lines):
+              if "'render smith weapon')" in line and line.lstrip().startswith('once('):
+                  lines[i]=line.replace('once(','last_once(',1)
+                  changed=True
+          if not changed:
+              raise SystemExit('render helper line not found')
+          p.write_text('\n'.join(lines)+'\n',encoding='utf-8')
+          PY
       - name: Apply v3.65 patch
         run: python apply_v365_balance_rework.py
       - name: Validate JavaScript
