@@ -1,0 +1,59 @@
+name: Apply v3.66 Chapter 8
+on:
+  push:
+    paths:
+      - '.github/workflows/apply-v366-chapter8.yml'
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      - name: Apply v3.66 patch
+        run: python apply_v366_chapter8_psychic.py
+      - name: Validate JavaScript
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          import re, subprocess
+          s=Path('index.html').read_text(encoding='utf-8')
+          scripts=re.findall(r'<script[^>]*>(.*?)</script>',s,re.S)
+          Path('/tmp/neon.js').write_text('\n'.join(scripts),encoding='utf-8')
+          subprocess.run(['node','--check','/tmp/neon.js'],check=True)
+          PY
+      - name: Verify v3.66 markers
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          s=Path('index.html').read_text(encoding='utf-8')
+          req=[
+            'BATTLE <b>v3.66</b>',
+            'CHAPTER 8 · 복싱장',
+            "id:'boxing_master'",
+            "id:'psychic'",
+            "unlock:'psychic'",
+            'psychicSkill(f,e)',
+            'psychicCaptureShots()',
+            'updatePsychicOrbitShot(s,dt)',
+            "kind:'psychic_bolt'",
+            "kind:'firetruck_water'",
+            "mode==='boxing'",
+            "BOXING_STAGE_KEY='neonRumble.boxingStages.v1'",
+            "PSYCHIC_UNLOCK_KEY='neonRumble.psychicUnlocked.v1'",
+            'tryUnlockPsychic()',
+            "$('chapter8-entry')",
+            'startBoxingStage(3)',
+            'updateBoxingStage()'
+          ]
+          miss=[x for x in req if x not in s]
+          if miss: raise SystemExit('missing markers: '+repr(miss))
+          print('v3.66 markers OK')
+          PY
+      - name: Commit release
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add index.html
+          git commit -m 'Release NEON RUMBLE v3.66'
+          git push
