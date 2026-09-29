@@ -10,6 +10,8 @@ jobs:
       contents: write
     steps:
       - uses: actions/checkout@v4
+      - name: Fix helper anchors
+        run: python fix_v364_helper.py
       - name: Apply v3.64 patch
         run: python apply_v364_balance_casino_skins.py
       - name: Validate JavaScript
