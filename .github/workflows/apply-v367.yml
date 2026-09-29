@@ -10,8 +10,8 @@ jobs:
       contents: write
     steps:
       - uses: actions/checkout@v4
-      - name: Apply v3.67 patch
-        run: python apply_v367_balance_snail.py
+      - name: Apply v3.67 snail submarine hotfix
+        run: python hotfix_v367_snail_contact_chase.py
       - name: Validate JavaScript
         run: |
           python - <<'PY'
@@ -22,35 +22,29 @@ jobs:
           Path('/tmp/neon.js').write_text('\n'.join(scripts),encoding='utf-8')
           subprocess.run(['node','--check','/tmp/neon.js'],check=True)
           PY
-      - name: Verify v3.67 markers
+      - name: Verify v3.67 snail submarine markers
         run: |
           python - <<'PY'
           from pathlib import Path
           s=Path('index.html').read_text(encoding='utf-8')
           req=[
             'BATTLE <b>v3.67</b>',
-            "id:'psychic',name:'초능력자'",
-            "hp:550,damage:30,speed:95",
-            'damage:30*f.scale',
-            'this.attack(f,e,60*f.scale)',
             "id:'snail',name:'달팽이'",
             'damage:6767676767',
-            'speed:20',
-            'snailShellSkill(f)',
-            "f.icon='🐚'",
-            'f.armor=Math.max(f.armor||0,.8)',
-            'f.snailShellUntil=this.time+5',
-            'f.snailShellNextHeal+=.5'
+            'speed:28,cooldown:1',
+            'snailContactSide:null,snailContactTime:0',
+            'f.snailContactTime>=.3',
+            "'psychic','snail'].includes(f.id)"
           ]
           miss=[x for x in req if x not in s]
           if miss: raise SystemExit('missing: '+repr(miss))
-          if '벽 밀치기 80' in s[s.find("id:'psychic'"):s.find("id:'snail'")]: raise SystemExit('old psychic push text remains in roster')
-          print('v3.67 markers verified')
+          if 'BATTLE <b>v3.68</b>' in s: raise SystemExit('version changed unexpectedly')
+          print('v3.67 snail submarine markers verified')
           PY
-      - name: Commit release
+      - name: Commit hotfix
         run: |
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
           git add index.html
-          git commit -m 'Release NEON RUMBLE v3.67'
+          git commit -m 'Hotfix v3.67 snail chase contact timing'
           git push
