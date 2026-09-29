@@ -3,6 +3,7 @@ on:
   push:
     paths:
       - '.github/workflows/apply-v367.yml'
+# retry-2: exact snail melee exclusion anchor
 jobs:
   patch:
     runs-on: ubuntu-latest
