@@ -10,6 +10,17 @@ jobs:
       contents: write
     steps:
       - uses: actions/checkout@v4
+      - name: Fix v3.66 helper exclusion anchor
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          p=Path('apply_v366_chapter8_psychic.py')
+          s=p.read_text(encoding='utf-8')
+          old="once(\"'goblin','goblin_king'].includes(f.id)\", \"'goblin','goblin_king','psychic'].includes(f.id)\", 'psychic contact exclusion')"
+          new="atleast(\"'goblin','goblin_king'].includes(f.id)\", \"'goblin','goblin_king','psychic'].includes(f.id)\", 'psychic contact exclusion',2)"
+          if old not in s: raise SystemExit('helper anchor missing')
+          p.write_text(s.replace(old,new,1),encoding='utf-8')
+          PY
       - name: Apply v3.66 patch
         run: python apply_v366_chapter8_psychic.py
       - name: Validate JavaScript
