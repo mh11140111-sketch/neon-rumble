@@ -1,0 +1,46 @@
+name: Hotfix v3.66 Psychic Orbit Wall
+on:
+  push:
+    paths:
+      - '.github/workflows/hotfix-v366-psychic-orbit-wall.yml'
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      - name: Apply hotfix
+        run: python hotfix_v366_psychic_orbit_wall.py
+      - name: Validate JavaScript
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          import re, subprocess
+          s=Path('index.html').read_text(encoding='utf-8')
+          scripts=re.findall(r'<script[^>]*>(.*?)</script>',s,re.S)
+          Path('/tmp/neon.js').write_text('\n'.join(scripts),encoding='utf-8')
+          subprocess.run(['node','--check','/tmp/neon.js'],check=True)
+          PY
+      - name: Verify hotfix markers
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          s=Path('index.html').read_text(encoding='utf-8')
+          req=['BATTLE <b>v3.66</b>','🧱 궤도탄 역충격','궤도탄 벽 접촉 시 자신이 원래 피해']
+          miss=[x for x in req if x not in s]
+          if miss: raise SystemExit('missing: '+repr(miss))
+          start=s.find('updatePsychicOrbitShot(s,dt){')
+          end=s.find('smithWeaponSkill(f,e){',start)
+          block=s[start:end if end>start else start+4000]
+          if '즉시 승리' in block or 'this.result=p.side' in block or 'this.result=p.team' in block:
+              raise SystemExit('instant-win logic still present in orbit updater')
+          print('v3.66 orbit wall hotfix verified')
+          PY
+      - name: Commit hotfix
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add index.html
+          git commit -m 'Hotfix v3.66 psychic orbit wall damage'
+          git push
