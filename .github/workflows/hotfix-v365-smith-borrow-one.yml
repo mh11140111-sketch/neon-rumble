@@ -1,0 +1,50 @@
+name: Hotfix v3.65 Smith Borrow One
+on:
+  push:
+    paths:
+      - '.github/workflows/hotfix-v365-smith-borrow-one.yml'
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      - name: Apply smith hotfix
+        run: python hotfix_v365_smith_borrow_one.py
+      - name: Validate JavaScript
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          import re, subprocess
+          s=Path('index.html').read_text(encoding='utf-8')
+          scripts=re.findall(r'<script[^>]*>(.*?)</script>',s,re.S)
+          Path('/tmp/neon.js').write_text('\n'.join(scripts),encoding='utf-8')
+          subprocess.run(['node','--check','/tmp/neon.js'],check=True)
+          PY
+      - name: Verify smith hotfix
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          s=Path('index.html').read_text(encoding='utf-8')
+          req=[
+            "10초마다 제작무기로 다른 캐릭터의 일반 공격 또는 공격 스킬 하나를 무작위로 빌려 1회 사용해.",
+            "const attacks=[",
+            "name:'궁수의 화살'",
+            "name:'용의 신통력'",
+            "name:'복어의 가시'",
+            "if(a.name==='복어의 가시')",
+            "this.effect(f,'⚒️ '+a.name+' 복제!'"
+          ]
+          miss=[x for x in req if x not in s]
+          if miss: raise SystemExit('missing markers: '+repr(miss))
+          if '모든 캐릭터의 공격을 발사' in s: raise SystemExit('old simultaneous smith attack still present')
+          print('smith borrowed-one hotfix markers OK')
+          PY
+      - name: Commit hotfix
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add index.html
+          git commit -m 'Hotfix v3.65 smith borrowed attack'
+          git push
