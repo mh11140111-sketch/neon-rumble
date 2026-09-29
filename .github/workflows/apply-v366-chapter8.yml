@@ -10,7 +10,7 @@ jobs:
       contents: write
     steps:
       - uses: actions/checkout@v4
-      - name: Fix v3.66 helper exclusion anchor
+      - name: Fix v3.66 helper anchors
         run: |
           python - <<'PY'
           from pathlib import Path
@@ -18,8 +18,13 @@ jobs:
           s=p.read_text(encoding='utf-8')
           old="once(\"'goblin','goblin_king'].includes(f.id)\", \"'goblin','goblin_king','psychic'].includes(f.id)\", 'psychic contact exclusion')"
           new="atleast(\"'goblin','goblin_king'].includes(f.id)\", \"'goblin','goblin_king','psychic'].includes(f.id)\", 'psychic contact exclusion',2)"
-          if old not in s: raise SystemExit('helper anchor missing')
-          p.write_text(s.replace(old,new,1),encoding='utf-8')
+          if old not in s: raise SystemExit('psychic exclusion helper anchor missing')
+          s=s.replace(old,new,1)
+          old2="once(\"if(mode==='forge'||mode==='forge-select'){resetForgeTransient();mode='duel'}engine=\", \"if(mode==='forge'||mode==='forge-select'){resetForgeTransient();mode='duel'}if(mode==='boxing'||mode==='boxing-select'){resetBoxingTransient();mode='duel'}engine=\", 'start reset boxing')"
+          new2="s=s.replace(\"if(mode==='forge'||mode==='forge-select'){resetForgeTransient();mode='duel'}engine=\", \"if(mode==='forge'||mode==='forge-select'){resetForgeTransient();mode='duel'}if(mode==='boxing'||mode==='boxing-select'){resetBoxingTransient();mode='duel'}engine=\",1)"
+          if old2 not in s: raise SystemExit('start reset helper anchor missing')
+          s=s.replace(old2,new2,1)
+          p.write_text(s,encoding='utf-8')
           PY
       - name: Apply v3.66 patch
         run: python apply_v366_chapter8_psychic.py
