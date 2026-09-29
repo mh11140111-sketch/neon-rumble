@@ -1,0 +1,51 @@
+name: Hotfix v3.66 Psychic Stealth Balance
+on:
+  push:
+    paths:
+      - '.github/workflows/hotfix-v366-psychic-stealth-balance.yml'
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      - name: Apply hotfix
+        run: python hotfix_v366_psychic_stealth_balance.py
+      - name: Validate JavaScript
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          import re, subprocess
+          s=Path('index.html').read_text(encoding='utf-8')
+          scripts=re.findall(r'<script[^>]*>(.*?)</script>',s,re.S)
+          Path('/tmp/neon.js').write_text('\n'.join(scripts),encoding='utf-8')
+          subprocess.run(['node','--check','/tmp/neon.js'],check=True)
+          PY
+      - name: Verify stealth balance markers
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          s=Path('index.html').read_text(encoding='utf-8')
+          req=[
+            'BATTLE <b>v3.66</b>',
+            "speed:120,cooldown:2,unlock:'psychic'",
+            '염력탄 50 / 2초 + 넉백',
+            '벽 밀치기 80 / 5초 + 기절 1초',
+            'const dealt=this.attack(f,e,80*f.scale);',
+            "kind:'psychic_bolt',icon:'🟣',radius:9*f.scale,speed:330*f.scale,damage:50*f.scale"
+          ]
+          miss=[x for x in req if x not in s]
+          if miss: raise SystemExit('missing: '+repr(miss))
+          # Historical release note should remain unchanged for submarine patch.
+          if 'v3.66 · 소방차 호스 수정 · CHAPTER 8 복싱장' not in s:
+              raise SystemExit('v3.66 patch-note history changed unexpectedly')
+          print('v3.66 psychic stealth balance verified')
+          PY
+      - name: Commit hotfix
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add index.html
+          git commit -m 'Hotfix v3.66 psychic stealth balance'
+          git push
