@@ -1,0 +1,56 @@
+name: Apply v3.63
+on:
+  push:
+    paths:
+      - '.github/workflows/apply-v363.yml'
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      - name: Apply v3.63 patch
+        run: python apply_v363_balance_ui_tutorial.py
+      - name: Validate JavaScript
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          import re, subprocess
+          s=Path('index.html').read_text(encoding='utf-8')
+          scripts=re.findall(r'<script[^>]*>(.*?)</script>',s,re.S)
+          Path('/tmp/neon.js').write_text('\n'.join(scripts),encoding='utf-8')
+          subprocess.run(['node','--check','/tmp/neon.js'],check=True)
+          PY
+      - name: Verify v3.63 markers
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          s=Path('index.html').read_text(encoding='utf-8')
+          req=[
+            'BATTLE <b>v3.63</b>',
+            '패치노트 · v3.63',
+            "rate=stage===0?1:stage===1?.5:.7;",
+            'expires:this.time+5*f.scale',
+            "cooldown:3.3,description:'3.3초마다 ☀️ 투사체를 던진다.",
+            'id="setting-start-position"',
+            "startPosition:'top'",
+            "settings.startPosition==='bottom'",
+            'id="tutorial-header-btn"',
+            '1장 · NEON RUMBLE에 온 걸 환영해!',
+            '2장 · 모드 변경 방법',
+            '3장 · 스테이지와 코인',
+            '4장 · 상점 · 옷장 · 도박장',
+            '5장 · 이제 전투를 시작해!'
+          ]
+          miss=[x for x in req if x not in s]
+          if miss: raise SystemExit('missing markers: '+repr(miss))
+          print('v3.63 markers OK')
+          PY
+      - name: Commit release
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add index.html
+          git commit -m 'Release NEON RUMBLE v3.63'
+          git push
