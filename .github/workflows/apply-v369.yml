@@ -49,3 +49,4 @@ jobs:
           git add index.html
           git commit -m 'Release NEON RUMBLE v3.69'
           git push
+      # retry 2: scoped Furball melee exclusion anchor
