@@ -1,0 +1,55 @@
+name: Apply v3.68
+on:
+  push:
+    paths:
+      - '.github/workflows/apply-v368.yml'
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      - name: Apply v3.68 patch
+        run: python apply_v368_tv_forge_skip.py
+      - name: Validate JavaScript
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          import re, subprocess
+          s=Path('index.html').read_text(encoding='utf-8')
+          scripts=re.findall(r'<script[^>]*>(.*?)</script>',s,re.S)
+          Path('/tmp/neon.js').write_text('\n'.join(scripts),encoding='utf-8')
+          subprocess.run(['node','--check','/tmp/neon.js'],check=True)
+          PY
+      - name: Verify v3.68 markers
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          s=Path('index.html').read_text(encoding='utf-8')
+          req=[
+            'BATTLE <b>v3.68</b>',
+            "id:'psychic',name:'초능력자'",
+            'hp:650,damage:30,speed:95',
+            "id:'old_tv',name:'낡은TV'",
+            "kind:'oldtv_square'",
+            "fillText('🔲'",
+            'STAGE_SKIP_KEY',
+            'grantStageSkipTicket',
+            'r<.70',
+            'craft-system-panel',
+            'Date.now()+60000',
+            '10+Math.floor(Math.random()*991)',
+            "unlock:'oldTv'"
+          ]
+          miss=[x for x in req if x not in s]
+          if miss: raise SystemExit('missing: '+repr(miss))
+          print('v3.68 markers verified')
+          PY
+      - name: Commit release
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add index.html
+          git commit -m 'Release NEON RUMBLE v3.68'
+          git push
