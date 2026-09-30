@@ -12,6 +12,17 @@ jobs:
       - uses: actions/checkout@v4
       - name: Apply v3.68 patch
         run: python apply_v368_tv_forge_skip.py
+      - name: Fix TV call separator
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          p=Path('index.html')
+          s=p.read_text(encoding='utf-8')
+          old="if(f.id==='old_tv')this.oldTvSkill(f,e)if(f.id==='dragon')"
+          new="if(f.id==='old_tv')this.oldTvSkill(f,e);if(f.id==='dragon')"
+          if old not in s: raise SystemExit('TV separator anchor missing')
+          p.write_text(s.replace(old,new,1),encoding='utf-8')
+          PY
       - name: Validate JavaScript
         run: |
           python - <<'PY'
@@ -40,7 +51,8 @@ jobs:
             'craft-system-panel',
             'Date.now()+60000',
             '10+Math.floor(Math.random()*991)',
-            "unlock:'oldTv'"
+            "unlock:'oldTv'",
+            "if(f.id==='old_tv')this.oldTvSkill(f,e);if(f.id==='dragon')"
           ]
           miss=[x for x in req if x not in s]
           if miss: raise SystemExit('missing: '+repr(miss))
