@@ -1,0 +1,49 @@
+name: Hotfix v3.67 Snail Instant Attack
+on:
+  push:
+    paths:
+      - '.github/workflows/hotfix-v367-snail-instant-attack.yml'
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      - name: Apply hotfix
+        run: python hotfix_v367_snail_instant_attack.py
+      - name: Validate JavaScript
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          import re, subprocess
+          s=Path('index.html').read_text(encoding='utf-8')
+          scripts=re.findall(r'<script[^>]*>(.*?)</script>',s,re.S)
+          Path('/tmp/neon.js').write_text('\n'.join(scripts),encoding='utf-8')
+          subprocess.run(['node','--check','/tmp/neon.js'],check=True)
+          PY
+      - name: Verify marker
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          s=Path('index.html').read_text(encoding='utf-8')
+          req=[
+            'BATTLE <b>v3.67</b>',
+            "id:'snail',name:'달팽이'",
+            'speed:28,cooldown:1',
+            '접촉 즉시 근접 6,767,676,767',
+            "'goblin','goblin_king','psychic'].includes(f.id)"
+          ]
+          miss=[x for x in req if x not in s]
+          if miss: raise SystemExit('missing: '+repr(miss))
+          if 'f.snailContactTime>=.3' in s: raise SystemExit('old delayed snail attack remains')
+          if "'psychic','snail'].includes(f.id)" in s: raise SystemExit('snail still excluded from generic melee')
+          print('v3.67 snail instant attack markers verified')
+          PY
+      - name: Commit hotfix
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add index.html
+          git commit -m 'Hotfix v3.67 snail instant attack'
+          git push
