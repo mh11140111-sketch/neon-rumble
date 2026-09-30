@@ -11,7 +11,7 @@ def once(old,new,label):
 
 # Version / patch notes
 once('BATTLE <b>v3.68</b>','BATTLE <b>v3.69</b>','version')
-once('<summary>📒 패치노트 · v3.68</summary><div class="patch-body">', '<summary>📒 패치노트 · v3.69</summary><div class="patch-body"><div class="patch-version"><h3>v3.69 · 편의성 · 신규 캐릭터 털복숭이</h3><ul><li>📦 랜덤 코인상자 제작비 100 → 250코인.</li><li>📺 낡은TV 노이즈 상태에서 TV 화면에 실제 잡음 시각효과가 표시되도록 개선.</li><li>🫈 털복숭이 추가. 가까운 적을 1.5초마다 할퀴어 피해 10~100, 50% 확률로 출혈 부여.</li><li>🫈 자신이 마지막으로 공격한 상대가 사망하면 상대가 죽기 직전 체력만큼 회복.</li></ul></div>', 'patch notes')
+once('<summary>📒 패치노트 · v3.68</summary><div class="patch-body">', '<summary>📒 패치노트 · v3.69</summary><div class="patch-body"><div class="patch-version"><h3>v3.69 · 편의성 · 신규 캐릭터 털복숭이</h3><ul><li>📦 랜덤 코인상자 제작비 100 → 250코인.</li><li>📺 낡은TV 노이즈 상태에서 TV 화면 잡음과 외곽 글리치 프레임이 표시되도록 강화.</li><li>🫈 털복숭이 추가. 가까운 적을 1.5초마다 할퀴어 피해 10~100, 50% 확률로 출혈 부여.</li><li>🫈 자신이 마지막으로 공격한 상대가 사망하면 상대가 죽기 직전 체력만큼 회복.</li></ul></div>', 'patch notes')
 
 # New character
 anchor="{id:'old_tv',name:'낡은TV',icon:'📺',tag:'화면 노이즈 · 🔲 연사',hp:1000,damage:40,speed:125,cooldown:0,unlock:'oldTv',description:'3.5초마다 5초 동안 화면에 실제 노이즈가 생긴다. 노이즈 상태에서는 0.1~2초의 무작위 간격으로 🔲을 1~3연발하며, 한 발 피해는 40이고 탄속은 기본~2배 사이에서 무작위로 정해진다.',detail:'HP 1000 · 노이즈 3.5초마다 / 5초 유지 · 🔲 1~3연발 · 발당 40 · 발사 간격 0.1~2초 · 탄속 ×1~2 · CH7 클리어 후 제작소에서 획득'},"
@@ -25,7 +25,7 @@ once(attack_anchor,helper+attack_anchor,'furball helpers')
 once(" f.attack=.35/f.scale;f.cd=f.cooldown;let n=Math.min(e.health,Math.round(dmg*(1-e.armor)));e.health-=n;f.damageDealt+=n;f.hits++;", " f.attack=.35/f.scale;f.cd=f.cooldown;const preDeathHp=e.health;let n=Math.min(e.health,Math.round(dmg*(1-e.armor)));e.health-=n;f.damageDealt+=n;f.hits++;", 'attack pre hp')
 once(" if(e.health===0){e.trail=[];this.emit((e.boss?'보스 ':this.mode==='boss'?'도전자 '+e.side+'번 ':'')+e.name+' 탈락!');this.checkEnd()}", " if(e.health===0){this.furballDeathHeal(e,preDeathHp);e.trail=[];this.emit((e.boss?'보스 ':this.mode==='boss'?'도전자 '+e.side+'번 ':'')+e.name+' 탈락!');this.checkEnd()}", 'direct death reward')
 
-# Bleed death reward (covers Furball's own bleed kill)
+# Bleed death reward
 once("tickBleed(e){const b=e.bleed;if(!b)return;while(b.next<=this.time+1e-9&&b.next<=b.expires+1e-9){const source=this.fighters[b.source];if(!source||source.team===e.team){e.bleed=null;return}const n=Math.min(e.health,Math.max(0,Math.round(b.damage*(1-e.armor))));e.health-=n;", "tickBleed(e){const b=e.bleed;if(!b)return;while(b.next<=this.time+1e-9&&b.next<=b.expires+1e-9){const source=this.fighters[b.source];if(!source||source.team===e.team){e.bleed=null;return}const preDeathHp=e.health,n=Math.min(e.health,Math.max(0,Math.round(b.damage*(1-e.armor))));e.health-=n;", 'bleed pre hp')
 once("e.trail=[];e.bleed=null;this.emit(e.name+' 출혈로 탈락!');this.checkEnd();return", "this.furballDeathHeal(e,preDeathHp);e.trail=[];e.bleed=null;this.emit(e.name+' 출혈로 탈락!');this.checkEnd();return", 'bleed death reward')
 
@@ -41,16 +41,10 @@ once("function startCraft(id){if(!craftSystemUnlocked()){alert('CHAPTER 7을 먼
 once("for(const x of p.querySelectorAll('[data-craft]'))x.disabled=!ok||!!craftJob||coins<100;", "for(const x of p.querySelectorAll('[data-craft]')){const price=x.dataset.craft==='coin_box'?250:100;x.disabled=!ok||!!craftJob||coins<price}", 'craft button pricing')
 once("<p>CHAPTER 7 클리어 시 사용 가능 · 모든 제작 100코인 · 제작시간 1분</p>", "<p>CHAPTER 7 클리어 시 사용 가능 · 제작시간 1분</p>", 'forge description')
 once("<button type=\"button\" data-craft=\"coin_box\">100코인 제작</button>", "<button type=\"button\" data-craft=\"coin_box\">250코인 제작</button>", 'coin box button')
-# tutorial wording
 s=s.replace('CHAPTER 7을 클리어하면 100코인·1분 제작 방식의 🔨 제작소도 열려.','CHAPTER 7을 클리어하면 🔨 제작소가 열려. 낡은TV는 100코인, 랜덤 코인상자는 250코인이며 제작시간은 1분이야.',1)
 
-# TV noise visual overlay: draw on top of fighters before normal effects.
-marker='for(const e of engine.effects)'
-pos=s.find(marker)
-if pos<0:
-    raise SystemExit('effects draw marker not found')
-noise="""for(const tv of engine.fighters){if(tv.id!=='old_tv'||tv.health<=0||engine.time>=(tv.oldTvNoiseUntil||0)-1e-9)continue;const sc=tv.bodyScale||1,w=48*sc,h=30*sc,x=tv.x-w/2,y=tv.y-h/2-5*sc;ctx.save();ctx.globalAlpha=.88;ctx.fillStyle='#090b0d';ctx.fillRect(x,y,w,h);for(let ni=0;ni<18;ni++){const yy=y+Math.random()*h,hh=1+Math.random()*3;ctx.fillStyle=ni%3===0?'#f7f7f7':ni%3===1?'#737373':'#c9c9c9';ctx.globalAlpha=.35+Math.random()*.55;ctx.fillRect(x,yy,w*(.25+Math.random()*.75),hh)}ctx.globalAlpha=.9;ctx.strokeStyle='#e6f2f2';ctx.lineWidth=2*sc;ctx.strokeRect(x,y,w,h);ctx.restore()}\n"""
-s=s[:pos]+noise+s[pos:]
+# Make Old TV noise state unmistakable visually: retain static screen and add animated outer glitch frame.
+once("ctx.strokeStyle='#b9c1ca';ctx.lineWidth=2;ctx.strokeRect(f.x-w/2,f.y-h/2,w,h);ctx.restore();}if(engine.isStudying(f)", "ctx.strokeStyle='#b9c1ca';ctx.lineWidth=2;ctx.strokeRect(f.x-w/2,f.y-h/2,w,h);ctx.globalAlpha=.45+.3*Math.sin(engine.time*30);ctx.strokeStyle='#74f7ff';ctx.lineWidth=3;ctx.strokeRect(f.x-w/2-6,f.y-h/2-6,w+12,h+12);ctx.restore();}if(engine.isStudying(f)", 'tv noise visual')
 
 p.write_text(s,encoding='utf-8')
 print('v3.69 patch applied')
