@@ -31,7 +31,7 @@ once("e.trail=[];e.bleed=null;this.emit(e.name+' 출혈로 탈락!');this.checkE
 
 # Skill hook and prevent generic contact attack
 once("if(f.id==='old_tv')this.oldTvSkill(f,e);", "if(f.id==='old_tv')this.oldTvSkill(f,e);if(f.id==='furball')this.furballSkill(f,e);", 'furball skill hook')
-once("'goblin','goblin_king','psychic'].includes(f.id)", "'goblin','goblin_king','psychic','furball'].includes(f.id)", 'generic melee exclusion')
+once("'goblin','goblin_king','psychic'].includes(f.id)&&f.cd<=0", "'goblin','goblin_king','psychic','furball'].includes(f.id)&&f.cd<=0", 'generic melee exclusion')
 
 # Ability HUD
 once("function ability(f){if(f.id==='old_tv')", "function ability(f){if(f.id==='furball')return '🫈 할퀴기 10~100 / 1.5초 · 출혈 50% · 마지막 공격 대상 사망 시 회복';if(f.id==='old_tv')", 'furball ability')
