@@ -35,8 +35,8 @@ jobs:
             "this.random()<.5)this.applyBleed(f,e)",
             "const price=id==='coin_box'?250:100",
             'data-craft="coin_box">250코인 제작',
-            "tv.id!=='old_tv'",
-            "fillRect(x,y,w,h)"
+            "strokeStyle='#74f7ff'",
+            'strokeRect(f.x-w/2-6,f.y-h/2-6,w+12,h+12)'
           ]
           miss=[x for x in req if x not in s]
           if miss: raise SystemExit('missing: '+repr(miss))
@@ -49,4 +49,4 @@ jobs:
           git add index.html
           git commit -m 'Release NEON RUMBLE v3.69'
           git push
-      # retry 2: scoped Furball melee exclusion anchor
+      # retry 3: scoped TV visual enhancement
