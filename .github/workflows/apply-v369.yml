@@ -1,0 +1,51 @@
+name: Apply v3.69
+on:
+  push:
+    paths:
+      - '.github/workflows/apply-v369.yml'
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      - name: Apply v3.69 patch
+        run: python apply_v369_furball_tv_coinbox.py
+      - name: Validate JavaScript
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          import re, subprocess
+          s=Path('index.html').read_text(encoding='utf-8')
+          scripts=re.findall(r'<script[^>]*>(.*?)</script>',s,re.S)
+          Path('/tmp/neon.js').write_text('\n'.join(scripts),encoding='utf-8')
+          subprocess.run(['node','--check','/tmp/neon.js'],check=True)
+          PY
+      - name: Verify v3.69 markers
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          s=Path('index.html').read_text(encoding='utf-8')
+          req=[
+            'BATTLE <b>v3.69</b>',
+            "id:'furball',name:'털복숭이'",
+            'furballSkill(f,e)',
+            'furballDeathHeal(dead,preHp)',
+            "this.random()<.5)this.applyBleed(f,e)",
+            "const price=id==='coin_box'?250:100",
+            'data-craft="coin_box">250코인 제작',
+            "tv.id!=='old_tv'",
+            "fillRect(x,y,w,h)"
+          ]
+          miss=[x for x in req if x not in s]
+          if miss: raise SystemExit('missing: '+repr(miss))
+          print('v3.69 markers verified')
+          PY
+      - name: Commit release
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add index.html
+          git commit -m 'Release NEON RUMBLE v3.69'
+          git push
