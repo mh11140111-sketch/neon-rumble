@@ -10,7 +10,7 @@ jobs:
       contents: write
     steps:
       - uses: actions/checkout@v4
-      - name: Scope duplicate helper anchors
+      - name: Scope helper anchors
         run: |
           python - <<'PY'
           from pathlib import Path
@@ -18,6 +18,12 @@ jobs:
           s=p.read_text(encoding='utf-8')
           s=s.replace("once(\"'forge','boxing','lab'].includes(mode)\", \"'forge','boxing','lab','hell'].includes(mode)\", 'manual hell mode')", "once(\"function isManualMode(){return ['control','stage','boss-control','desert','mansion','space','casino','ocean','forge','boxing','lab'].includes(mode)}\", \"function isManualMode(){return ['control','stage','boss-control','desert','mansion','space','casino','ocean','forge','boxing','lab','hell'].includes(mode)}\", 'manual hell mode')")
           s=s.replace("once(\"'forge','boxing','lab'].includes(mode)\", \"'forge','boxing','lab','hell'].includes(mode)\", 'hell wardrobe background exclusion')", "once(\"if(wardrobeBg&&!['stage','desert','mansion','space','casino','ocean','forge','boxing','lab'].includes(mode))\", \"if(wardrobeBg&&!['stage','desert','mansion','space','casino','ocean','forge','boxing','lab','hell'].includes(mode))\", 'hell wardrobe background exclusion')")
+          s=s.replace("for fn in ['applyPoison(f,e){','applyToxin(f,e){','applyBurn(f,e){','applyBleed(f,e){','applyCurse(source,e){']:", "for fn in ['applyPoison(f,e){','applyToxin(f,e){','applyCurse(source,e){']:")
+          # Moon and knight direct-health attacks must also respect the demon's 5-second invulnerability.
+          needle="for(const e of this.fighters){if(e===f||e.health<=0||this.dragonMirageActive(e))continue;if(e.id==='sun')"
+          repl="for(const e of this.fighters){if(e===f||e.health<=0||this.dragonMirageActive(e)||(['hell_clone','hell_demon'].includes(e.id)&&(e.hellInvulnUntil||0)>this.time))continue;if(e.id==='sun')"
+          if needle in s:
+              s=s.replace("p.write_text(s,encoding='utf-8')\nprint('v3.72 patch applied')", "# Direct-health invulnerability guards\nif \"+repr(needle)+\" in s: s=s.replace(\"+repr(needle)+\",\"+repr(repl)+\",1)\nkn=\"for(const e of [...this.fighters]){if(e===f||e.health<=0||this.dragonMirageActive(e))continue;const n=Math.min(e.health,100);\"\nkr=\"for(const e of [...this.fighters]){if(e===f||e.health<=0||this.dragonMirageActive(e)||(['hell_clone','hell_demon'].includes(e.id)&&(e.hellInvulnUntil||0)>this.time))continue;const n=Math.min(e.health,100);\"\nif kn in s: s=s.replace(kn,kr,1)\np.write_text(s,encoding='utf-8')\nprint('v3.72 patch applied')")
           p.write_text(s,encoding='utf-8')
           PY
       - name: Apply v3.72 patch
