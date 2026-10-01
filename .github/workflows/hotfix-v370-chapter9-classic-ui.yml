@@ -1,0 +1,52 @@
+name: Hotfix v3.70 Chapter 9 Classic UI
+on:
+  push:
+    paths:
+      - '.github/workflows/hotfix-v370-chapter9-classic-ui.yml'
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      - name: Apply Chapter 9 UI hotfix
+        run: python hotfix_v370_chapter9_classic_ui.py
+      - name: Validate JavaScript
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          import re, subprocess
+          s=Path('index.html').read_text(encoding='utf-8')
+          scripts=re.findall(r'<script[^>]*>(.*?)</script>',s,re.S)
+          Path('/tmp/neon.js').write_text('\n'.join(scripts),encoding='utf-8')
+          subprocess.run(['node','--check','/tmp/neon.js'],check=True)
+          PY
+      - name: Verify Chapter 9 classic UI
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          s=Path('index.html').read_text(encoding='utf-8')
+          req=[
+            'BATTLE <b>v3.70</b>',
+            "id='chapter9-entry'" if False else "chapter9-entry",
+            'lab-progress',
+            'lab-status-1',
+            'lab-status-2',
+            'lab-status-3',
+            '← 챕터 목록으로',
+            "mode='lab-select'",
+            'STAGE를 순서대로 클리어하면 다음 STAGE가 열려.',
+            'updateChapter9UI();return (labStageMask&7)===7'
+          ]
+          miss=[x for x in req if x not in s]
+          if miss: raise SystemExit('missing: '+repr(miss))
+          print('chapter9 classic UI verified')
+          PY
+      - name: Commit hotfix
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add index.html
+          git commit -m 'Hotfix v3.70 chapter 9 classic UI'
+          git push
