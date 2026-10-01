@@ -1,0 +1,64 @@
+name: Apply v3.73
+on:
+  push:
+    paths:
+      - '.github/workflows/apply-v373.yml'
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      - name: Apply v3.73 patch
+        run: python apply_v373_codes_deviltalk.py
+      - name: Validate JavaScript
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          import re, subprocess
+          s=Path('index.html').read_text(encoding='utf-8')
+          scripts=re.findall(r'<script[^>]*>(.*?)</script>',s,re.S)
+          Path('/tmp/neon.js').write_text('\n'.join(scripts),encoding='utf-8')
+          subprocess.run(['node','--check','/tmp/neon.js'],check=True)
+          PY
+      - name: Verify v3.73 markers
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          s=Path('index.html').read_text(encoding='utf-8')
+          req=[
+            'BATTLE <b>v3.73</b>',
+            '🎁 코드 입력',
+            "CODE_REDEEMED_KEY='neonRumble.redeemedCodes.v1'",
+            "neon67:'coins'",
+            "itisme13666:'demon'",
+            "skip82:'skip'",
+            "unlock:'hellDemon'",
+            "hp:1366,damage:13,speed:175",
+            'hellDashDamage=13+Math.floor(this.random()*154)',
+            'f.hellSummonNext=this.time+13',
+            'function devilSpeak()',
+            "b.id='devil-talk-btn'",
+            "if(r<.005)line='…정말 여기까지 들었군. itisme13666'",
+            "else if(r<.02)line='지옥의 문에는 숫자가 새겨져 있지. skip82'",
+            "else if(r<.045)line='네온빛 속에서 이런 글자를 본 적 있나? neon67'",
+            "title:'5장 · 코드는 어디에서 쓰나?'"
+          ]
+          miss=[x for x in req if x not in s]
+          if miss: raise SystemExit('missing: '+repr(miss))
+          # Secret values must not be disclosed inside the newest patch-note block.
+          start=s.index('<h3>v3.73')
+          end=s.find('<div class="patch-version">',start+1)
+          note=s[start:end if end!=-1 else start+2000]
+          for secret in ['neon67','itisme13666','skip82','666코인','스킵권 10개']:
+              if secret in note: raise SystemExit('secret leaked in patch note: '+secret)
+          print('v3.73 markers verified')
+          PY
+      - name: Commit release
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add index.html
+          git commit -m 'Release NEON RUMBLE v3.73'
+          git push
