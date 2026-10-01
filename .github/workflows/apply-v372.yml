@@ -1,0 +1,76 @@
+name: Apply v3.72
+on:
+  push:
+    paths:
+      - '.github/workflows/apply-v372.yml'
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      - name: Scope duplicate helper anchors
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          p=Path('apply_v372_hell.py')
+          s=p.read_text(encoding='utf-8')
+          s=s.replace("once(\"'forge','boxing','lab'].includes(mode)\", \"'forge','boxing','lab','hell'].includes(mode)\", 'manual hell mode')", "once(\"function isManualMode(){return ['control','stage','boss-control','desert','mansion','space','casino','ocean','forge','boxing','lab'].includes(mode)}\", \"function isManualMode(){return ['control','stage','boss-control','desert','mansion','space','casino','ocean','forge','boxing','lab','hell'].includes(mode)}\", 'manual hell mode')")
+          s=s.replace("once(\"'forge','boxing','lab'].includes(mode)\", \"'forge','boxing','lab','hell'].includes(mode)\", 'hell wardrobe background exclusion')", "once(\"if(wardrobeBg&&!['stage','desert','mansion','space','casino','ocean','forge','boxing','lab'].includes(mode))\", \"if(wardrobeBg&&!['stage','desert','mansion','space','casino','ocean','forge','boxing','lab','hell'].includes(mode))\", 'hell wardrobe background exclusion')")
+          p.write_text(s,encoding='utf-8')
+          PY
+      - name: Apply v3.72 patch
+        run: python apply_v372_hell.py
+      - name: Validate JavaScript
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          import re, subprocess
+          s=Path('index.html').read_text(encoding='utf-8')
+          scripts=re.findall(r'<script[^>]*>(.*?)</script>',s,re.S)
+          Path('/tmp/neon.js').write_text('\n'.join(scripts),encoding='utf-8')
+          subprocess.run(['node','--check','/tmp/neon.js'],check=True)
+          PY
+      - name: Verify v3.72 markers
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          s=Path('index.html').read_text(encoding='utf-8')
+          req=[
+            'BATTLE <b>v3.72</b>',
+            "description:'5초마다 3초 동안 화면에 실제 노이즈가 생긴다.",
+            'f.oldTvNoiseNext=this.time+5/f.scale',
+            'f.oldTvNoiseUntil=this.time+3/f.scale',
+            "id:'hell_clone',name:'악마의 분신'",
+            "id:'hell_demon',name:'악마'",
+            'spawnHellEye(owner)',
+            'demonSkill(f,e,dt)',
+            'hellDashDamage=13+Math.floor(this.random()*654)',
+            'f.hellInvulnUntil=this.time+5',
+            "HELL_STAGE_KEY='neonRumble.hellStages.v1'",
+            'function chapter10Unlocked()',
+            "id='chapter10-entry'",
+            'CHAPTER 10',
+            "mode='hell'",
+            'HP 6666',
+            'hellNextTeamHeal=1500',
+            'healHellTeam(500)',
+            "mode==='hell'?startHellStage(hellStageNo):start()",
+            "mode==='hell'?'#7f241d'",
+            "mode==='hell'?'HELL · STAGE '+hellStageNo"
+          ]
+          miss=[x for x in req if x not in s]
+          if miss: raise SystemExit('missing: '+repr(miss))
+          bad=['3.5초마다 1.5초','f.oldTvNoiseNext=this.time+3.5/f.scale','f.oldTvNoiseUntil=this.time+1.5/f.scale']
+          present=[x for x in bad if x in s]
+          if present: raise SystemExit('old TV markers remain: '+repr(present))
+          print('v3.72 markers verified')
+          PY
+      - name: Commit release
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add index.html
+          git commit -m 'Release NEON RUMBLE v3.72'
+          git push
