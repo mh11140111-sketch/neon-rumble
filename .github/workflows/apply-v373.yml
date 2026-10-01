@@ -10,6 +10,19 @@ jobs:
       contents: write
     steps:
       - uses: actions/checkout@v4
+      - name: Scope helper to current HUD
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          p=Path('apply_v373_codes_deviltalk.py')
+          s=p.read_text(encoding='utf-8')
+          start=s.find("# generic ability display for sandbox demon")
+          if start!=-1:
+              end=s.find("p.write_text(s,encoding='utf-8')",start)
+              if end==-1: raise SystemExit('helper tail not found')
+              s=s[:start]+s[end:]
+          p.write_text(s,encoding='utf-8')
+          PY
       - name: Apply v3.73 patch
         run: python apply_v373_codes_deviltalk.py
       - name: Validate JavaScript
@@ -47,7 +60,6 @@ jobs:
           ]
           miss=[x for x in req if x not in s]
           if miss: raise SystemExit('missing: '+repr(miss))
-          # Secret values must not be disclosed inside the newest patch-note block.
           start=s.index('<h3>v3.73')
           end=s.find('<div class="patch-version">',start+1)
           note=s[start:end if end!=-1 else start+2000]
