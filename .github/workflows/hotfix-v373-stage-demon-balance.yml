@@ -1,0 +1,50 @@
+name: Hotfix v3.73 Stage Demon Balance
+on:
+  push:
+    paths:
+      - '.github/workflows/hotfix-v373-stage-demon-balance.yml'
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      - name: Apply hotfix
+        run: python hotfix_v373_stage_demon_balance.py
+      - name: Validate JavaScript
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          import re, subprocess
+          s=Path('index.html').read_text(encoding='utf-8')
+          scripts=re.findall(r'<script[^>]*>(.*?)</script>',s,re.S)
+          Path('/tmp/neon.js').write_text('\n'.join(scripts),encoding='utf-8')
+          subprocess.run(['node','--check','/tmp/neon.js'],check=True)
+          PY
+      - name: Verify split balance
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          s=Path('index.html').read_text(encoding='utf-8')
+          req=[
+            'const chapterMode=!!f.hellChapterMode,summonEvery=chapterMode?3:13,dashRange=chapterMode?654:154;',
+            'b.hp=666;b.health=666;b.hellChapterMode=true',
+            'b.hp=6666;b.health=6666;b.hellChapterMode=true;b.hellBoss=true',
+            'HP 666 · 악의 돌진 13~666 · 악의 눈 3초',
+            '악의 돌진 13~666/5초 · 악마의 눈 HP 66 소환/3초',
+            "hp:1366,damage:13,speed:175,cooldown:0,unlock:'hellDemon'",
+            "detail:'HP 1366 · 악의 돌진 13~166 / 5초 · 🧿 HP 66 소환 / 13초"
+          ]
+          miss=[x for x in req if x not in s]
+          if miss: raise SystemExit('missing: '+repr(miss))
+          if 'BATTLE <b>v3.73</b>' not in s: raise SystemExit('version mismatch')
+          print('v3.73 chapter/sandbox demon balance split verified')
+          PY
+      - name: Commit hotfix
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add index.html
+          git commit -m 'Hotfix v3.73 separate chapter and sandbox demon balance'
+          git push
