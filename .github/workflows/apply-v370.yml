@@ -10,6 +10,17 @@ jobs:
       contents: write
     steps:
       - uses: actions/checkout@v4
+      - name: Fix helper anchor
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          p=Path('apply_v370_lab_doctor.py')
+          s=p.read_text(encoding='utf-8')
+          old="once(\"'ocean','forge','boxing'].includes(mode)\", \"'ocean','forge','boxing','lab'].includes(mode)\", 'manual lab mode')"
+          new="once(\"function isManualMode(){return ['control','stage','boss-control','desert','mansion','space','casino','ocean','forge','boxing'].includes(mode)}\", \"function isManualMode(){return ['control','stage','boss-control','desert','mansion','space','casino','ocean','forge','boxing','lab'].includes(mode)}\", 'manual lab mode')"
+          if old not in s: raise SystemExit('manual helper line missing')
+          p.write_text(s.replace(old,new,1),encoding='utf-8')
+          PY
       - name: Apply v3.70 patch
         run: python apply_v370_lab_doctor.py
       - name: Validate JavaScript
