@@ -1,0 +1,48 @@
+name: Hotfix v3.70 Chapter 9 Panel + Lab Background
+on:
+  push:
+    paths:
+      - '.github/workflows/hotfix-v370-chapter9-panel-lab-bg.yml'
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      - name: Apply hotfix
+        run: python hotfix_v370_chapter9_panel_lab_bg.py
+      - name: Validate JavaScript
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          import re, subprocess
+          s=Path('index.html').read_text(encoding='utf-8')
+          scripts=re.findall(r'<script[^>]*>(.*?)</script>',s,re.S)
+          Path('/tmp/neon.js').write_text('\n'.join(scripts),encoding='utf-8')
+          subprocess.run(['node','--check','/tmp/neon.js'],check=True)
+          PY
+      - name: Verify hotfix markers
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          s=Path('index.html').read_text(encoding='utf-8')
+          req=[
+            "'boxing-panel','lab-selection'",
+            "function updateStageUI(){if($('lab-selection'))$('lab-selection').hidden=true;",
+            "else if(mode==='lab'){const lg=ctx.createLinearGradient",
+            "mode==='lab'?'#2e7778'",
+            "mode==='lab'?'LABORATORY ESCAPE · STAGE '+labStageNo",
+            "BATTLE <b>v3.70</b>"
+          ]
+          miss=[x for x in req if x not in s]
+          if miss: raise SystemExit('missing: '+repr(miss))
+          print('v3.70 CH9 UI/background markers verified')
+          PY
+      - name: Commit hotfix
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add index.html
+          git commit -m 'Hotfix v3.70 CH9 panel and lab background'
+          git push
