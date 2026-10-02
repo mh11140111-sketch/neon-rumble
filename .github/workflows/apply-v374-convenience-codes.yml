@@ -1,0 +1,60 @@
+name: Apply v3.74 Convenience Codes
+on:
+  push:
+    paths:
+      - '.github/workflows/apply-v374-convenience-codes.yml'
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      - name: Apply patch
+        run: python apply_v374_convenience_codes.py
+      - name: Validate JavaScript
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          import re, subprocess
+          s=Path('index.html').read_text(encoding='utf-8')
+          scripts=re.findall(r'<script[^>]*>(.*?)</script>',s,re.S)
+          Path('/tmp/neon.js').write_text('\n'.join(scripts),encoding='utf-8')
+          subprocess.run(['node','--check','/tmp/neon.js'],check=True)
+          PY
+      - name: Verify v3.74 convenience patch
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          s=Path('index.html').read_text(encoding='utf-8')
+          req=[
+            "ninja4:'ninjaSkin'",
+            "fast8282:'fastSpeed'",
+            "id:'skin_ninja_mask'",
+            "icon:'👺'",
+            "FAST_SPEED_KEY='neonRumble.fastSpeedUnlocked.v1'",
+            '<option value="5" data-secret-speed disabled>',
+            '<option value="10" data-secret-speed disabled>',
+            "fastSpeedUnlocked=true",
+            "hellStageNo===3?150:0",
+            "STAGE 3 추가 보상 🪙 150코인",
+            "if(item.casinoOnly||item.codeOnly)continue",
+            "r<.003",
+            "r<.011",
+            "r<.023"
+          ]
+          miss=[x for x in req if x not in s]
+          if miss: raise SystemExit('missing: '+repr(miss))
+          # Secret code values/rewards must not be exposed in patch notes.
+          head=s.split('</details>',1)[0]
+          for secret in ['ninja4','fast8282','neon67','skip82','itisme13666']:
+              if secret in head: raise SystemExit('secret leaked in patch notes: '+secret)
+          print('v3.74 convenience patch verified')
+          PY
+      - name: Commit patch
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add index.html
+          git commit -m 'Patch NEON RUMBLE v3.74 convenience codes'
+          git push
