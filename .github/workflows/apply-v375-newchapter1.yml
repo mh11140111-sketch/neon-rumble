@@ -1,0 +1,67 @@
+name: Apply v3.75 New Chapter 1
+on:
+  push:
+    paths:
+      - '.github/workflows/apply-v375-newchapter1.yml'
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      - name: Apply v3.75 patch
+        run: python apply_v375_newchapter1_convenience.py
+      - name: Validate JavaScript
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          import re, subprocess
+          s=Path('index.html').read_text(encoding='utf-8')
+          scripts=re.findall(r'<script[^>]*>(.*?)</script>',s,re.S)
+          Path('/tmp/neon.js').write_text('\n'.join(scripts),encoding='utf-8')
+          subprocess.run(['node','--check','/tmp/neon.js'],check=True)
+          PY
+      - name: Verify v3.75 new chapter features
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          s=Path('index.html').read_text(encoding='utf-8')
+          req=[
+            '<option value="both">위 · 아래 동시에</option>',
+            "settings.startPosition==='both'",
+            "id:'technician'",
+            "kind:'tech_wrench'",
+            "damage:70*f.scale",
+            "this.attack(f,x,80*f.scale)",
+            "f.techCollecting=true",
+            "NEW_CH1_STAGE_KEY='neonRumble.newChapter1Stages.v1'",
+            "TECHNICIAN_UNLOCK_KEY='neonRumble.technicianUnlocked.v1'",
+            "function newChapter1Unlocked(){return (hellStageMask&7)===7}",
+            "NEW-CHAPTER 1",
+            "stageTreeAura=true",
+            "Math.random()>=.30",
+            "Math.random()>=.15",
+            "id:'aura_tree'",
+            "stageRewardOnly:true",
+            "legacy-stage-complete",
+            "꾸미기+스테이지 스킵권",
+            "else if(r<.55){casinoShowReels('🎟️')"
+          ]
+          miss=[x for x in req if x not in s]
+          if miss: raise SystemExit('missing: '+repr(miss))
+          if "else if(r<.70){casinoShowReels('🎫')" in s:
+              raise SystemExit('independent casino stage skip chance still present')
+          if "grantStageSkipTicket(1);text+=' · 🎫 스테이지 스킵권 1장도 함께 획득!'" not in s:
+              raise SystemExit('cosmetic + skip bundle missing')
+          for x in ["what?':'demonSkin","fight787:'boxerSkin","lucky777:'coinBoost","fast8282:'fastSpeed'"]:
+              if x not in s: raise SystemExit('existing v3.75 secret feature lost: '+x)
+          print('v3.75 new chapter verified')
+          PY
+      - name: Commit patch
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add index.html
+          git commit -m 'Patch NEON RUMBLE v3.75 NEW-CHAPTER 1'
+          git push
