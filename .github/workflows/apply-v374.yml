@@ -1,0 +1,58 @@
+name: Apply v3.74
+on:
+  push:
+    paths:
+      - '.github/workflows/apply-v374.yml'
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      - name: Apply v3.74 patch
+        run: python apply_v374_hellfire.py
+      - name: Validate JavaScript
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          import re, subprocess
+          s=Path('index.html').read_text(encoding='utf-8')
+          scripts=re.findall(r'<script[^>]*>(.*?)</script>',s,re.S)
+          Path('/tmp/neon.js').write_text('\n'.join(scripts),encoding='utf-8')
+          subprocess.run(['node','--check','/tmp/neon.js'],check=True)
+          PY
+      - name: Verify v3.74 split balance
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          s=Path('index.html').read_text(encoding='utf-8')
+          req=[
+            'BATTLE <b>v3.74</b>',
+            "kind:'hellfire',icon:'🟣'",
+            'damage:66*f.scale',
+            'f.hellFireNext=this.time+2.5/f.scale',
+            'e.hellBurn={source:source.side,next:this.time+.66}',
+            "this.effect(e,'🟣🔥 −'+n,'doom')",
+            'const chapterMode=!!f.hellChapterMode,summonEvery=chapterMode?3:13,dashRange=chapterMode?654:154,invulnDuration=chapterMode?5:1.3,invulnHeal=chapterMode?500:136',
+            'if(f.health>0)this.tickHellBurn(f)',
+            'if(f&&f.health<=0)f.hellBurn=null',
+            '악의 돌진 13~666',
+            '악마의 눈 HP 66 소환/3초',
+            '무적 5초+HP 500/13초'
+          ]
+          miss=[x for x in req if x not in s]
+          if miss: raise SystemExit('missing: '+repr(miss))
+          if "summonEvery=chapterMode?3:13" not in s or "dashRange=chapterMode?654:154" not in s:
+              raise SystemExit('chapter/sandbox split missing')
+          if "invulnDuration=chapterMode?5:1.3" not in s or "invulnHeal=chapterMode?500:136" not in s:
+              raise SystemExit('sandbox-only invulnerability nerf missing')
+          print('v3.74 split balance verified')
+          PY
+      - name: Commit release
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add index.html
+          git commit -m 'Release NEON RUMBLE v3.74'
+          git push
