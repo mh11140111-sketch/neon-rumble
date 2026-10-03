@@ -1,0 +1,48 @@
+name: Hotfix v3.76 Grave Code
+on:
+  push:
+    paths:
+      - '.github/workflows/hotfix-v376-grave-code.yml'
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      - name: Apply grave code hotfix
+        run: python hotfix_v376_grave_code_typo.py
+      - name: Validate JavaScript
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          import re, subprocess
+          s=Path('index.html').read_text(encoding='utf-8')
+          scripts=re.findall(r'<script[^>]*>(.*?)</script>',s,re.S)
+          Path('/tmp/neon.js').write_text('\n'.join(scripts),encoding='utf-8')
+          subprocess.run(['node','--check','/tmp/neon.js'],check=True)
+          PY
+      - name: Verify grave code
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          s=Path('index.html').read_text(encoding='utf-8')
+          req=[
+            "deathisgood55:'graveFx'",
+            "code==='deathisgood55'",
+            "쓰러진 자리에도 흔적은 남지. deathisgood55",
+            "GRAVE_FX_KEY='neonRumble.graveFxUnlocked.v1'",
+            "ctx.fillText('༼☠︎༽'"
+          ]
+          miss=[x for x in req if x not in s]
+          if miss: raise SystemExit('missing: '+repr(miss))
+          if "dathisgood55" in s: raise SystemExit('old typo code still present')
+          print('grave code corrected and verified')
+          PY
+      - name: Commit hotfix
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add index.html
+          git commit -m 'Hotfix v3.76 grave code typo'
+          git push
