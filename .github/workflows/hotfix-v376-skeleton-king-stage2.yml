@@ -1,0 +1,58 @@
+name: Hotfix v3.76 Skeleton King Stage 2
+on:
+  push:
+    paths:
+      - '.github/workflows/hotfix-v376-skeleton-king-stage2.yml'
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      - name: Apply correction
+        run: python hotfix_v376_skeleton_king_cowboy_heal.py
+      - name: Validate JavaScript
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          import re, subprocess
+          s=Path('index.html').read_text(encoding='utf-8')
+          scripts=re.findall(r'<script[^>]*>(.*?)</script>',s,re.S)
+          Path('/tmp/neon.js').write_text('\n'.join(scripts),encoding='utf-8')
+          subprocess.run(['node','--check','/tmp/neon.js'],check=True)
+          PY
+      - name: Verify correction
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          s=Path('index.html').read_text(encoding='utf-8')
+          req=[
+            "f.id==='cowboy'&&e.id==='skeleton_king'&&n>0",
+            "while(f.skeletonKingDamageBank>=100)",
+            "const heal=Math.min(50*f.scale,f.hp-f.health)",
+            "해골 소환 없음",
+            "카우보이가 해골왕에게 누적 피해 100을 줄 때마다 HP 50 회복"
+          ]
+          miss=[x for x in req if x not in s]
+          if miss: raise SystemExit('missing '+repr(miss))
+          banned=[
+            "f.id==='skeleton_king'&&n>0",
+            "f.skSummonNext=this.time+10",
+            "this.spawnSkele44Skeleton(f,f.x,f.y)"
+          ]
+          bad=[x for x in banned if x in s]
+          if bad: raise SystemExit('old/wrong behavior remains '+repr(bad))
+          if "function createEngineForMode(activeMode)" not in s:
+              raise SystemExit('mode routing hardening lost')
+          if "deathisgood55:'graveFx'" not in s or "dathisgood55" in s:
+              raise SystemExit('grave code regression')
+          print('skeleton king stage2 correction verified')
+          PY
+      - name: Commit hotfix
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add index.html
+          git commit -m 'Hotfix v3.76 skeleton king stage 2 correction'
+          git push
