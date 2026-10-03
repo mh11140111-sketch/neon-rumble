@@ -1,0 +1,72 @@
+name: Apply v3.77 New Chapter 3
+on:
+  push:
+    paths:
+      - '.github/workflows/apply-v377-newchapter3.yml'
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      - name: Apply v3.77 patch
+        run: python apply_v377_newchapter3.py
+      - name: Validate JavaScript
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          import re, subprocess
+          s=Path('index.html').read_text(encoding='utf-8')
+          scripts=re.findall(r'<script[^>]*>(.*?)</script>',s,re.S)
+          Path('/tmp/neon.js').write_text('\n'.join(scripts),encoding='utf-8')
+          subprocess.run(['node','--check','/tmp/neon.js'],check=True)
+          PY
+      - name: Verify v3.77
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          s=Path('index.html').read_text(encoding='utf-8')
+          req=[
+            'BATTLE <b>v3.77</b>',
+            "tag:'🔧 랜치 5개 · 벽 고정 · 회수 AI'",
+            "f.techWrenchStock=5",
+            "(f.techWrenchStock??5)+'/5",
+            "!f.skeletonBundleMate",
+            "NEW_CH3_STAGE_KEY='neonRumble.newChapter3Stages.v1'",
+            "function newChapter3Unlocked(){return (newChapter2StageMask&7)===7}",
+            "id:'pumpkin_king'",
+            "function updateNewChapter3Stage()",
+            "function setupNewChapter3UI()",
+            "mode='newchapter3'",
+            "pumpkinKingAura(f)",
+            "pumpkinKingExplosion(f)",
+            "0.5초마다 10",
+            "사망 시 반경 260 폭발 피해 200",
+            "spawnNewChapter3FemaleVampire",
+            "CHAPTER 3 STAGE 3과 같은 법사좀비 HP 2000",
+            "updateNewChapter3Stage();hud()"
+          ]
+          miss=[x for x in req if x not in s]
+          if miss: raise SystemExit('missing '+repr(miss))
+          # Skeleton bundle fix must affect both control and duel checks.
+          if s.count("battleEngine.fighters.filter(f=>!f.summon&&!f.skeletonBundleMate).length===2") < 2:
+              raise SystemExit('skeleton bundle routing verification missing')
+          # Prior critical protections.
+          if "engine=mode='group'?" in s or "engine=mode==='group'?new Engine" in s:
+              raise SystemExit('group routing regression')
+          if "deathisgood55:'graveFx'" not in s or "dathisgood55" in s:
+              raise SystemExit('grave code regression')
+          # Skele-44 must still exclude mage.
+          x=s[s.find("spawnSkele44Skeleton"):s.find("skele44Skill")]
+          if "skeleton_mage" in x:
+              raise SystemExit('Skele44 mage summon regression')
+          print('v3.77 verified')
+          PY
+      - name: Commit release
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add index.html
+          git commit -m 'Release NEON RUMBLE v3.77'
+          git push
