@@ -155,12 +155,10 @@ once("'newchapter1-selection']",
      'hide panels newch2')
 
 # start/selection reset and rematch
-once("||mode==='newchapter'||mode==='newchapter-select'){engine=null;mode='duel'}",
-     "||mode==='newchapter'||mode==='newchapter-select'||mode==='newchapter2'||mode==='newchapter2-select'){engine=null;mode='duel'}",
-     'start reset newch2')
-# same expression appears twice (selection); replace remaining
-s=s.replace("||mode==='newchapter'||mode==='newchapter-select'){engine=null;mode='duel'}",
-            "||mode==='newchapter'||mode==='newchapter-select'||mode==='newchapter2'||mode==='newchapter2-select'){engine=null;mode='duel'}")
+old_reset="||mode==='newchapter'||mode==='newchapter-select'){engine=null;mode='duel'}"
+new_reset="||mode==='newchapter'||mode==='newchapter-select'||mode==='newchapter2'||mode==='newchapter2-select'){engine=null;mode='duel'}"
+if s.count(old_reset)!=2: raise SystemExit(f'start/selection reset newch2: expected 2 got {s.count(old_reset)}')
+s=s.replace(old_reset,new_reset)
 once("mode==='newchapter'?startNewChapter1Stage(newChapter1StageNo):start();",
      "mode==='newchapter'?startNewChapter1Stage(newChapter1StageNo):mode==='newchapter2'?startNewChapter2Stage(newChapter2StageNo):start();",
      'rematch newch2')
