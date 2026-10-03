@@ -36,13 +36,10 @@ for a,b in repls:
     s=s.replace(a,b)
 
 # Skeleton bundle routing bug: count only primary fighters in 1v1/control verification.
-once("battleEngine.fighters.filter(f=>!f.summon).length===2",
-     "battleEngine.fighters.filter(f=>!f.summon&&!f.skeletonBundleMate).length===2",
-     'control skeleton bundle routing')
-# second same for duel
-if "battleEngine.fighters.filter(f=>!f.summon).length===2" not in s: raise SystemExit('duel verify anchor missing')
-s=s.replace("battleEngine.fighters.filter(f=>!f.summon).length===2",
-            "battleEngine.fighters.filter(f=>!f.summon&&!f.skeletonBundleMate).length===2",1)
+old_verify="battleEngine.fighters.filter(f=>!f.summon).length===2"
+new_verify="battleEngine.fighters.filter(f=>!f.summon&&!f.skeletonBundleMate).length===2"
+if s.count(old_verify)!=2: raise SystemExit(f'skeleton bundle routing anchors: expected 2 got {s.count(old_verify)}')
+s=s.replace(old_verify,new_verify)
 
 # New storage keys/state based on current NC2 anchors.
 once("NEW_CH2_STAGE_KEY='neonRumble.newChapter2Stages.v1',",
