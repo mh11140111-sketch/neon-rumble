@@ -1,0 +1,54 @@
+name: Hotfix v3.76 Skeleton King Heal
+on:
+  push:
+    paths:
+      - '.github/workflows/hotfix-v376-skeleton-king-heal.yml'
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      - name: Apply skeleton king heal patch
+        run: python hotfix_v376_skeleton_king_heal.py
+      - name: Validate JavaScript
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          import re, subprocess
+          s=Path('index.html').read_text(encoding='utf-8')
+          scripts=re.findall(r'<script[^>]*>(.*?)</script>',s,re.S)
+          Path('/tmp/neon.js').write_text('\n'.join(scripts),encoding='utf-8')
+          subprocess.run(['node','--check','/tmp/neon.js'],check=True)
+          PY
+      - name: Verify skeleton king heal
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          s=Path('index.html').read_text(encoding='utf-8')
+          req=[
+            "f.id==='skeleton_king'&&n>0",
+            "f.skeletonKingDamageBank=(f.skeletonKingDamageBank||0)+n",
+            "while(f.skeletonKingDamageBank>=100)",
+            "const heal=Math.min(50*f.scale,f.hp-f.health)",
+            "누적 피해 100마다 HP +50",
+            "누적 피해 100마다 HP 50 회복"
+          ]
+          miss=[x for x in req if x not in s]
+          if miss: raise SystemExit('missing '+repr(miss))
+          if "function createEngineForMode(activeMode)" not in s:
+              raise SystemExit('mode routing hardening lost')
+          if "deathisgood55:'graveFx'" not in s or "dathisgood55" in s:
+              raise SystemExit('grave code regression')
+          if "NEW-CHAPTER 2" not in s or "id:'skele44'" not in s:
+              raise SystemExit('new chapter 2 regression')
+          print('skeleton king heal verified')
+          PY
+      - name: Commit hotfix
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add index.html
+          git commit -m 'Hotfix v3.76 skeleton king damage healing'
+          git push
