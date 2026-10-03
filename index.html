@@ -1303,7 +1303,7 @@ function currentNewChapterSkipTarget(){const defs=[
  {m:['newchapter5-select','newchapter5'],name:'NEW-CHAPTER 5',mask:()=>newChapter5StageMask,mark:markNewChapter5Stage},
  {m:['newchapter6-select','newchapter6'],name:'NEW-CHAPTER 6',mask:()=>newChapter6StageMask,mark:markNewChapter6Stage}
 ];const d=defs.find(x=>x.m.includes(mode));if(!d)return null;return {...d,done:(d.mask()&7)===7}}
-function useNewStageSkipTicket(){if(newStageSkipTickets<=0){alert('🎟️ NEW-스테이지 스킵권이 없어!');return}const t=currentNewChapterSkipTarget();if(!t){alert('🎟️ NEW-CHAPTER 1~4의 선택 화면에서 사용해 줘.');return}if(t.done){alert(t.name+'은 이미 모든 STAGE를 클리어했어.');return}for(let n=1;n<=3;n++)t.mark(n);newStageSkipTickets--;saveStageSkipTickets();renderWardrobe();updateSelection();alert('🎟️ '+t.name+' 전체 스킵 완료! STAGE 1·2·3이 모두 클리어 처리되고 다음 NEW-CHAPTER가 열렸어.')}
+function useNewStageSkipTicket(){if(newStageSkipTickets<=0){alert('🎟️ NEW-스테이지 스킵권이 없어!');return}const t=currentNewChapterSkipTarget();if(!t){alert('🎟️ NEW-CHAPTER 1~6의 선택 화면에서 사용해 줘.');return}if(t.done){alert(t.name+'은 이미 모든 STAGE를 클리어했어.');return}for(let n=1;n<=3;n++)t.mark(n);newStageSkipTickets--;saveStageSkipTickets();renderWardrobe();updateSelection();alert('🎟️ '+t.name+' 전체 스킵 완료! STAGE 1·2·3이 모두 클리어 처리되고 다음 NEW-CHAPTER가 열렸어.')}
 function unlockNextChapterByTicket(){if(stageSkipTickets<=0){alert('스테이지 스킵권이 없어!');return}let label='';if(!chapter2Unlocked()){robotStageMask=7;localStorage.setItem(ROBOT_STAGE_KEY,'7');label='CHAPTER 2'}else if(!chapter3Unlocked()){desertStageMask=7;localStorage.setItem(DESERT_STAGE_KEY,'7');label='CHAPTER 3'}else if(!chapter4Unlocked()){mansionStageMask=7;localStorage.setItem(MANSION_STAGE_KEY,'7');label='CHAPTER 4'}else if(!chapter5Unlocked()){spaceStageMask=7;localStorage.setItem(SPACE_STAGE_KEY,'7');label='CHAPTER 5'}else if(!chapter6Unlocked()){casinoStageMask=7;localStorage.setItem(CASINO_STAGE_KEY,'7');label='CHAPTER 6'}else if(!chapter7Unlocked()){oceanStageMask=7;localStorage.setItem(OCEAN_STAGE_KEY,'7');label='CHAPTER 7'}else if(!chapter8Unlocked()){forgeStageMask=7;localStorage.setItem(FORGE_STAGE_KEY,'7');label='CHAPTER 8'}else if(!chapter9Unlocked()){boxingStageMask=7;localStorage.setItem(BOXING_STAGE_KEY,'7');label='CHAPTER 9'}else if(!chapter10Unlocked()){labStageMask=7;localStorage.setItem(LAB_STAGE_KEY,'7');label='CHAPTER 10'}else{alert('현재 해금할 다음 챕터가 없어!');return}stageSkipTickets--;saveStageSkipTickets();updateChapter2UI();updateChapter3UI();updateChapter4UI();updateChapter5UI();updateChapter6UI();updateChapter7UI();updateChapter8UI();updateChapter9UI();updateChapter10UI();renderForgeSystem();renderWardrobe();renderShop();alert('🎫 스킵권 사용! '+label+' 해금!')}
 function saveCraftJob(){try{if(craftJob)localStorage.setItem(FORGE_JOB_KEY,JSON.stringify(craftJob));else localStorage.removeItem(FORGE_JOB_KEY)}catch{}}
 function craftSystemUnlocked(){return chapter8Unlocked()}
@@ -1695,7 +1695,7 @@ const DEVIL_TALK_LINES=[
  '빠른 길에는 항상 어디까지 빠른 길인지 적혀 있어야 하지.',
  '웃는 얼굴이 꼭 같은 기술을 두 번 쓰리라는 법은 없지.',
  '모든 패를 가진 자는 오히려 다음 패를 고르지 못한다.',
- '1.5초면 짧아 보이지만 조커에겐 다른 얼굴을 꺼내기 충분한 시간이지.',
+ '1초면 짧아 보이지만 조커에겐 다른 얼굴을 꺼내기 충분한 시간이지.',
  '접촉하지 못한 공격은 미련 없이 버리는 것도 기술이다.',
  '거미줄도 욕심내면 엉킨다. 하나면 충분하지.'
 ];
