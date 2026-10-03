@@ -1,0 +1,51 @@
+name: Hotfix v3.76 Skele44 Summon Pool
+on:
+  push:
+    paths:
+      - '.github/workflows/hotfix-v376-skele44-pool.yml'
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      - name: Apply hotfix
+        run: python hotfix_v376_skele44_summon_pool.py
+      - name: Validate JavaScript
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          import re, subprocess
+          s=Path('index.html').read_text(encoding='utf-8')
+          scripts=re.findall(r'<script[^>]*>(.*?)</script>',s,re.S)
+          Path('/tmp/neon.js').write_text('\n'.join(scripts),encoding='utf-8')
+          subprocess.run(['node','--check','/tmp/neon.js'],check=True)
+          PY
+      - name: Verify Skele44 pool
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          s=Path('index.html').read_text(encoding='utf-8')
+          req=[
+            "const ids=['skeleton_gun','skeleton_sword','skeleton_drunk']",
+            "법사해골 소환 없음",
+            "총잡이/칼잡이/취한 해골 중 하나 소환",
+            "법사해골 제외"
+          ]
+          miss=[x for x in req if x not in s]
+          if miss: raise SystemExit('missing '+repr(miss))
+          target=s[s.find("spawnSkele44Skeleton"):s.find("skele44Skill")]
+          if "skeleton_mage" in target:
+              raise SystemExit('skeleton_mage still present in Skele44 summon pool')
+          if "function createEngineForMode(activeMode)" not in s:
+              raise SystemExit('mode routing regression')
+          print('Skele44 summon pool verified')
+          PY
+      - name: Commit hotfix
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add index.html
+          git commit -m 'Hotfix v3.76 Skele44 summon pool'
+          git push
