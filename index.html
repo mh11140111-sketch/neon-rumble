@@ -696,6 +696,7 @@ jokerAttackSkill(f,e,dt){
  else if(id==='firefighter')run(()=>{f.firetruckMounted=false;f.firetruckNext=Infinity;this.firefighterSkill(f,e);if(distance(f,e)>f.radius+e.radius+42*f.scale)this.jokerSetPending(f,id,70*f.scale)});
  else if(id==='moneyman')run(()=>{f.cd=0;this.moneyManSkill(f,e)});
  else if(id==='slotmachine')run(()=>{f.cd=0;this.slotMachineSkill(f,e)});
+ else if(id==='treasure')run(()=>{f.cd=0;this.treasureSkill(f,e)});
  else if(id==='casino_boss')run(()=>{f.casinoSummonNext=Infinity;f.casinoMoneyMax=5;f.cd=0;this.casinoBossSkill(f,e)});
  else if(id==='merman')run(()=>{f.mermanWaveNext=0;this.mermanSkill(f,e)});
  else if(id==='crab')run(()=>{f.cd=0;this.crabSkill(f,e,dt)});
