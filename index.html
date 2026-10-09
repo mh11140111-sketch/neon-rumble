@@ -1593,31 +1593,20 @@ function slotMachineOwned(){try{const a=JSON.parse(localStorage.getItem('neonRum
 function characterLocked(c){return (c?.unlock==='gentlemanShop'&&!ownedCosmetics.includes('gentleman_shop'))||!!c?.stageOnly||(c?.unlock==='skeleton'&&!skeletonsUnlocked)||(c?.unlock==='skeletonMage'&&!skeletonMageUnlocked)||(c?.unlock==='zombieMage'&&!zombieMageUnlocked)||(c?.unlock==='infectedUfo'&&!infectedUfoUnlocked)||(c?.unlock==='detective'&&!detectiveUnlocked)||(c?.unlock==='moneyManShop'&&!moneyManOwned())||(c?.unlock==='slotMachineShop'&&!slotMachineOwned())||(c?.unlock==='casinoBoss'&&!casinoBossUnlocked)||(c?.unlock==='shark'&&!sharkUnlocked)||(c?.unlock==='merman'&&!mermanUnlocked)||(c?.unlock==='psychic'&&!psychicUnlocked)||(c?.unlock==='oldTv'&&!oldTvUnlocked)||(c?.unlock==='doctor'&&!doctorUnlocked)||(c?.unlock==='hellDemon'&&!hellDemonUnlocked)||(c?.unlock==='joker'&&!jokerUnlocked)||(c?.unlock==='treasure'&&!treasureUnlocked)||(c?.unlock==='whale'&&!whaleUnlocked)||(c?.unlock==='squid'&&!squidUnlocked)||(c?.unlock==='technician'&&!technicianUnlocked)||(c?.unlock==='skele44'&&!skele44Unlocked)||(c?.unlock==='pumpkinKing'&&!pumpkinKingUnlocked)||(c?.unlock==='cosmicStar'&&!cosmicStarUnlocked)||(c?.unlock==='cursedPerson'&&!cursedPersonUnlocked)||(c?.unlock==='weeper'&&!weeperUnlocked)||(c?.unlock==='angel'&&!angelUnlocked)||(c?.unlock==='welder'&&!welderUnlocked)||(c?.unlock==='bathtub'&&!bathtubUnlocked)||(c?.unlock==='toilet'&&!toiletUnlocked)}
 function characterGroup(c){
  const t=(c.id+' '+c.name+' '+c.tag).toLowerCase();
- if(/악마|지옥|demon|hell|devil|demon_eye/.test(t))return '악마·지옥';
- if(/사신|죽음|reaper|death/.test(t))return '사신·죽음';
- if(/해골|좀비|유령|흡혈귀|skeleton|zombie|ghost|vampire/.test(t))return '언데드';
- if(/로켓|우주인|rocket|astronaut/.test(t))return '우주 탐험';
- if(/외계|ufo|alien|cosmic|우주의 별/.test(t))return '외계·우주';
- if(/상어|범고래|고래|shark|orca|whale/.test(t))return '해양 생물';
- if(/바다|인어|잠수|오징어|문어|ocean|squid|merman|diver|submarine/.test(t))return '해양 전사';
- if(/time_traveler|시간/.test(t))return '시간·차원';
- if(/마법|mage|magic|wizard|psychic|aladdin|genie/.test(t))return '마법·초능력';
- if(/천사|용|angel|dragon|moon|sun|kingdom/.test(t))return '신화·천체';
- if(/나무|꽃|식물|tree|flower|plant|pumpkin/.test(t))return '자연·식물';
- if(/거미|곰|벌|게|도마뱀|spider|bear|crab|lizard|cat|dog|animal/.test(t))return '동물·곤충';
- if(/로봇|robot|machine|tv/.test(t))return '로봇·기계';
- if(/과학|기술|tech|scientist|laboratory/.test(t))return '과학·기술';
- if(/기사|검|궁수|닌자|knight|archer|ninja|sword|warrior/.test(t))return '무기·기사';
- if(/복서|cowboy|boxer|fighter|martial/.test(t))return '격투·무술';
- if(/의사|doctor|dentist|nurse/.test(t))return '의료';
- if(/요리|chef|cook|food|kitchen/.test(t))return '요리·음식';
- if(/대장장이|광부|용접|smith|miner|welder|worker/.test(t))return '제작·노동';
- if(/탐정|detective|police|firefighter/.test(t))return '구조·수사';
- if(/gentleman|신사|bard|음유|king|왕/.test(t))return '특수 인물';
- if(/저주|cursed|weeper/.test(t))return '저주·괴담';
- if(/toilet|욕조|샴푸|칫솔|bath|shampoo|tooth|poop/.test(t))return '생활용품';
- if(/casino|slot|money|coin|gold/.test(t))return '경제·카지노';
- return '개성파 전투원';
+ if(/악마|지옥|저주|demon|hell|devil|cursed|weeper/.test(t))return '악마';
+ if(/사신|해골|유령|좀비|흡혈귀|죽음|reaper|death|ghost|zombie|skeleton|vampire|grave/.test(t))return '죽음·언데드';
+ if(/우주|로켓|외계|별|ufo|alien|rocket|astronaut|cosmic|space/.test(t))return '우주';
+ if(/바다|상어|범고래|잠수|인어|문어|오징어|고래|sea|ocean|shark|whale|squid|merman|diver|orca|submarine/.test(t))return '바다';
+ if(/용|마법|천사|지니|mage|magic|angel|genie|dragon|wizard|psychic|moon|sun|time_traveler/.test(t))return '마법·신화';
+ if(/나무|식물|꽃|거미|곰|벌|게|도마뱀|tree|spider|bear|crab|lizard|plant|flower/.test(t))return '자연·동물';
+ if(/로봇|기계|기술|과학|robot|tech|scientist|machine|tv|computer/.test(t))return '기계·과학';
+ if(/기사|검|궁수|복서|닌자|전사|무사|king|knight|archer|boxer|ninja|sword|warrior|cowboy/.test(t))return '전사·무기';
+ if(/의사|요리|대장장이|광부|용접|탐정|doctor|chef|smith|miner|welder|detective|worker|firefighter/.test(t))return '직업·일상';
+ if(/gentleman|신사|bard|음유|singer|music/.test(t))return '예술·인물';
+ if(/toilet|욕조|샴푸|칫솔|bath|shampoo|tooth|poop|soap/.test(t))return '생활용품';
+ if(/casino|slot|money|coin|gold|treasure/.test(t))return '경제·보물';
+ if(/love|heart|joker|invisible|moon|sun|clock|time|hourglass/.test(t))return '특수능력';
+ return '독립 캐릭터';
 }
 function updateCharacterGroups(){
  const wrap=$('character-group-filter-wrap'),sel=$('character-group-filter'),roster=$('roster');if(!wrap||!sel||!roster)return;
@@ -1976,7 +1965,7 @@ function updateSelection(){
 }
 for(let i=0;i<5;i++){const b=document.createElement('button');b.id='squad-slot'+i;b.type='button';b.setAttribute('aria-label','도전자 '+(i+1)+'번 변경');b.innerHTML='<small>도전자 '+(i+1)+'</small><span id="squad-icon'+i+'"></span><strong id="squad-name'+i+'"></strong>';b.onclick=()=>{bossSlot=i;updateSelection()};$('squad-picker').appendChild(b);const card=document.createElement('div');card.id='hero-status'+i;card.className='hero-status';card.innerHTML='<strong id="hero-name'+i+'"></strong><div class="health"><i id="hero-bar'+i+'"></i></div><small id="hero-hp'+i+'"></small>';$('squad-hud').appendChild(card)}
 for(let t=0;t<2;t++)for(let i=0;i<3;i++){const b=document.createElement('button');b.id='relay-slot'+t+i;b.type='button';b.onclick=()=>{side=t;relaySlots[t]=i;updateSelection()};$('relay-picker').appendChild(b)}
-ROSTER.forEach(c=>{const b=document.createElement('button');b.type='button';b.className='fighter-card';b.dataset.character=c.id;b.hidden=characterLocked(c);b.setAttribute('aria-label',c.name+' 선택. '+c.description);b.innerHTML='<span class="card-top"><span class="card-icon" aria-hidden="true">'+charVisualHtml(c)+'</span><span class="card-name">'+c.name+'</span></span><span class="card-tag">'+c.tag+'</span><span class="character-group-label" style="display:block;font-size:11px;color:#a7d6fa;margin-top:4px"></span><span class="card-desc">'+c.description+'</span><span class="card-hp">기본 HP '+c.hp+' · 공격력 '+(c.id==='nerd'?'10~95':c.damage)+'</span>';b.onclick=()=>{if(isBossMode()){if(bossSlot<0)bossChoice=c.id;else squad[bossSlot]=c.id}else if(['relay','group'].includes(mode))relayTeams[side][relaySlots[side]]=c.id;else selected[side]=c.id;updateSelection();if(settings.characterPicker==='popup'&&$('character-picker-modal'))$('character-picker-modal').hidden=true};$('roster').appendChild(b)});
+ROSTER.forEach(c=>{const b=document.createElement('button');b.type='button';b.className='fighter-card';b.dataset.character=c.id;b.hidden=characterLocked(c);b.setAttribute('aria-label',c.name+' 선택. '+c.description);b.innerHTML='<span class="card-top"><span class="card-icon" aria-hidden="true">'+charVisualHtml(c)+'</span><span class="card-name">'+c.name+'</span></span><span class="card-tag">'+c.tag+'</span><span class="character-group-label" style="display:block;font-size:10px;color:#a7d6fa;margin-top:2px"></span><span class="card-desc">'+c.description+'</span><span class="card-hp">기본 HP '+c.hp+' · 공격력 '+(c.id==='nerd'?'10~95':c.damage)+'</span>';b.onclick=()=>{if(isBossMode()){if(bossSlot<0)bossChoice=c.id;else squad[bossSlot]=c.id}else if(['relay','group'].includes(mode))relayTeams[side][relaySlots[side]]=c.id;else selected[side]=c.id;updateSelection();if(settings.characterPicker==='popup'&&$('character-picker-modal'))$('character-picker-modal').hidden=true};$('roster').appendChild(b)});
 $('character-search').addEventListener('input',()=>{updateCharacterGroups()});
 updateCharacterGroups();$('choose0').onclick=()=>{side=0;bossSlot=-1;updateSelection()};$('choose1').onclick=()=>{side=1;bossSlot=Math.max(0,bossSlot);updateSelection()};$('random').onclick=()=>{const playable=ROSTER.filter(c=>!characterLocked(c)),rand=()=>playable[Math.floor(Math.random()*playable.length)].id;if(isBossMode()){bossChoice=rand();squad=squad.map(rand)}else if(['relay','group'].includes(mode))relayTeams=relayTeams.map(t=>t.map(rand));else selected=selected.map(rand);updateSelection()};function switchRegularMode(next){if(['newchapter','newchapter-select','newchapter2','newchapter2-select','newchapter3','newchapter3-select','newchapter4','newchapter4-select','newchapter5','newchapter5-select','newchapter6','newchapter6-select'].includes(mode)){engine=null}if(mode==='desert'||mode==='desert-select')resetDesertTransient();if(mode==='mansion'||mode==='mansion-select')resetMansionTransient();if(mode==='space'||mode==='space-select')resetSpaceTransient();if(mode==='casino'||mode==='casino-select')resetCasinoTransient();if(mode==='ocean'||mode==='ocean-select')resetOceanTransient();if(mode==='boxing'||mode==='boxing-select')resetBoxingTransient();engine=null;mode=next;updateSelection()}$('mode-duel').onclick=()=>{switchRegularMode('duel')};$('mode-boss').onclick=()=>{bossSlot=-1;switchRegularMode('boss')};
 $('mode-relay').onclick=()=>{side=0;switchRegularMode('relay')};$('mode-group').onclick=()=>{side=0;switchRegularMode('group')};$('mode-control').onclick=()=>{side=0;bossSlot=-1;switchRegularMode('control')};
