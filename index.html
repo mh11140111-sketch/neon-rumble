@@ -1350,6 +1350,33 @@ timeTravelerSkill(f,e){
  if(!f||f.health<=0||f.timeTraveling||f.cd>0||f.stunUntil>this.time||!e||e.health<=0)return;
  const a=this.aim(f,e);this.shots.push({x:f.x,y:f.y,vx:a.x,vy:a.y,owner:f.side,team:f.team,target:e.side,kind:'time_clock',icon:'🕙',radius:13*f.scale,speed:340*f.scale,damage:50*f.scale,life:4,bounces:0});f.cd=1/f.scale;f.attack=.18/f.scale;this.effect(f,'🕙','skill')
 }
+tickGentleman(dt){
+ for(const f of this.fighters){
+  if(!f||f.id!=='gentleman'||f.health<=0||f.stunUntil>this.time)continue;
+  const enemy=this.enemies(f).sort((a,b)=>distance(f,a)-distance(f,b))[0];
+  const angle=enemy?Math.atan2(enemy.y-f.y,enemy.x-f.x):0;
+  const weapon={x:f.x+Math.cos(angle)*f.radius*1.7,y:f.y+Math.sin(angle)*f.radius*1.7};
+  f.gentleUmbrellaX=weapon.x;f.gentleUmbrellaY=weapon.y;f.gentleAngle=angle;
+  if(!Number.isFinite(f.gentleKnifeUntil))f.gentleKnifeUntil=0;
+  if(f.gentleKnifeUntil>this.time){
+   f.gentleKnifeHits=f.gentleKnifeHits||{};
+   for(const t of this.enemies(f)){if(distance(t,weapon)>t.radius+20*f.scale)continue;if((f.gentleKnifeHits[t.side]||0)<=this.time){f.gentleKnifeHits[t.side]=this.time+.4;this.attack(f,t,100*f.scale)}}
+  }else{
+   if(f.gentleKnifeUntil>0){f.gentleKnifeUntil=0;f.gentleKnifeHits={};if(enemy){const d=this.aim(weapon,enemy);this.shots.push({x:weapon.x,y:weapon.y,vx:d.x,vy:d.y,owner:f.side,team:f.team,target:enemy.side,kind:'gentle_blade',icon:'⚔️',radius:12,speed:420*f.scale,damage:50*f.scale,life:3,bounces:0})}}
+   if(enemy&&distance(enemy,weapon)<=enemy.radius+18*f.scale){f.gentleKnifeUntil=this.time+3;this.effect(f,'⚔️ 칼 변환 3초','skill');continue}
+   if(enemy&&this.time>=(f.gentleGunNext||0)){f.gentleGunNext=this.time+1/f.scale;const d=this.aim(weapon,enemy);this.shots.push({x:weapon.x,y:weapon.y,vx:d.x,vy:d.y,owner:f.side,team:f.team,target:enemy.side,kind:'gentle_bullet',radius:7,speed:800*f.scale,damage:50*f.scale,life:3,bounces:0})}
+  }
+ }
+}
+tickGentlemanHats(){
+ this.gentlemanHats=(this.gentlemanHats||[]).filter(h=>h.life>0);
+ for(const h of this.gentlemanHats){
+  h.life-=.016;
+  const ally=this.fighters.find(f=>f.team===h.team&&f.health>0&&f.id!=='gentleman'&&distance(f,h)<f.radius+h.radius);
+  if(ally){const hp=ally.hp,health=ally.health,side=ally.side,team=ally.team,scale=ally.scale,boss=ally.boss;
+   const type=ROSTER.find(x=>x.id==='gentleman');Object.assign(ally,type,{side,team,hp,health,scale,boss,gentlemanInherited:true,gentleKnifeUntil:0,gentleGunNext:0});this.effect(ally,'🎩 신사 계승!','skill');h.life=0}
+ }
+}
 tickBard(dt){
  for(const f of this.fighters){
   if(!f||f.health<=0)continue;
