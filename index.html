@@ -1120,8 +1120,8 @@ stepRound(dt){
  for(const s of this.shots){
   if(!s||typeof s.kind!=='string'||!Number.isFinite(s.life)||!Number.isFinite(s.x)||!Number.isFinite(s.y)||!Number.isFinite(s.vx)||!Number.isFinite(s.vy)||!Number.isFinite(s.speed)){if(s)s.life=0;continue}
   s.life-=dt;if(s.kind==='ice_spike'||s.kind==='ice_patch'){const owner=this.fighters[s.owner];if(!owner||owner.health<=0){s.life=0;continue}
-if(s.kind==='ice_spike'){const travel=Math.min(s.distanceLeft||0,s.speed*dt);s.x+=s.vx*travel;s.y+=s.vy*travel;s.distanceLeft-=travel;s.nextTrail=(s.nextTrail||0)+travel;while(s.nextTrail>=13){s.nextTrail-=13;s.trail.push({x:s.x-s.vx*s.nextTrail,y:s.y-s.vy*s.nextTrail})}
-for(const enemy of this.enemies(owner)){if(s.trail.some(p=>Math.hypot(enemy.x-p.x,enemy.y-p.y)<enemy.radius+14)&&(s.hitAt[enemy.side]||0)<=this.time){this.applyIce(enemy,.5);s.hitAt[enemy.side]=this.time+.5}}
+if(s.kind==='ice_spike'){const travel=Math.min(s.distanceLeft||0,s.speed*dt);s.x+=s.vx*travel;s.y+=s.vy*travel;s.distanceLeft-=travel;s.nextTrail=(s.nextTrail||0)+travel;while(s.nextTrail>=13){s.nextTrail-=13;s.trail.push({x:s.x-s.vx*s.nextTrail,y:s.y-s.vy*s.nextTrail,expires:this.time+0.75})}
+s.trail=s.trail.filter(p=>p.expires>this.time);if(s.trail.length>12)s.trail.splice(0,s.trail.length-12);for(const enemy of this.enemies(owner)){if(s.trail.some(p=>Math.hypot(enemy.x-p.x,enemy.y-p.y)<enemy.radius+14)&&(s.hitAt[enemy.side]||0)<=this.time){this.applyIce(enemy,.5);s.hitAt[enemy.side]=this.time+.5}}
 if(s.distanceLeft<=.001){s.kind='ice_patch';s.life=2;s.radius=35*owner.scale;s.hitAt={};s.trail=[]}}
 else for(const enemy of this.enemies(owner)){if(distance(s,enemy)<=enemy.radius+s.radius&&(s.hitAt[enemy.side]||0)<=this.time){this.applyIce(enemy,1.5);s.hitAt[enemy.side]=this.time+1.5}}continue}
   if(s.kind==='joker_taser'&&((s.jokerSafeUntil??0)<=this.time||!Number.isFinite(s.x)||!Number.isFinite(s.y)||!Number.isFinite(s.vx)||!Number.isFinite(s.vy))){s.life=0;continue}if(s.psychicOrbitBy!=null){this.updatePsychicOrbitShot(s,dt);if(this.result!==null)break;continue}const f=this.fighters[s.owner];if(!f){s.life=0;continue}if(f.health<=0||f.egg){s.life=0;continue}
