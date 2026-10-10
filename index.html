@@ -1338,7 +1338,7 @@ tickTimeTravelers(dt){
   if(!f)continue;
   if(f.timeSlowUntil&&this.time>=f.timeSlowUntil){if(Number.isFinite(f.timeBaseSpeed))f.speed=f.timeBaseSpeed;f.timeSlowUntil=0;f.timeSlowFactor=1}
   if(f.timeSlowUntil>this.time){if(!Number.isFinite(f.timeBaseSpeed))f.timeBaseSpeed=f.speed;f.speed=f.timeBaseSpeed*(f.timeSlowFactor||.8);f.cd+=(dt*(1/(f.timeSlowFactor||.8)-1))}
-  if(f.timeClone){const original=this.fighters[f.timeOriginalSide];if(!original||original.health<=0)f.health=0;else if(f.health<=0){original.health=0;this.checkEnd();continue}}
+  if(f.timeClone){const original=this.fighters[f.timeOriginalSide];if(!original||original.health<=0)f.health=0;else if(f.health<=0)continue}
   if(f.id!=='time_traveler'||f.timeClone||f.health<=0)continue;
   f.timeDamageHistory=(f.timeDamageHistory||[]).filter(h=>this.time-h.at<=5);
   if(!Number.isFinite(f.timeHealNext))f.timeHealNext=this.time+5;
