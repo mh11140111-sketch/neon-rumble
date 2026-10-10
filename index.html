@@ -1039,7 +1039,7 @@ jokerResolveContact(f,e){
  this.effect(f,'🃏 '+(ROSTER.find(x=>x.id===p.sourceId)?.name||p.sourceId)+' 접촉!','skill');return dealt>0
 }
 stepFighter(f,e,dt){
- this.tickHolyShield(f);if(f.id==='hell_demon'&&typeof syncDemonUltimateSkinMode==='function')syncDemonUltimateSkinMode(f);if(f.id==='angel')this.angelSkill(f);if(f.toiletCapture||f.toiletForcedDash||f.timeTraveling)return;if(f.id==='toothbrush')this.toothbrushSkill(f);if(f.id==='shampoo')this.shampooSkill(f);if(f.id==='bathtub')this.bathtubSkill(f);if(f.id==='toilet')this.toiletSkill(f);if(f.id==='time_traveler')this.timeTravelerSkill(f,e);if(f.id==='poop_blob')this.poopBlobSkill(f);if(f.id==='miner')this.minerSkill(f);if(f.id==='work_manager')this.workManagerSkill(f);if(f.id==='classic_man'){this.classicManSkill(f,e);return}if(f.id==='gold_ore'){this.goldOreSkill(f);return}if(f.id==='welder')this.welderSkill(f);
+ this.tickHolyShield(f);if(f.id==='hell_demon'&&typeof syncDemonUltimateSkinMode==='function')syncDemonUltimateSkinMode(f);if(f.id==='angel')this.angelSkill(f);if(f.toiletCapture||f.toiletForcedDash||f.timeTraveling)return;if(f.id==='toothbrush')this.toothbrushSkill(f);if(f.id==='shampoo')this.shampooSkill(f);if(f.id==='bathtub')this.bathtubSkill(f);if(f.id==='toilet')this.toiletSkill(f);if(f.id==='time_traveler')this.timeTravelerSkill(f,e);if(f.id==='poop_blob')this.poopBlobSkill(f);if(f.id==='miner')this.minerSkill(f);if(f.id==='work_manager')this.workManagerSkill(f);if(f.id==='classic_man'){this.classicManSkill(f,e,dt);return}if(f.id==='gold_ore'){this.goldOreSkill(f);return}if(f.id==='welder')this.welderSkill(f);
  if(this.heroStatusImmune(f))this.clearHeroStatus(f);if(f.squidPulledBy!=null&&this.time<(f.squidPullUntil||0)){f.attack=0;return}
  if((f.charmUntil||0)>this.time){const src=this.fighters[f.charmSource];if(src&&src.health>0&&src.team!==f.team){const a=this.aim(f,src),spd=f.speed*(1-Math.max(f.slowPower||0,f.rootSlowPower||0));f.vx=a.x;f.vy=a.y;f.x+=a.x*spd*dt;f.y+=a.y*spd*dt;this.keepInside(f);f.attack=0;return}else{f.charmUntil=0;f.charmSource=null}}
  if(f.id==='genie'){this.genieSkill(f,dt);return}
@@ -1349,9 +1349,11 @@ tickTimeTravelers(dt){
   if(f.timeTraveling&&this.time>=f.timeReturnAt){f.timeTraveling=false;f.x=clamp(170+this.random()*380,70,this.width-70);f.y=clamp(170+this.random()*380,70,this.height-70);f.stunUntil=this.time;const side=this.fighters.length,rebirth3EnhancedClone=typeof mode!=='undefined'&&mode==='rebirthchapter3'&&typeof rebirthChapter3StageNo!=='undefined'&&rebirthChapter3StageNo>=1&&rebirthChapter3StageNo<=3,clone={...f,side,name:'시간여행자 분신',hp:rebirth3EnhancedClone?2000:1000,health:rebirth3EnhancedClone?2000:f.health,timeClone:true,timeOriginalSide:f.side,timeErrorUsed:true,timeTraveling:false,timeHealNext:this.time+5,timeDamageHistory:[],x:clamp(f.x+50,70,this.width-70),y:clamp(f.y+50,70,this.height-70),trail:[],boss:false};this.fighters.push(clone);this.timeBurst(f,'return');this.timeBurst(clone,'return');this.effect(f,'🕙 분신 소환!','skill');this.effect(clone,'⏳ 시간선 합류','skill')}
  }
 }
-classicManSkill(f,e){
- if(!f||f.health<=0||!e||e.health<=0||f.stunUntil>this.time||f.cd>0)return;
- if(distance(f,e)>f.radius+e.radius+48*f.scale)return;
+classicManSkill(f,e,dt){
+ if(!f||f.health<=0||!e||e.health<=0||f.stunUntil>this.time)return;
+ const range=f.radius+e.radius+48*f.scale;
+ if(distance(f,e)>range){if(!(this.manualTeam0&&f.team===0)){const a=this.aim(f,e);f.vx=a.x;f.vy=a.y;f.x+=a.x*f.speed*dt;f.y+=a.y*f.speed*dt;this.keepInside(f)}return}
+ if(f.cd>0)return;
  const critical=this.random()<.2,damage=e.hp<=100?Math.max(e.health,1):Math.max(1,Math.ceil(e.hp*(critical?.2:.1)));
  f.classicHammerUntil=this.time+.22;f.classicHammerAngle=Math.atan2(e.y-f.y,e.x-f.x);
  f.cd=1/Math.max(.1,f.scale);f.attack=.22;
