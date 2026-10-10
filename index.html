@@ -366,6 +366,7 @@ furballSkill(f,e){
  if(dealt>0&&e.health>0)this.applyBleed(f,e);
 }
 attack(f,e,dmg,friendly=false,bypassDodge=false,bypassParry=false){
+  if(typeof mode!=='undefined'&&mode==='rebirthchapter3'&&typeof rebirthChapter3StageNo!=='undefined'&&rebirthChapter3StageNo<=3&&f&&f.team===0&&!friendly)dmg*=2;
   if(e&&(e.toiletForcedDash||e.timeTraveling))return 0;
   if(e&&e.bardBuffType==='shield'&&e.bardShieldHp>0&&dmg>0){e.bardShieldHp=0;e.bardBuffType=null;this.effect(e,'🎵 방어막 파괴 · 피해 무효','skill');return 0}
   if(f&&f.bardBuffType==='attack'&&f.bardBuffUntil>this.time)dmg*=f.bardBuffFactor||1.2;
@@ -2639,12 +2640,12 @@ function startRebirthChapter3Stage(n){
  engine.manualTeam0=true;paused=false;acc=0;last=performance.now();lastHits=0;lastMessage='';hideStageSelectionPanels();
  const rp=$('rebirth-chapter-page');if(rp)rp.hidden=true;$('selection').hidden=true;$('battle').hidden=false;$('result').hidden=true;$('pause-label').hidden=true;$('pause').disabled=false;$('pause').textContent='일시정지';
  resetStick();refreshControlUI();$('squad-hud').hidden=true;$('relay-hud').hidden=true;$('score-label0').textContent='🕙 시간여행자';$('score-label1').textContent=n===5?'🕴️ ???':n===4?'🔈 스피커':'🌀 무작위 적';
- $('battle-mode').textContent='REBIRTH CH3 · '+n;$('battle-info').textContent=n<=3?'적 3마리씩 5웨이브 · 웨이브마다 체력 15% 회복':n===4?'스피커 · 작은 파동 50 → 큰 파동 70':'??? · 체력 3333 · 거대 블랙홀';
+ $('battle-mode').textContent='REBIRTH CH3 · '+n;$('battle-info').textContent=n<=3?'적 3마리씩 5웨이브 · 공격력 2배 · 웨이브마다 체력 30% 회복':n===4?'스피커 · 작은 파동 50 → 큰 파동 70':'??? · 체력 3333 · 거대 블랙홀';
  fit();hud();draw();window.scrollTo({top:0,behavior:'auto'});playSfx('start')
 }
 function updateRebirthChapter3Stage(dt){
  if(mode!=='rebirthchapter3'||!engine||engine.result!==null)return;const hero=engine.fighters.find(f=>f.team===0&&!f.summon);if(!hero||hero.health<=0){engine.result=1;return}
- if(rebirthChapter3StageNo<=3){const enemies=engine.fighters.filter(f=>f.team===1&&f.stageOnlySummon);if(enemies.length&&!enemies.some(f=>f.health>0)&&!engine.rebirth3WaveDone){engine.rebirth3WaveDone=true;hero.health=Math.min(hero.hp,hero.health+hero.hp*.15);if(rebirthChapter3Wave>=5){engine.desertWaveMode=false;engine.result=0}else spawnRebirth3Wave()}return}
+ if(rebirthChapter3StageNo<=3){const enemies=engine.fighters.filter(f=>f.team===1&&f.stageOnlySummon);if(enemies.length&&!enemies.some(f=>f.health>0)&&!engine.rebirth3WaveDone){engine.rebirth3WaveDone=true;hero.health=Math.min(hero.hp,hero.health+hero.hp*.30);if(rebirthChapter3Wave>=5){engine.desertWaveMode=false;engine.result=0}else spawnRebirth3Wave()}return}
  const boss=engine.fighters.find(f=>f.team===1&&!f.summon);if(!boss||boss.health<=0){engine.result=0;return}
  if(rebirthChapter3StageNo===4){
   if(boss.speakerPhase===undefined)boss.speakerPhase=0;
